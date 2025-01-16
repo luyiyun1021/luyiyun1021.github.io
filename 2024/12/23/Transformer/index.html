@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha256-5eIC48iZUHmSlSUz9XtjRyK2mzQkHScZY1WdMaoz74E=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-minimal.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"luyiyun1021.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.21.1","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="前言Transformer由论文《Attention is All You Need》提出，现在是谷歌云TPU推荐的参考模型。论文相关的Tensorflow的代码可以从GitHub获取，其作为Tensor2Tensor包的一部分。哈佛的NLP团队也实现了一个基于PyTorch的版本，并注释该论文。 在本文中，我们将试图把模型简化一点，并逐一介绍里面的核心概念，希望让普通读者也能轻易理解。 Atte">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Transformer">
+<meta property="og:url" content="https://luyiyun1021.github.io/2024/12/23/Transformer/index.html">
+<meta property="og:site_name" content="Ronny Lu&#39;s blog">
+<meta property="og:description" content="前言Transformer由论文《Attention is All You Need》提出，现在是谷歌云TPU推荐的参考模型。论文相关的Tensorflow的代码可以从GitHub获取，其作为Tensor2Tensor包的一部分。哈佛的NLP团队也实现了一个基于PyTorch的版本，并注释该论文。 在本文中，我们将试图把模型简化一点，并逐一介绍里面的核心概念，希望让普通读者也能轻易理解。 Atte">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223204611805.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223204624351.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223204644319.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223204703053.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223204753829.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223204808623.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223204817764.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223204827884.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223204837811.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223204845263.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223204851643.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223204858967.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223204907248.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223204917105.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223204924298.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223204931261.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223204940131.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223205007335.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223205016584.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223205023109.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223205033278.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223205045993.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223205051556.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223205108154.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223205119517.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223205125576.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223205132032.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223205141462.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223205150944.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223205156309.png">
+<meta property="article:published_time" content="2024-12-23T09:05:31.000Z">
+<meta property="article:modified_time" content="2024-12-23T12:53:32.196Z">
+<meta property="article:author" content="Ronny Lu">
+<meta property="article:tag" content="大模型">
+<meta property="article:tag" content="论文精读">
+<meta property="article:tag" content="nlp">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223204611805.png">
+
+
+<link rel="canonical" href="https://luyiyun1021.github.io/2024/12/23/Transformer/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://luyiyun1021.github.io/2024/12/23/Transformer/","path":"2024/12/23/Transformer/","title":"Transformer"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Transformer | Ronny Lu's blog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<style>.darkmode--activated{--body-bg-color:#282828;--content-bg-color:#333;--card-bg-color:#555;--text-color:#ccc;--blockquote-color:#bbb;--link-color:#ccc;--link-hover-color:#eee;--brand-color:#ddd;--brand-hover-color:#ddd;--table-row-odd-bg-color:#282828;--table-row-hover-bg-color:#363636;--menu-item-bg-color:#555;--btn-default-bg:#222;--btn-default-color:#ccc;--btn-default-border-color:#555;--btn-default-hover-bg:#666;--btn-default-hover-color:#ccc;--btn-default-hover-border-color:#666;--highlight-background:#282b2e;--highlight-foreground:#a9b7c6;--highlight-gutter-background:#34393d;--highlight-gutter-foreground:#9ca9b6}.darkmode--activated img{opacity:.75}.darkmode--activated img:hover{opacity:.9}.darkmode--activated code{color:#69dbdc;background:0 0}button.darkmode-toggle{z-index:9999}.darkmode-ignore,img{display:flex!important}.beian img{display:inline-block!important}</style></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Ronny Lu's blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-Transformer-%E6%95%B4%E4%BD%93%E7%BB%93%E6%9E%84"><span class="nav-number">2.</span> <span class="nav-text">1. Transformer 整体结构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-Transformer-%E7%9A%84%E8%BE%93%E5%85%A5"><span class="nav-number">3.</span> <span class="nav-text">2. Transformer 的输入</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-%E5%8D%95%E8%AF%8D-Embedding"><span class="nav-number">3.1.</span> <span class="nav-text">2.1 单词 Embedding</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-%E4%BD%8D%E7%BD%AE-Embedding"><span class="nav-number">3.2.</span> <span class="nav-text">2.2 位置 Embedding</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-Self-Attention%EF%BC%88%E8%87%AA%E6%B3%A8%E6%84%8F%E5%8A%9B%E6%9C%BA%E5%88%B6%EF%BC%89"><span class="nav-number">4.</span> <span class="nav-text">3. Self-Attention（自注意力机制）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-Self-Attention-%E7%BB%93%E6%9E%84"><span class="nav-number">4.1.</span> <span class="nav-text">3.1 Self-Attention 结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-Q-K-V-%E7%9A%84%E8%AE%A1%E7%AE%97"><span class="nav-number">4.2.</span> <span class="nav-text">3.2 Q, K, V 的计算</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-Self-Attention-%E7%9A%84%E8%BE%93%E5%87%BA"><span class="nav-number">4.3.</span> <span class="nav-text">3.3 Self-Attention 的输出</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-4-Multi-Head-Attention"><span class="nav-number">4.4.</span> <span class="nav-text">3.4 Multi-Head Attention</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-Encoder-%E7%BB%93%E6%9E%84"><span class="nav-number">5.</span> <span class="nav-text">4. Encoder 结构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-Add-Norm"><span class="nav-number">5.1.</span> <span class="nav-text">4.1 Add &amp; Norm</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-Feed-Forward"><span class="nav-number">5.2.</span> <span class="nav-text">4.2 Feed Forward</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-3-%E7%BB%84%E6%88%90-Encoder"><span class="nav-number">5.3.</span> <span class="nav-text">4.3 组成 Encoder</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-Decoder-%E7%BB%93%E6%9E%84"><span class="nav-number">6.</span> <span class="nav-text">5. Decoder 结构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-%E7%AC%AC%E4%B8%80%E4%B8%AA-Multi-Head-Attention"><span class="nav-number">6.1.</span> <span class="nav-text">5.1 第一个 Multi-Head Attention</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-2-%E7%AC%AC%E4%BA%8C%E4%B8%AA-Multi-Head-Attention"><span class="nav-number">6.2.</span> <span class="nav-text">5.2 第二个 Multi-Head Attention</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-3-Softmax-%E9%A2%84%E6%B5%8B%E8%BE%93%E5%87%BA%E5%8D%95%E8%AF%8D"><span class="nav-number">6.3.</span> <span class="nav-text">5.3 Softmax 预测输出单词</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-Transformer-%E6%80%BB%E7%BB%93"><span class="nav-number">7.</span> <span class="nav-text">6. Transformer 总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Ronny Lu"
+      src="/images/avatar.jpeg">
+  <p class="site-author-name" itemprop="name">Ronny Lu</p>
+  <div class="site-description" itemprop="description">Tech notes on LLM, LLM Infra, C++</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">29</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2024/12/23/Transformer/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpeg">
+      <meta itemprop="name" content="Ronny Lu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ronny Lu's blog">
+      <meta itemprop="description" content="Tech notes on LLM, LLM Infra, C++">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Transformer | Ronny Lu's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Transformer
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2024-12-23 17:05:31 / 修改时间：20:53:32" itemprop="dateCreated datePublished" datetime="2024-12-23T17:05:31+08:00">2024-12-23</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">大模型</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E8%AE%BA%E6%96%87%E7%B2%BE%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">论文精读</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E8%AE%BA%E6%96%87%E7%B2%BE%E8%AF%BB/nlp/" itemprop="url" rel="index"><span itemprop="name">nlp</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>4.3k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>4 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>Transformer由论文《Attention is All You Need》提出，现在是谷歌云TPU推荐的参考模型。论文相关的Tensorflow的代码可以从GitHub获取，其作为Tensor2Tensor包的一部分。哈佛的NLP团队也实现了一个基于PyTorch的版本，并注释该论文。</p>
+<p>在本文中，我们将试图把模型简化一点，并逐一介绍里面的核心概念，希望让普通读者也能轻易理解。</p>
+<p>Attention is All You Need：<a href="https://link.zhihu.com/?target=https://arxiv.org/abs/1706.03762">Attention Is All You Need</a></p>
+<span id="more"></span>
+
+<h2 id="1-Transformer-整体结构"><a href="#1-Transformer-整体结构" class="headerlink" title="1. Transformer 整体结构"></a>1. Transformer 整体结构</h2><p>首先介绍 Transformer 的整体结构，下图是 Transformer 用于中英文翻译的整体结构：</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223204611805.png" alt="image.png"></p>
+<p>Transformer 的整体结构，左图Encoder和右图Decoder</p>
+<p>可以看到 <strong>Transformer 由 Encoder 和 Decoder 两个部分组成</strong>，Encoder 和 Decoder 都包含 6 个 block。Transformer 的工作流程大体如下：</p>
+<p><strong>第一步：</strong>获取输入句子的每一个单词的表示向量 <strong>X</strong>，<strong>X</strong>由单词的 Embedding（Embedding就是从原始数据提取出来的Feature） 和单词位置的 Embedding 相加得到。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223204624351.png" alt="image.png"></p>
+<p>Transformer 的输入表示</p>
+<p><strong>第二步：</strong>将得到的单词表示向量矩阵 (如上图所示，每一行是一个单词的表示 <strong>x</strong>) 传入 Encoder 中，经过 6 个 Encoder block 后可以得到句子所有单词的编码信息矩阵 <strong>C</strong>，如下图。单词向量矩阵用 Xn×d 表示， n 是句子中单词个数，d 是表示向量的维度 (论文中 d&#x3D;512)。每一个 Encoder block 输出的矩阵维度与输入完全一致。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223204644319.png" alt="image.png"></p>
+<p>Transformer Encoder 编码句子信息<br><strong>第三步</strong>：将 Encoder 输出的编码信息矩阵 <strong>C</strong>传递到 Decoder 中，Decoder 依次会根据当前翻译过的单词 1~ i 翻译下一个单词 i+1，如下图所示。在使用的过程中，翻译到单词 i+1 的时候需要通过 <strong>Mask (掩盖)</strong> 操作遮盖住 i+1 之后的单词。<br><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223204703053.png" alt="image.png"></p>
+<p>Transofrmer Decoder 预测<br>上图 Decoder 接收了 Encoder 的编码矩阵 <strong>C</strong>，然后首先输入一个翻译开始符 “<Begin>“，预测第一个单词 “I”；然后输入翻译开始符 “<Begin>“ 和单词 “I”，预测单词 “have”，以此类推。这是 Transformer 使用时候的大致流程，接下来是里面各个部分的细节。</p>
+<h2 id="2-Transformer-的输入"><a href="#2-Transformer-的输入" class="headerlink" title="2. Transformer 的输入"></a>2. Transformer 的输入</h2><p>Transformer 中单词的输入表示 <strong>x</strong>由<strong>单词 Embedding</strong> 和<strong>位置 Embedding</strong> （Positional Encoding）相加得到。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223204753829.png" alt="image.png"></p>
+<p>Transformer 的输入表示</p>
+<h3 id="2-1-单词-Embedding"><a href="#2-1-单词-Embedding" class="headerlink" title="2.1 单词 Embedding"></a>2.1 单词 Embedding</h3><p>单词的 Embedding 有很多种方式可以获取，例如可以采用 Word2Vec、Glove 等算法预训练得到，也可以在 Transformer 中训练得到。</p>
+<h3 id="2-2-位置-Embedding"><a href="#2-2-位置-Embedding" class="headerlink" title="2.2 位置 Embedding"></a>2.2 位置 Embedding</h3><p>Transformer 中除了单词的 Embedding，还需要使用位置 Embedding 表示单词出现在句子中的位置。<strong>因为 Transformer 不采用 RNN 的结构，而是使用全局信息，不能利用单词的顺序信息，而这部分信息对于 NLP 来说非常重要。</strong>所以 Transformer 中使用位置 Embedding 保存单词在序列中的相对或绝对位置。</p>
+<p><strong>方法一：使用[0,1]范围分配</strong></p>
+<p>这个方法的分配方式是，将0-1这个范围的，将第一个token分配0，最后一个token分配去1，其余的token按照文章的长度平均分配。具体形式如下：</p>
+<blockquote>
+<p>我喜欢吃洋葱 【0 0.16 0.32…..1】</p>
+<p>我真的不喜欢吃洋葱【0 0.125 0.25…..1】</p>
+</blockquote>
+<p>问题：我们可以看到，如果句子长度不同，那么位置编码是不一样，所以无法表示句子之间有什么相似性。</p>
+<p><strong>方法二：1-n正整数范围分配</strong></p>
+<p>这个方法比较直观，就是按照输入的顺序，一次分配给token所在的索引位置。具体形式如下：</p>
+<blockquote>
+<p>我喜欢吃洋葱 【1，2，3，4，5，6】</p>
+<p>我真的不喜欢吃洋葱【1，2，3，4，5，6，7】</p>
+</blockquote>
+<p>问题：往往句子越长，后面的值越大，数字越大说明这个位置占的权重也越大，这样的方式无法凸显每个位置的真实的权重。</p>
+<p><strong>方法三：三角函数表示</strong></p>
+<p>位置 Embedding 用 <strong>PE</strong>表示，<strong>PE</strong> 的维度与单词 Embedding 是一样的。PE 可以通过训练得到，也可以使用某种公式计算得到。在 Transformer 中采用了后者，计算公式如下：</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223204808623.png" alt="image.png"></p>
+<p>其中，pos 表示单词在句子中的位置，d 表示 PE的维度 (与词 Embedding 一样)，2i 表示偶数的维度，2i+1 表示奇数维度 (即 2i≤d, 2i+1≤d)。使用这种公式计算 PE 有以下的好处：</p>
+<ul>
+<li><p>使 PE 能够适应比训练集里面所有句子更长的句子，假设训练集里面最长的句子是有 20 个单词，突然来了一个长度为 21 的句子，则使用公式计算的方法可以计算出第 21 位的 Embedding。</p>
+</li>
+<li><p>可以让模型容易地计算出相对位置，对于固定长度的间距 k，<strong>PE(pos+k)</strong> 可以用 <strong>PE(pos)</strong> 计算得到。因为 Sin(A+B) &#x3D; Sin(A)Cos(B) + Cos(A)Sin(B), Cos(A+B) &#x3D; Cos(A)Cos(B) - Sin(A)Sin(B)。</p>
+</li>
+</ul>
+<p>将单词的词 Embedding 和位置 Embedding 相加，就可以得到单词的表示向量 <strong>x</strong>，<strong>x</strong> 就是 Transformer 的输入。</p>
+<h2 id="3-Self-Attention（自注意力机制）"><a href="#3-Self-Attention（自注意力机制）" class="headerlink" title="3. Self-Attention（自注意力机制）"></a>3. Self-Attention（自注意力机制）</h2><p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223204817764.png" alt="image.png"></p>
+<p>Transformer Encoder 和 Decoder</p>
+<p>上图是论文中 Transformer 的内部结构图，左侧为 Encoder block，右侧为 Decoder block。红色圈中的部分为 <strong>Multi-Head Attention</strong>，是由多个 <strong>Self-Attention</strong>组成的，可以看到 Encoder block 包含一个 Multi-Head Attention，而 Decoder block 包含两个 Multi-Head Attention (其中有一个用到 Masked)。Multi-Head Attention 上方还包括一个 Add &amp; Norm 层，Add 表示残差连接 (Residual Connection) 用于防止网络退化，Norm 表示 Layer Normalization，用于对每一层的激活值进行归一化。</p>
+<p>因为 <strong>Self-Attention</strong>是 Transformer 的重点，所以我们重点关注 Multi-Head Attention 以及 Self-Attention，首先详细了解一下 Self-Attention 的内部逻辑。</p>
+<h3 id="3-1-Self-Attention-结构"><a href="#3-1-Self-Attention-结构" class="headerlink" title="3.1 Self-Attention 结构"></a>3.1 Self-Attention 结构</h3><p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223204827884.png" alt="image.png"></p>
+<p>Self-Attention 结构</p>
+<p>上图是 Self-Attention 的结构，在计算的时候需要用到矩阵<strong>Q(查询),K(键值),V(值)<strong>。在实际中，Self-Attention 接收的是输入(单词的表示向量x组成的矩阵X) 或者上一个 Encoder block 的输出。而</strong>Q,K,V</strong>正是通过 Self-Attention 的输入进行线性变换得到的。</p>
+<h3 id="3-2-Q-K-V-的计算"><a href="#3-2-Q-K-V-的计算" class="headerlink" title="3.2 Q, K, V 的计算"></a>3.2 Q, K, V 的计算</h3><p>Self-Attention 的输入用矩阵X进行表示，则可以使用线性变阵矩阵<strong>WQ,WK,WV</strong>计算得到<strong>Q,K,V</strong>。计算如下图所示，<strong>注意 X, Q, K, V 的每一行都表示一个单词。</strong></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223204837811.png" alt="image.png"></p>
+<p>Q, K, V 的计算</p>
+<h3 id="3-3-Self-Attention-的输出"><a href="#3-3-Self-Attention-的输出" class="headerlink" title="3.3 Self-Attention 的输出"></a>3.3 Self-Attention 的输出</h3><p>得到矩阵 Q, K, V之后就可以计算出 Self-Attention 的输出了，计算的公式如下：</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223204845263.png" alt="image.png"></p>
+<p>Self-Attention 的输出</p>
+<p>公式中计算矩阵<strong>Q</strong>和<strong>K</strong>每一行向量的内积，为了防止内积过大，因此除以 dk 的平方根。<strong>Q</strong>乘以<strong>K</strong>的转置后，得到的矩阵行列数都为 n，n 为句子单词数，这个矩阵可以表示单词之间的 attention 强度。下图为<strong>Q</strong>乘以 KT ，1234 表示的是句子中的单词。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223204851643.png" alt="image.png"></p>
+<p>Q乘以K的转置的计算</p>
+<p>得到QKT 之后，使用 Softmax 计算每一个单词对于其他单词的 attention 系数，公式中的 Softmax 是对矩阵的每一行进行 Softmax，即每一行的和都变为 1.</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223204858967.png" alt="image.png"></p>
+<p>对矩阵的每一行进行 Softmax</p>
+<p>得到 Softmax 矩阵之后可以和<strong>V</strong>相乘，得到最终的输出<strong>Z</strong>。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223204907248.png" alt="image.png"></p>
+<p>Self-Attention 输出</p>
+<p>上图中 Softmax 矩阵的第 1 行表示单词 1 与其他所有单词的 attention 系数，最终单词 1 的输出 Z1 等于所有单词 i 的值 Vi 根据 attention 系数的比例加在一起得到，如下图所示：</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223204917105.png" alt="image.png"></p>
+<p>Zi 的计算方法</p>
+<h3 id="3-4-Multi-Head-Attention"><a href="#3-4-Multi-Head-Attention" class="headerlink" title="3.4 Multi-Head Attention"></a>3.4 Multi-Head Attention</h3><p>在上一步，我们已经知道怎么通过 Self-Attention 计算得到输出矩阵 Z，而 Multi-Head Attention 是由多个 Self-Attention 组合形成的，下图是论文中 Multi-Head Attention 的结构图。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223204924298.png" alt="image.png"></p>
+<p>Multi-Head Attention</p>
+<p>从上图可以看到 Multi-Head Attention 包含多个 Self-Attention 层，首先将输入<strong>X</strong>分别传递到 h 个不同的 Self-Attention 中，计算得到 h 个输出矩阵<strong>Z</strong>。下图是 h&#x3D;8 时候的情况，此时会得到 8 个输出矩阵<strong>Z</strong>。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223204931261.png" alt="image.png"></p>
+<p>多个 Self-Attention</p>
+<p>得到 8 个输出矩阵 Z1 到 Z8 之后，Multi-Head Attention 将它们拼接在一起 <strong>(Concat)<strong>，然后传入一个</strong>Linear</strong>层，得到 Multi-Head Attention 最终的输出<strong>Z</strong>。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223204940131.png" alt="image.png"></p>
+<p>Multi-Head Attention 的输出</p>
+<p>可以看到 Multi-Head Attention 输出的矩阵<strong>Z</strong>与其输入的矩阵<strong>X</strong>的维度是一样的。</p>
+<p>具体来说，单头自注意力机制将所有位置的特征向量都看作等价的，而多头自注意力机制能够在不同的“视角”下对输入进行建模。通过将输入的特征向量划分成$h$个多头，模型能够在$h$个不同的子空间上计算注意力，从而能够学习到多个不同的、互补的特征表示，从而更加<strong>全面地捕捉输入序列的语义信息</strong>。例如，对于一句话来说，不同的多头可以学习到句子的不同方面，如主语、宾语、谓语、修饰语等，从而能够更好地表示句子的语义信息。</p>
+<p>此外，多头自注意力机制还可以<strong>并行计算</strong>，因为每个头的注意力计算是独立的，可以并行地进行。这在计算效率上有一定的优势，可以加速模型的训练和推理过程。</p>
+<p>需要注意的是，在多头自注意力机制中，头的数量$h$需要根据任务的复杂度和数据集的规模进行调整，过多或过少的头都可能会影响模型的性能。通常情况下，头的数量$h$在4-16之间较为常见。</p>
+<h2 id="4-Encoder-结构"><a href="#4-Encoder-结构" class="headerlink" title="4. Encoder 结构"></a>4. Encoder 结构</h2><p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223205007335.png" alt="image.png"></p>
+<p>Transformer Encoder block</p>
+<p>上图红色部分是 Transformer 的 Encoder block 结构，可以看到是由 Multi-Head Attention, <strong>Add &amp; Norm, Feed Forward, Add &amp; Norm</strong> 组成的。刚刚已经了解了 Multi-Head Attention 的计算过程，现在了解一下 Add &amp; Norm 和 Feed Forward 部分。</p>
+<h3 id="4-1-Add-Norm"><a href="#4-1-Add-Norm" class="headerlink" title="4.1 Add &amp; Norm"></a>4.1 Add &amp; Norm</h3><p>Add &amp; Norm 层由 Add 和 Norm 两部分组成，其计算公式如下：</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223205016584.png" alt="image.png"></p>
+<p>其中 <strong>X</strong>表示 Multi-Head Attention 或者 Feed Forward 的输入，MultiHeadAttention(<strong>X</strong>) 和 FeedForward(<strong>X</strong>) 表示输出 (输出与输入 <strong>X</strong> 维度是一样的，所以可以相加)。</p>
+<p><strong>Add</strong>指 <strong>X</strong>+MultiHeadAttention(<strong>X</strong>)，将子层的输出和输入进行残差连接（residual connection），并进行元素级别的加法，得到增强了的特征表示。这个残差连接可以有效地防止梯度消失问题，避免训练过程中信息的损失。在 ResNet 中经常用到：</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223205023109.png" alt="image.png"></p>
+<p>残差连接</p>
+<p><strong>Norm</strong>指 Layer Normalization，通常用于 RNN 结构，Layer Normalization 会将每一层神经元的输入都转成均值方差都一样的，进行归一化操作，以缩放增强后的特征表示，并减少内部协变量位移（Internal Covariate Shift），从而加快模型的收敛速度和提高性能。</p>
+<h3 id="4-2-Feed-Forward"><a href="#4-2-Feed-Forward" class="headerlink" title="4.2 Feed Forward"></a>4.2 Feed Forward</h3><p>Feed Forward 层比较简单，是一个两层的全连接层，第一层的激活函数为 Relu，第二层不使用激活函数，对应的公式如下。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223205033278.png" alt="image.png"></p>
+<p>Feed Forward</p>
+<p><strong>X</strong>是输入，Feed Forward 最终得到的输出矩阵的维度与<strong>X</strong>一致。</p>
+<p>Feed Forward层由两个全连接层组成，中间用一个非线性激活函数进行连接，如ReLU（Rectified Linear Unit）激活函数。在Transformer模型中，第一个全连接层将特征表示映射到一个更高维度的空间，可以增强模型的非线性建模能力，提高模型的性能和泛化能力；第二个全连接层将其再次映射回原始的维度，从而降低模型的计算复杂度和内存占用。</p>
+<h3 id="4-3-组成-Encoder"><a href="#4-3-组成-Encoder" class="headerlink" title="4.3 组成 Encoder"></a>4.3 组成 Encoder</h3><p>通过上面描述的 Multi-Head Attention, Feed Forward, Add &amp; Norm 就可以构造出一个 Encoder block，Encoder block 接收输入矩阵 X(n×d) ，并输出一个矩阵 O(n×d) 。通过多个 Encoder block 叠加就可以组成 Encoder。</p>
+<p>第一个 Encoder block 的输入为句子单词的表示向量矩阵，后续 Encoder block 的输入是前一个 Encoder block 的输出，最后一个 Encoder block 输出的矩阵就是<strong>编码信息矩阵 C</strong>，这一矩阵后续会用到 Decoder 中。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223205045993.png" alt="image.png"></p>
+<p>Encoder 编码句子信息</p>
+<h2 id="5-Decoder-结构"><a href="#5-Decoder-结构" class="headerlink" title="5. Decoder 结构"></a>5. Decoder 结构</h2><p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223205051556.png" alt="image.png"></p>
+<p>Transformer Decoder block</p>
+<p>上图红色部分为 Transformer 的 Decoder block 结构，与 Encoder block 相似，但是存在一些区别：</p>
+<ul>
+<li><p>包含两个 Multi-Head Attention 层。</p>
+</li>
+<li><p>第一个 Multi-Head Attention 层采用了 Masked 操作。</p>
+</li>
+<li><p>第二个 Multi-Head Attention 层的<strong>K, V</strong>矩阵使用 Encoder 的<strong>编码信息矩阵C</strong>进行计算，而<strong>Q</strong>使用上一个 Decoder block 的输出计算。</p>
+</li>
+<li><p>最后有一个 Softmax 层计算下一个翻译单词的概率。</p>
+</li>
+</ul>
+<h3 id="5-1-第一个-Multi-Head-Attention"><a href="#5-1-第一个-Multi-Head-Attention" class="headerlink" title="5.1 第一个 Multi-Head Attention"></a>5.1 第一个 Multi-Head Attention</h3><p>Decoder block 的第一个 Multi-Head Attention 采用了 Masked 操作，因为在翻译的过程中是顺序翻译的，即翻译完第 i 个单词，才可以翻译第 i+1 个单词。通过 Masked 操作可以防止第 i 个单词知道 i+1 个单词之后的信息。下面以 “我有一只猫” 翻译成 “I have a cat” 为例，了解一下 Masked 操作。</p>
+<p>下面的描述中使用了类似 Teacher Forcing 的概念，不熟悉 Teacher Forcing 的童鞋可以参考以下上一篇文章Seq2Seq 模型详解。在 Decoder 的时候，是需要根据之前的翻译，求解当前最有可能的翻译，如下图所示。首先根据输入 “<Begin>“ 预测出第一个单词为 “I”，然后根据输入 “<Begin> I” 预测下一个单词 “have”。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223205108154.png" alt="image.png"></p>
+<p>Decoder 预测</p>
+<p>Decoder 可以在训练的过程中使用 Teacher Forcing 并且并行化训练，即将正确的单词序列 (<Begin> I have a cat) 和对应输出 (I have a cat <end>) 传递到 Decoder。那么在预测第 i 个输出时，就要将第 i+1 之后的单词掩盖住，<strong>注意 Mask 操作是在 Self-Attention 的 Softmax 之前使用的，下面用 0 1 2 3 4 5 分别表示 “<Begin> I have a cat <end>“。</strong></p>
+<p><strong>第一步：</strong>是 Decoder 的输入矩阵和 <strong>Mask</strong> 矩阵，输入矩阵包含 “<Begin> I have a cat” (0, 1, 2, 3, 4) 五个单词的表示向量，<strong>Mask</strong> 是一个 5×5 的矩阵。在 <strong>Mask</strong> 可以发现单词 0 只能使用单词 0 的信息，而单词 1 可以使用单词 0, 1 的信息，即只能使用之前的信息。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223205119517.png" alt="image.png"></p>
+<p>输入矩阵与 Mask 矩阵</p>
+<p><strong>第二步：</strong>接下来的操作和之前的 Self-Attention 一样，通过输入矩阵<strong>X</strong>计算得到<strong>Q,K,V</strong>矩阵。然后计算<strong>Q</strong>和 KT 的乘积 QKT 。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223205125576.png" alt="image.png"></p>
+<p>Q乘以K的转置</p>
+<p><strong>第三步：</strong>在得到 QKT 之后需要进行 Softmax，计算 attention score，我们在 Softmax 之前需要使用<strong>Mask</strong>矩阵遮挡住每一个单词之后的信息，遮挡操作如下：</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223205132032.png" alt="image.png"></p>
+<p>Softmax 之前 Mask</p>
+<p>得到 <strong>Mask</strong> QKT 之后在 <strong>Mask</strong> QKT上进行 Softmax，每一行的和都为 1。但是单词 0 在单词 1, 2, 3, 4 上的 attention score 都为 0。</p>
+<p><strong>第四步：</strong>使用 <strong>Mask</strong> QKT与矩阵 <strong>V</strong>相乘，得到输出 <strong>Z</strong>，则单词 1 的输出向量 Z1 是只包含单词 1 信息的。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223205141462.png" alt="image.png"></p>
+<p>Mask 之后的输出</p>
+<p><strong>第五步：</strong>通过上述步骤就可以得到一个 Mask Self-Attention 的输出矩阵 Zi ，然后和 Encoder 类似，通过 Multi-Head Attention 拼接多个输出Zi 然后计算得到第一个 Multi-Head Attention 的输出<strong>Z</strong>，<strong>Z</strong>与输入<strong>X</strong>维度一样。</p>
+<h3 id="5-2-第二个-Multi-Head-Attention"><a href="#5-2-第二个-Multi-Head-Attention" class="headerlink" title="5.2 第二个 Multi-Head Attention"></a>5.2 第二个 Multi-Head Attention</h3><p>Decoder block 第二个 Multi-Head Attention 变化不大， 主要的区别在于其中 Self-Attention 的 <strong>K, V</strong>矩阵不是使用 上一个 Decoder block 的输出计算的，而是使用 <strong>Encoder 的编码信息矩阵 C</strong> 计算的。</p>
+<p>根据 Encoder 的输出 <strong>C</strong>计算得到 <strong>K, V</strong>，根据上一个 Decoder block 的输出 <strong>Z</strong> 计算 <strong>Q</strong> (如果是第一个 Decoder block 则使用输入矩阵 <strong>X</strong> 进行计算)，后续的计算方法与之前描述的一致。</p>
+<p>这样做的好处是在 Decoder 的时候，每一位单词都可以利用到 Encoder 所有单词的信息 (这些信息无需 <strong>Mask</strong>)。</p>
+<h3 id="5-3-Softmax-预测输出单词"><a href="#5-3-Softmax-预测输出单词" class="headerlink" title="5.3 Softmax 预测输出单词"></a>5.3 Softmax 预测输出单词</h3><p>Decoder block 最后的部分是利用 Softmax 预测下一个单词，在之前的网络层我们可以得到一个最终的输出 Z，因为 Mask 的存在，使得单词 0 的输出 Z0 只包含单词 0 的信息，如下：</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223205150944.png" alt="image.png"></p>
+<p>Decoder Softmax 之前的 Z</p>
+<p>Softmax 根据输出矩阵的每一行预测下一个单词：</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223205156309.png" alt="image.png"></p>
+<p>Decoder Softmax 预测</p>
+<p>这就是 Decoder block 的定义，与 Encoder 一样，Decoder 是由多个 Decoder block 组合而成。</p>
+<h2 id="6-Transformer-总结"><a href="#6-Transformer-总结" class="headerlink" title="6. Transformer 总结"></a>6. Transformer 总结</h2><ul>
+<li><p>Transformer 与 RNN 不同，可以比较好地并行训练。</p>
+</li>
+<li><p>Transformer 本身是不能利用单词的顺序信息的，因此需要在输入中添加位置 Embedding，否则 Transformer 就是一个词袋模型了。</p>
+</li>
+<li><p>Transformer 的重点是 Self-Attention 结构，其中用到的 <strong>Q, K, V</strong>矩阵通过输出进行线性变换得到。</p>
+</li>
+<li><p>Transformer 中 Multi-Head Attention 中有多个 Self-Attention，可以捕获单词之间多种维度上的相关系数 attention score。</p>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" rel="tag"># 大模型</a>
+              <a href="/tags/%E8%AE%BA%E6%96%87%E7%B2%BE%E8%AF%BB/" rel="tag"># 论文精读</a>
+              <a href="/tags/nlp/" rel="tag"># nlp</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2024/12/23/%E5%A4%9A%E5%A4%84%E7%90%86%E5%99%A8%E7%BC%96%E7%A8%8B%E4%B8%AD%E7%9A%84%E4%B8%80%E8%87%B4%E6%80%A7%E9%97%AE%E9%A2%98/" rel="prev" title="多处理器编程中的一致性问题">
+                  <i class="fa fa-angle-left"></i> 多处理器编程中的一致性问题
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2025/01/09/Bert/" rel="next" title="Bert">
+                  Bert <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Ronny Lu</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">75k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">1:08</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">
+    <!--由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动 -->
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+</body>
+</html>

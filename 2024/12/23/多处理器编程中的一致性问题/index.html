@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha256-5eIC48iZUHmSlSUz9XtjRyK2mzQkHScZY1WdMaoz74E=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-minimal.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"luyiyun1021.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.21.1","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="Why Memory Barriers？中文翻译（上）高并发编程–多处理器编程中的一致性问题(上)高并发编程–多处理器编程中的一致性问题(下)谈谈 C++ 中的内存顺序 (Memory Order)C++ 相关知识总结分享 Memory Barrier为什么需要内存屏障？由于CPU的速度要快于（数量级上的差异）memory以及他们之间的互连器件（interconnect），因此引入了 Store">
+<meta property="og:type" content="article">
+<meta property="og:title" content="多处理器编程中的一致性问题">
+<meta property="og:url" content="https://luyiyun1021.github.io/2024/12/23/%E5%A4%9A%E5%A4%84%E7%90%86%E5%99%A8%E7%BC%96%E7%A8%8B%E4%B8%AD%E7%9A%84%E4%B8%80%E8%87%B4%E6%80%A7%E9%97%AE%E9%A2%98/index.html">
+<meta property="og:site_name" content="Ronny Lu&#39;s blog">
+<meta property="og:description" content="Why Memory Barriers？中文翻译（上）高并发编程–多处理器编程中的一致性问题(上)高并发编程–多处理器编程中的一致性问题(下)谈谈 C++ 中的内存顺序 (Memory Order)C++ 相关知识总结分享 Memory Barrier为什么需要内存屏障？由于CPU的速度要快于（数量级上的差异）memory以及他们之间的互连器件（interconnect），因此引入了 Store">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223113405743.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223113559619.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223113619007.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223113629110.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223113641723.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223113649801.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223113655885.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223113707830.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223113714781.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223113725472.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223113731619.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223113738004.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223113748857.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223113759993.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223113805089.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223114032860.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223115041399.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223115131954.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223115437774.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223115453757.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223115504723.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223115515680.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223115524889.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223134818787.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223134832484.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223134838406.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223134844716.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223134850394.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223134903299.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223134917311.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223134932447.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223134941526.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223134950542.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223135006264.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223135016920.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223135022786.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223135027809.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223135033175.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223135039124.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223135046595.png">
+<meta property="article:published_time" content="2024-12-23T03:31:46.000Z">
+<meta property="article:modified_time" content="2024-12-23T05:51:58.371Z">
+<meta property="article:author" content="Ronny Lu">
+<meta property="article:tag" content="c++">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223113405743.png">
+
+
+<link rel="canonical" href="https://luyiyun1021.github.io/2024/12/23/%E5%A4%9A%E5%A4%84%E7%90%86%E5%99%A8%E7%BC%96%E7%A8%8B%E4%B8%AD%E7%9A%84%E4%B8%80%E8%87%B4%E6%80%A7%E9%97%AE%E9%A2%98/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://luyiyun1021.github.io/2024/12/23/%E5%A4%9A%E5%A4%84%E7%90%86%E5%99%A8%E7%BC%96%E7%A8%8B%E4%B8%AD%E7%9A%84%E4%B8%80%E8%87%B4%E6%80%A7%E9%97%AE%E9%A2%98/","path":"2024/12/23/多处理器编程中的一致性问题/","title":"多处理器编程中的一致性问题"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>多处理器编程中的一致性问题 | Ronny Lu's blog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<style>.darkmode--activated{--body-bg-color:#282828;--content-bg-color:#333;--card-bg-color:#555;--text-color:#ccc;--blockquote-color:#bbb;--link-color:#ccc;--link-hover-color:#eee;--brand-color:#ddd;--brand-hover-color:#ddd;--table-row-odd-bg-color:#282828;--table-row-hover-bg-color:#363636;--menu-item-bg-color:#555;--btn-default-bg:#222;--btn-default-color:#ccc;--btn-default-border-color:#555;--btn-default-hover-bg:#666;--btn-default-hover-color:#ccc;--btn-default-hover-border-color:#666;--highlight-background:#282b2e;--highlight-foreground:#a9b7c6;--highlight-gutter-background:#34393d;--highlight-gutter-foreground:#9ca9b6}.darkmode--activated img{opacity:.75}.darkmode--activated img:hover{opacity:.9}.darkmode--activated code{color:#69dbdc;background:0 0}button.darkmode-toggle{z-index:9999}.darkmode-ignore,img{display:flex!important}.beian img{display:inline-block!important}</style></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Ronny Lu's blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Memory-Barrier"><span class="nav-number">1.</span> <span class="nav-text">Memory Barrier</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81%E5%86%85%E5%AD%98%E5%B1%8F%E9%9A%9C%EF%BC%9F"><span class="nav-number">1.1.</span> <span class="nav-text">为什么需要内存屏障？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Cache"><span class="nav-number">1.2.</span> <span class="nav-text">Cache</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Cache-Coherency-Protocols-MSEI"><span class="nav-number">1.3.</span> <span class="nav-text">Cache Coherency Protocols - MSEI</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81%E7%BC%93%E5%AD%98%E4%B8%80%E8%87%B4%E6%80%A7%E5%8D%8F%E8%AE%AE%EF%BC%9F"><span class="nav-number">1.3.1.</span> <span class="nav-text">为什么需要缓存一致性协议？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Cacheline-State"><span class="nav-number">1.3.2.</span> <span class="nav-text">Cacheline State</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Protocol-Message"><span class="nav-number">1.3.3.</span> <span class="nav-text">Protocol Message</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#State-Machine"><span class="nav-number">1.3.4.</span> <span class="nav-text">State Machine</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#MESI-Protocol-Example"><span class="nav-number">1.3.5.</span> <span class="nav-text">MESI Protocol Example</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Store-Buffer"><span class="nav-number">1.4.</span> <span class="nav-text">Store Buffer</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E5%BC%95%E5%85%A5-store-buffer"><span class="nav-number">1.4.1.</span> <span class="nav-text">为什么要引入 store buffer?</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF-store-buffer"><span class="nav-number">1.4.2.</span> <span class="nav-text">什么是 store buffer?</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BC%9A%E5%BC%95%E5%85%A5%E4%BB%80%E4%B9%88%E6%96%B0%E7%9A%84%E9%97%AE%E9%A2%98%EF%BC%9F"><span class="nav-number">1.4.3.</span> <span class="nav-text">会引入什么新的问题？</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Invalidate-Queues"><span class="nav-number">1.5.</span> <span class="nav-text">Invalidate Queues</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81-Invalidate-Queues"><span class="nav-number">1.5.1.</span> <span class="nav-text">为什么需要 Invalidate Queues?</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Example-for-Invalidate-Queues"><span class="nav-number">1.5.2.</span> <span class="nav-text">Example for Invalidate Queues</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Read-and-Write-Memory-Barriers"><span class="nav-number">1.6.</span> <span class="nav-text">Read and Write Memory Barriers</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Memory-Consistency-Memory-Model"><span class="nav-number">2.</span> <span class="nav-text">Memory Consistency (Memory Model)</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Reorder"><span class="nav-number">2.1.</span> <span class="nav-text">Reorder</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B9%B1%E5%BA%8F%E6%89%A7%E8%A1%8C%E7%9A%84%E5%8E%9F%E5%9B%A0"><span class="nav-number">2.1.1.</span> <span class="nav-text">乱序执行的原因</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Memory-consistency-motivation"><span class="nav-number">2.2.</span> <span class="nav-text">Memory consistency motivation</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Memory-order"><span class="nav-number">2.3.</span> <span class="nav-text">Memory order</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Sequential-Consistency-SC"><span class="nav-number">2.4.</span> <span class="nav-text">Sequential Consistency (SC)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B9%B6%E8%A1%8C%E7%A8%8B%E5%BA%8F%E4%B8%AD%E7%9A%84%E9%A1%BA%E5%BA%8F%E4%B8%80%E8%87%B4%E6%80%A7"><span class="nav-number">2.4.1.</span> <span class="nav-text">并行程序中的顺序一致性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AB%9E%E4%BA%89%E5%92%8C-Object-Layout-%E6%9C%89%E5%85%B3"><span class="nav-number">2.4.2.</span> <span class="nav-text">竞争和 Object Layout 有关</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Total-Store-Order-TSO"><span class="nav-number">2.5.</span> <span class="nav-text">Total Store Order (TSO)</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Memory-Order"><span class="nav-number">3.</span> <span class="nav-text">Memory Order</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Happens-before"><span class="nav-number">3.1.</span> <span class="nav-text">Happens-before</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#memory-order-relaxed"><span class="nav-number">3.2.</span> <span class="nav-text">memory_order_relaxed</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="nav-number">3.2.1.</span> <span class="nav-text">使用场景</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%AE%A1%E6%95%B0%E5%99%A8%EF%BC%88Counter%EF%BC%89"><span class="nav-number">3.2.1.1.</span> <span class="nav-text">计数器（Counter）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%AE%80%E5%8D%95%E6%A0%87%E5%BF%97%EF%BC%88Simple-Flag-Setting"><span class="nav-number">3.2.1.2.</span> <span class="nav-text">简单标志（Simple Flag Setting)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%BC%95%E7%94%A8%E8%AE%A1%E6%95%B0%EF%BC%88Reference-Counting%EF%BC%89"><span class="nav-number">3.2.1.3.</span> <span class="nav-text">引用计数（Reference Counting）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F-Singleton"><span class="nav-number">3.2.1.4.</span> <span class="nav-text">单例模式 (Singleton)</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%B8%B8%E8%A7%81%E9%94%99%E8%AF%AF"><span class="nav-number">3.2.1.4.1.</span> <span class="nav-text">常见错误</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%AD%A3%E7%A1%AE%E5%86%99%E6%B3%95"><span class="nav-number">3.2.1.4.2.</span> <span class="nav-text">正确写法</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%9C%80%E4%BD%B3%E5%86%99%E6%B3%95"><span class="nav-number">3.2.1.4.3.</span> <span class="nav-text">最佳写法</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%88%9D%E5%A7%8B%E5%8C%96-atomic-array"><span class="nav-number">3.2.1.5.</span> <span class="nav-text">初始化 atomic array</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E2%80%9Cvolatile%E2%80%9D-%E5%85%B3%E9%94%AE%E5%AD%97"><span class="nav-number">3.2.1.6.</span> <span class="nav-text">“volatile” 关键字</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Example"><span class="nav-number">3.2.2.</span> <span class="nav-text">Example</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#memory-order-seq-cst"><span class="nav-number">3.3.</span> <span class="nav-text">memory_order_seq_cst</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Acquire-%E5%92%8C-Release-%E4%B8%8D%E4%BF%9D%E8%AF%81%E5%85%A8%E5%B1%80%E5%BA%8F"><span class="nav-number">3.3.1.</span> <span class="nav-text">Acquire 和 Release 不保证全局序</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Sequentially-Consistency-SC-%E4%BF%9D%E8%AF%81%E5%86%99%E6%93%8D%E4%BD%9C%E5%85%A8%E5%B1%80%E5%BA%8F"><span class="nav-number">3.3.2.</span> <span class="nav-text">Sequentially Consistency(SC)保证写操作全局序</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#std-atomic%E8%AF%AD%E4%B9%89%E6%80%BB%E7%BB%93"><span class="nav-number">3.3.3.</span> <span class="nav-text">std:atomic&lt;..&gt;语义总结</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Example-1"><span class="nav-number">3.3.4.</span> <span class="nav-text">Example</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">3.3.5.</span> <span class="nav-text">总结</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Acquire-Release"><span class="nav-number">3.4.</span> <span class="nav-text">Acquire-Release</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Acquire-%E5%92%8C-Release-%E7%9A%84%E5%AE%9E%E7%8E%B0%EF%BC%88%E7%BC%96%E8%AF%91%E5%99%A8%EF%BC%89"><span class="nav-number">3.4.1.</span> <span class="nav-text">Acquire 和 Release 的实现（编译器）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Acquire-%E5%92%8C-Release-%E7%9A%84%E5%AE%9E%E7%8E%B0%EF%BC%88%E5%A4%84%E7%90%86%E5%99%A8%EF%BC%89"><span class="nav-number">3.4.2.</span> <span class="nav-text">Acquire 和 Release 的实现（处理器）</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8D%95%E7%8B%AC%E7%9A%84-memory-barrier-%E6%8C%87%E4%BB%A4%E4%BB%A3%E4%BB%B7%E5%A4%A7"><span class="nav-number">3.4.2.1.</span> <span class="nav-text">单独的 memory barrier 指令代价大</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%90%88%E5%B9%B6%E7%9A%84%E2%80%9CAcquire%E2%80%9D%E5%92%8C%E2%80%9CRelease%E2%80%9D"><span class="nav-number">3.4.2.2.</span> <span class="nav-text">合并的“Acquire”和“Release”</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Acquire%E5%92%8C-release-%E8%87%AA%E5%8A%A8%E5%8C%96"><span class="nav-number">3.4.2.3.</span> <span class="nav-text">Acquire和 release 自动化</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Release-sequences"><span class="nav-number">3.4.3.</span> <span class="nav-text">Release sequences</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#memory-order-consume"><span class="nav-number">3.5.</span> <span class="nav-text">memory_order_consume</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E4%BA%9B%E4%BE%8B%E5%AD%90"><span class="nav-number">3.6.</span> <span class="nav-text">一些例子</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%A7%E8%83%BD%E8%AF%84%E4%BC%B0"><span class="nav-number">3.7.</span> <span class="nav-text">性能评估</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Atomics-Code-Gen-for-x86-x64"><span class="nav-number">3.7.1.</span> <span class="nav-text">Atomics Code Gen for x86&#x2F;x64</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B5%8B%E8%AF%95%E7%A8%8B%E5%BA%8F"><span class="nav-number">3.7.2.</span> <span class="nav-text">测试程序</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%A7%E8%83%BD%E7%BB%BC%E8%BF%B0"><span class="nav-number">3.7.3.</span> <span class="nav-text">性能综述</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93-1"><span class="nav-number">3.8.</span> <span class="nav-text">总结</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Memory-Order-v-s-Memory-Model-v-s-Cache-Coherence"><span class="nav-number">4.</span> <span class="nav-text">Memory Order v.s. Memory Model v.s. Cache Coherence</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Ronny Lu"
+      src="/images/avatar.jpeg">
+  <p class="site-author-name" itemprop="name">Ronny Lu</p>
+  <div class="site-description" itemprop="description">Tech notes on LLM, LLM Infra, C++</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">29</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2024/12/23/%E5%A4%9A%E5%A4%84%E7%90%86%E5%99%A8%E7%BC%96%E7%A8%8B%E4%B8%AD%E7%9A%84%E4%B8%80%E8%87%B4%E6%80%A7%E9%97%AE%E9%A2%98/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpeg">
+      <meta itemprop="name" content="Ronny Lu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ronny Lu's blog">
+      <meta itemprop="description" content="Tech notes on LLM, LLM Infra, C++">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="多处理器编程中的一致性问题 | Ronny Lu's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          多处理器编程中的一致性问题
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2024-12-23 11:31:46 / 修改时间：13:51:58" itemprop="dateCreated datePublished" datetime="2024-12-23T11:31:46+08:00">2024-12-23</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/c/" itemprop="url" rel="index"><span itemprop="name">c++</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>14k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>13 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/reliveIT/article/details/105902477?spm=1001.2014.3001.5501">Why Memory Barriers？中文翻译（上）</a><br><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/48157076">高并发编程–多处理器编程中的一致性问题(上)</a><br><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/48161056">高并发编程–多处理器编程中的一致性问题(下)</a><br><a target="_blank" rel="noopener" href="https://luyuhuang.tech/2022/06/25/cpp-memory-order.html">谈谈 C++ 中的内存顺序 (Memory Order)</a><br><a target="_blank" rel="noopener" href="https://www.zhihu.com/column/c_1634220655800573952">C++ 相关知识总结分享</a></p>
+<h1 id="Memory-Barrier"><a href="#Memory-Barrier" class="headerlink" title="Memory Barrier"></a>Memory Barrier</h1><h2 id="为什么需要内存屏障？"><a href="#为什么需要内存屏障？" class="headerlink" title="为什么需要内存屏障？"></a>为什么需要内存屏障？</h2><p>由于CPU的速度要快于（数量级上的差异）memory以及他们之间的互连器件（interconnect），因此引入了 Store Buffer 和 Invalidate Queues， 可能会导致多线程下 Inconsistency 的情况</p>
+<h2 id="Cache"><a href="#Cache" class="headerlink" title="Cache"></a>Cache</h2><p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223113405743.png" alt="image.png"></p>
+<span id="more"></span>
+
+<h2 id="Cache-Coherency-Protocols-MSEI"><a href="#Cache-Coherency-Protocols-MSEI" class="headerlink" title="Cache Coherency Protocols - MSEI"></a>Cache Coherency Protocols - MSEI</h2><h3 id="为什么需要缓存一致性协议？"><a href="#为什么需要缓存一致性协议？" class="headerlink" title="为什么需要缓存一致性协议？"></a>为什么需要缓存一致性协议？</h3><p>cache独占导致的数据不一致：因为每个core都有自己独立的L1 cache，对于一个共享的memory location两个cache可以有自己的copy。那么这就会出现了数据不一致的状况，两个core可能同时访问这个memory location，且如果一个core是对这个memory location进行修改，那么这就需要两边的cache进行同步，防止数据不一致。这个工作就是cache coherence protocol要做的事情。</p>
+<h3 id="Cacheline-State"><a href="#Cacheline-State" class="headerlink" title="Cacheline State"></a><strong>Cacheline State</strong></h3><ul>
+<li><strong>Modified(M):</strong><br>  当一个core 的cacheline的状态是M时，说明当前core最近修改了这个cache，那么其他core的cache不能再修改当前cache line对应的memory location，除非该cache将这个修改同步到了memory。这个core对这个memory location可以理解为Owned。</li>
+<li><strong>Exclusive(E):</strong><br>  E这个状态与M很像，区别在于当前core并没有修改当前的cacheline，这意味着当前cacheline存储的memory location的值是最新的。当前core可以对该cacheline进行modify且不需要与其他core的cache同步。这个core对这个memory location可以理解为Owned。</li>
+<li><strong>Share(S):</strong><br>  S表示当前cacheline在其他core的cache也存在copy，当前core如果需要修改该cacheline则需要与其他core的cache进行提前沟通。</li>
+<li><strong>Invalid(I):</strong><br>  I表示当前cacheline是空的。</li>
+</ul>
+<h3 id="Protocol-Message"><a href="#Protocol-Message" class="headerlink" title="Protocol Message"></a>Protocol Message</h3><ul>
+<li><strong>Read</strong><br>  当一个cache需要读取某个cacheline消息的时候就会发起read消息。</li>
+<li><strong>Read Response</strong><br>  read response是read的回应，这response可以来自其他core的cache也可以来自memory。当其他core中对当前cacheline是M状态时，则会发起read response。</li>
+<li><strong>Invalidate</strong><br>  Invalidate消息包含对应的memory location，接收到这个消息的cache需要将自己cacheline内容剔除，并响应。</li>
+<li><strong>Invalidate Acknowledge</strong><br>  接收到Invalidate后删除cacheline中的数据就向发起者回复invalidate ack。</li>
+<li><strong>Read Invalidate</strong><br>  这个消息包含两个操作，read和invalidate，那么它也需要接收read response和多个invalidate ack响应。</li>
+<li><strong>Write Back</strong><br>  writeback包含数据和地址，会将这个地址对应的数据刷到内存中。</li>
+</ul>
+<h3 id="State-Machine"><a href="#State-Machine" class="headerlink" title="State Machine"></a>State Machine</h3><ul>
+<li>**Modified(M) -&gt; Exclusive(E)**：cache可以通过writeback transaction将一个cacheline的数据写回到memory中（或者下一级cache中），这时候，该cacheline的状态从Modified迁移到Exclusive状态。对于cpu而言，cacheline中的数据仍然是最新的，而且是该cpu独占的，因此可以不通知其他cpu cache而直接修改之。</li>
+<li>**Exclusive(E) -&gt; Modified(M)**：在Exclusive状态下，cpu可以直接将数据写入cacheline，不需要其他操作。相应的，该cacheline状态从Exclusive状态迁移到Modified状态。这个状态迁移过程不涉及bus上的Transaction（即无需MESI Protocol Messages的交互）。</li>
+<li>**Modified(M) -&gt; Invalid(I)**：CPU 在总线上收到一个read invalidate的请求，同时，该请求是针对一个处于modified状态的cacheline，在这种情况下，CPU必须该cacheline状态设置为无效，并且用read response”和“invalidate acknowledge来回应收到的read invalidate的请求，完成整个bus transaction。一旦完成这个transaction，数据被送往其他cpu cache中，本地的copy已经不存在了。</li>
+<li>**Invalid(I) -&gt; Modified(M)**：CPU需要执行一个原子的readmodify-write操作，并且其cache中没有缓存数据，这时候，CPU就会在总线上发送一个read invalidate用来请求数据，同时想独自霸占对该数据的所有权。该CPU的cache可以通过read response获取数据并加载cacheline，同时，为了确保其独占的权利，必须收集所有其他cpu发来的invalidate acknowledge之后（其他cpu没有local copy），完成整个bus transaction。</li>
+<li>**Share(S) -&gt; Modified(M)**：CPU需要执行一个原子的readmodify-write操作，并且其local cache中有read only的缓存数据（cacheline处于shared状态），这时候，CPU就会在总线上发送一个invalidate请求其他cpu清空自己的local copy，以便完成其独自霸占对该数据的所有权的梦想。同样的，该cpu必须收集所有其他cpu发来的invalidate acknowledge之后，才算完成整个bus transaction。</li>
+<li>**Modified(M) -&gt; Share(S)**：在本cpu独自享受独占数据的时候，其他的cpu发起read请求，希望获取数据，这时候，本cpu必须以其local cacheline的数据回应，并以read response回应之前总线上的read请求。这时候，本cpu失去了独占权，该cacheline状态从Modified状态变成shared状态（有可能也会进行写回的动作）。</li>
+<li>**Exclusive(E) -&gt; Share(S)**：这个迁移和f类似，只不过开始cacheline的状态是exclusive，cacheline和memory的数据都是最新的，不存在写回的问题。总线上的操作也是在收到read请求之后，以read response回应。</li>
+<li>**Share(S) -&gt; Exclusive(E)**：如果cpu认为自己很快就会启动对处于shared状态的cacheline进行write操作，因此想提前先霸占上该数据。因此，该cpu会发送invalidate敦促其他cpu清空自己的local copy，当收到全部其他cpu的invalidate acknowledge之后，transaction完成，本cpu上对应的cacheline从shared状态切换exclusive状态。还有另外一种方法也可以完成这个状态切换：当所有其他的cpu对其local copy的cacheline进行写回操作，同时将cacheline中的数据设为无效（主要是为了为新的数据腾些地方），这时候，本cpu坐享其成，直接获得了对该数据的独占权。</li>
+<li>**Exclusive(E) -&gt; Invalid(I)**：其他的CPU进行一个原子的read-modify-write操作，但是，数据在本cpu的cacheline中，因此，其他的那个CPU会发送read invalidate，请求对该数据以及独占权。本cpu回送read response”和“invalidate acknowledge”，一方面把数据转移到其他cpu的cache中，另外一方面，清空自己的cacheline。</li>
+<li>**Invalid(I) -&gt; Exclusive(E)**：cpu想要进行write的操作但是数据不在local cache中，因此，该cpu首先发送了read invalidate启动了一次总线transaction。在收到read response回应拿到数据，并且收集所有其他cpu发来的invalidate acknowledge之后（确保其他cpu没有local copy），完成整个bus transaction。当write操作完成之后，该cacheline的状态会从Exclusive状态迁移到Modified状态。</li>
+<li>**Invalid(I) -&gt; Share(S)**：本CPU执行读操作，发现local cache没有数据，因此通过read发起一次bus transaction，来自其他的cpu local cache或者memory会通过read response回应，从而将该cacheline从Invalid状态迁移到shared状态。</li>
+<li>**Share(S) -&gt; Invalid(I)**：当cacheline处于shared状态的时候，说明在多个cpu的local cache中存在副本，因此，这些cacheline中的数据都是read only的，一旦其中一个cpu想要执行数据写入的动作，必须先通过invalidate获取该数据的独占权，而其他的CPU会以invalidate acknowledge回应，清空数据并将其cacheline从shared状态修改成invalid状态。</li>
+</ul>
+<h3 id="MESI-Protocol-Example"><a href="#MESI-Protocol-Example" class="headerlink" title="MESI Protocol Example"></a>MESI Protocol Example</h3><p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223113559619.png" alt="image.png"></p>
+<p>第一列是操作序列号，第二列是执行操作的CPU，第三列是具体执行哪一种操作，第四列描述了各个cpu local cache中的cacheline的状态（用meory address&#x2F;状态表示），最后一列描述了内存在0地址和8地址的数据内容的状态：V表示是最新的，和cache一致，I表示不是最新的内容，最新的内容保存在cache中。<br><strong>sequence 0</strong>，各个cpu cache中的cacheline都是Invalid状态，而Memory中的数据都保存了最新的数据。<br><strong>sequence 1</strong>，CPU 0执行了load操作，将address 0的数据加载到寄存器，这个操作使得保存0地址数据的那个cacheline从invalid状态迁移到shared状态。<br><strong>sequence 2</strong>，CPU3也对0地址执行了load操作，导致其local cache上对应的cacheline也切换到shared状态。当然，这时候，memory仍然是最新的。<br><strong>sequence 3</strong>，CPU 0执行了对地址8的load操作，由于地址0和地址8都是选择同一个cache set，而且，我们之前已经说过，该cache是direct-mapped的（即每个set只有一个cacheline），因此需要首先清空该cacheline中的数据（该操作被称为Invalidation），由于cacheline的状态是shared，因此，不需要通知其他CPU。Invalidation local cache上的cacheline之后，cpu 0的load操作将该cacheline状态修改成Shared状态（保存地址8的数据）。<br><strong>sequence 4</strong>，CPU 2也开始执行load操作了，虽然是load操作，但是CPU知道程序随后会修改该值（不是原子操作的read-modify-write，否就是迁移到Modified状态了，也不是单纯的load操作，否则会迁移到shared状态），因此向总线发送了read invalidate命令，一方面获取该数据（自己的local cache中没有地址0的数据），另外，CPU 2想独占该数据（因为随后要write）。这个操作导致CPU 3的cacheline迁移到invalid状态。当然，这时候，memory仍然是最新的有效数据。<br><strong>Sequence 5</strong>，CPU 2的store操作很快到来，由于准备工作做的比较充分（Exclusive状态，独占该数据），cpu直接修改cacheline中的数据（对应地址0），从而将其状态迁移到modified状态，同时要注意的是：memory中的数据已经失效，不是最新的数据了，任何其他CPU发起对地址0的load操作都不能从memory中读取，而是通过嗅探（snoop）的方式从CPU 2的local cache中获取。<br><strong>sequence 6</strong>，CPU 1对地址0的数据执行原子的加1操作，这时候CPU 1会发出read invalidate命令，将地址0的数据从CPU 2的cacheline中嗅探得到，同时通过invalidate其他CPU local cache的内容而获得独占性的数据访问权。这时候，CPU 2中的cacheline状态变成invalid状态，而CPU 1将从invalid状态迁移到modified状态。<br><strong>sequence 7</strong>，CPU 1对地址8进行load操作，由于cacheline被地址0占据，因此需要首先将其驱逐出cache，于是执行write back操作将地址0的数据写回到memory，同时发送read命名，从CPU 0的cache中获得数据加载其cacheline，最后，CPU1的cache变成shared状态（保存地址8的数据）。由于执行了write back操作，memory中地址0的数据又变成最新的有效数据了。</p>
+<h2 id="Store-Buffer"><a href="#Store-Buffer" class="headerlink" title="Store Buffer"></a>Store Buffer</h2><h3 id="为什么要引入-store-buffer"><a href="#为什么要引入-store-buffer" class="headerlink" title="为什么要引入 store buffer?"></a>为什么要引入 store buffer?</h3><p>cpu 0发起一次对某个地址的写操作，但是local cache没有数据，该数据在CPU 1的local cache中，因此，为了完成写操作，CPU 0发出invalidate的命令，invalidate其他CPU的cache数据。只有完成了这些总线上的transaction之后，CPU 0才能正在发起写的操作，这是一个漫长的等待过程。但是，其实没必要等待这么长的时间，毕竟，物理CPU 1中的cacheline保存有什么样子的数据，其实都没有意义，这个值都会被CPU 0新写入的值覆盖的。</p>
+<h3 id="什么是-store-buffer"><a href="#什么是-store-buffer" class="headerlink" title="什么是 store buffer?"></a><strong>什么是 store buffer</strong>?</h3><p>有一种可以阻止cpu进入无聊等待状态的方法就是在CPU和cache之间增加store buffer这个HW block，如下图所示：<br><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223113619007.png" alt="image.png"></p>
+<p>一旦增加了store buffer，那么cpu0无需等待其他CPU的相应，只需要将要修改的内容放入store buffer，然后继续执行就OK了。当cacheline完成了bus transaction，并更新了cacheline的状态后，要修改的数据将从store buffer进入cacheline。这些store buffer对于cpu而言是local的</p>
+<h3 id="会引入什么新的问题？"><a href="#会引入什么新的问题？" class="headerlink" title="会引入什么新的问题？"></a><strong>会引入什么新的问题？</strong></h3><ul>
+<li><p><strong>存在多个数据副本（store buffer一份，CPU cache一份）- store forwarding 解决</strong><br>  当CPU执行load操作的时候，不但要看cache，还有看store buffer是否有内容，如果store buffer有该数据，那么就采用store buffer中的值。因此，即便是store操作还没有写入cacheline，store forwarding的效果看起来就好象cpu的store操作被向前传递了一样（后面的load的指令可以感知到这个store操作） 。</p>
+</li>
+<li><p><strong>导致存储系统重排序</strong>- <strong>memory barriers解决</strong><br>  因为现代计算的可见性是通过锁cache+cache coherency protocol缓存一致性协议来解决的，引入了store buffer，program order代码顺序上先写的因为需要bus transaction，所以写到store buffer，从而导致后写的先写入cache可见，这就是存储系统重排序导致的可见性问题。</p>
+<p>  看这个例子：</p>
+  <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// On CPU 0 - b loaded</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">foo</span><span class="params">(<span class="type">void</span>)</span> </span>&#123;</span><br><span class="line">  a=<span class="number">1</span>;</span><br><span class="line">  <span class="built_in">smp_mb</span>(); <span class="comment">// MODIFIED: memory barrier</span></span><br><span class="line">  b=<span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// on CPU 1 - a loaded​</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">bar</span><span class="params">(<span class="type">void</span>)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">while</span> (b == <span class="number">0</span>) <span class="keyword">continue</span>;</span><br><span class="line">  <span class="built_in">assert</span>(a == <span class="number">1</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>  我们假设CPU 0执行foo函数，CPU 1执行bar函数。我们再进一步假设a变量在CPU 1的cache中，b在CPU 0 cache中，执行的操作序列如下</p>
+<ol>
+<li>CPU 0执行a&#x3D;1的赋值操作，由于a不在local cache中，因此，CPU 0将a值放到store buffer中之后，发送了read invalidate命令到总线上去。</li>
+<li>CPU 1执行 while (b &#x3D;&#x3D; 0) 循环，由于b不在CPU 1的cache中，因此，CPU发送一个read message到总线上，看看是否可以从其他cpu的local cache中或者memory中获取数据</li>
+<li>CPU 0继续执行b&#x3D;1的赋值语句，由于b就在自己的local cache中（cacheline处于modified状态或者exclusive状态），因此CPU0可以直接操作将新的值1写入cache line。</li>
+<li>CPU 0收到了read message，将最新的b值”1“回送给CPU 1，同时将b cacheline的状态设定为shared</li>
+<li>CPU 1收到了来自CPU 0的read response消息，将b变量的最新值”1“值写入自己的cacheline，状态修改为shared。</li>
+<li>由于b值等于1了，因此CPU 1跳出while (b &#x3D;&#x3D; 0)的循环，继续前行。</li>
+<li>CPU 1执行assert(a &#x3D;&#x3D; 1)，这时候CPU 1的local cache中还是旧的a值，因此assert(a &#x3D;&#x3D; 1)失败。</li>
+<li>CPU 1收到了来自CPU 0的read invalidate消息，以a变量的值进行回应，同时清空自己的cacheline，但是这已经太晚了。</li>
+<li>CPU 0收到了read response和invalidate ack的消息之后，将store buffer中的a的最新值”1“数据写入cacheline，然并卵，CPU 1已经assertion fail了。<br>  但是在CPU设计层面是无法判断当前core中执行的变量是否与其他的core中的变量存在关系，因为CPU在执行代码的时候他认为这个当前所执行程序就是一个单线程的，他无法感知多线程的存在。因此这个问题无法在CPU设计层面解决，这个就需要编码人员介入了，编码人员需要告诉CPU现在需要将storebuffer flush到cache里，于是CPU设计者提供了叫memory barrier的工具。<br>  smp_mb()会在执行的时候将storebuffer中的数据全部刷进cache。这样assert就会执行成功了。</li>
+</ol>
+</li>
+</ul>
+<h2 id="Invalidate-Queues"><a href="#Invalidate-Queues" class="headerlink" title="Invalidate Queues"></a>Invalidate Queues</h2><h3 id="为什么需要-Invalidate-Queues"><a href="#为什么需要-Invalidate-Queues" class="headerlink" title="为什么需要 Invalidate Queues?"></a><strong>为什么需要 Invalidate Queues?</strong></h3><p>store buffer的容量是有限的，如果出现大量的bus transaction，把store buffer打满了，也会导致CPU流水线阻塞. 在这种状况下，CPU只能又进入等待状态，直到cache line完成invalidation和ack的交互之后，可以将store buffer的entry写入cacheline，从而为新的store让出空间之后，CPU才可以继续执行。这种状况也可能发生在调用了memory barrier指令之后，因为一旦store buffer中的某个entry被标记了，那么随后的store都必须等待invalidation完成，因此不管是否cache miss，这些store都必须进入store buffer。</p>
+<p>引入invalidate queues可以缓解这个状况。store buffer之所以很容易被填充满，主要是其他CPU回应invalidate acknowledge比较慢，如果能够加快这个过程，让store buffer尽快进入cacheline，那么也就不会那么容易填满了。</p>
+<p>CPU其实不需要完成invalidate操作就可以回送acknowledgement消息，这样，就不会阻止发生invalidate请求的那个CPU进入无聊的等待状态。CPU可以buffer这些invalidate message（放入Invalidate Queues），然后直接回应acknowledgement，表示自己已经收到请求，随后会慢慢处理。当然，再慢也要有一个度，例如对a变量cacheline的invalidate处理必须在该CPU发送任何关于a变量对应cacheline的操作到bus之前完成。<br><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223113629110.png" alt="image.png"></p>
+<h3 id="Example-for-Invalidate-Queues"><a href="#Example-for-Invalidate-Queues" class="headerlink" title="Example for Invalidate Queues"></a><strong>Example for Invalidate Queues</strong></h3><p>之前的代码引入 Invalidate Queues 会带来新的问题</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// On CPU 0 - b loaded</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">foo</span><span class="params">(<span class="type">void</span>)</span> </span>&#123;</span><br><span class="line">  a=<span class="number">1</span>;</span><br><span class="line">  <span class="built_in">smp_mb</span>();</span><br><span class="line">  b=<span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// on CPU 1 - a loaded​</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">bar</span><span class="params">(<span class="type">void</span>)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">while</span> (b == <span class="number">0</span>) <span class="keyword">continue</span>;</span><br><span class="line">  <span class="built_in">smp_mb</span>(); <span class="comment">// MODIFIED: memory barrier</span></span><br><span class="line">  <span class="built_in">assert</span>(a == <span class="number">1</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ol>
+<li>CPU 0执行a&#x3D;1的赋值操作，由于a在CPU 0 local cache中的cacheline处于shared状态，因此，CPU 0将a的新值“1”放入store buffer，并且发送了invalidate消息去清空CPU 1对应的cacheline。</li>
+<li>CPU 1执行while (b &#x3D;&#x3D; 0)的循环操作，但是b没有在local cache，因此发送read消息试图获取该值。</li>
+<li>CPU 1收到了CPU 0的invalidate消息，放入Invalidate Queue，并立刻回送Ack。</li>
+<li>CPU 0收到了CPU 1的invalidate ACK之后，即可以越过程序设定内存屏障（第四行代码的smp_mb() ），这样a的新值从store buffer进入cacheline，状态变成Modified。</li>
+<li>CPU 0 越过memory barrier后继续执行b&#x3D;1的赋值操作，由于b值在CPU 0的local cache中，因此store操作完成并进入cache line。</li>
+<li>CPU 0收到了read消息后将b的最新值“1”回送给CPU 1，并修正该cacheline为shared状态。</li>
+<li>CPU 1收到read response，将b的最新值“1”加载到local cacheline。</li>
+<li>对于CPU 1而言，b已经等于1了，因此跳出while (b &#x3D;&#x3D; 0)的循环，继续执行后续代码</li>
+<li>CPU 1执行assert(a &#x3D;&#x3D; 1)，但是由于这时候CPU 1 cache的a值仍然是旧值0，因此assertion 失败</li>
+<li>该来总会来，Invalidate Queue中针对a cacheline的invalidate消息最终会被CPU 1执行，将a设定为无效，但素，大错已经酿成。<br>很明显，在上文中的场景中，加速Invalidation response导致foo函数中的memory barrier失效了，因此，这时候对Invalidation response已经没有意义了，毕竟程序逻辑都错了。怎么办？其实我们可以让memory barrier指令和Invalidate Queue进行交互来保证确定的memory order。具体做法是这样的：当CPU执行memory barrier指令的时候，对当前Invalidate Queue中的所有的entry进行标注，这些被标注的项次被称为marked entries，而随后CPU执行的任何的load操作都需要等到Invalidate Queue中所有marked entries完成对cacheline的操作之后才能进行。因此，要想保证程序逻辑正确，我们需要给bar函数增加内存屏障的操作<br>程序修改之后，我们再来看看CPU的执行序列：<br>   1 - 8 相同</li>
+<li>CPU 1现在不能继续执行代码，只能等待，直到Invalidate Queue中的message被处理完成</li>
+<li>CPU 1处理队列中缓存的Invalidate消息，将a对应的cacheline设置为无效。</li>
+<li>由于a变量在local cache中无效，因此CPU 1在执行assert(a &#x3D;&#x3D; 1)的时候需要发送一个read消息去获取a值。<br>1. CPU 0用a的新值1回应来自CPU 1的请求。<br>2. CPU 1获得了a的新值，并放入cacheline，这时候assert(a &#x3D;&#x3D; 1)不会失败了。</li>
+</ol>
+<h2 id="Read-and-Write-Memory-Barriers"><a href="#Read-and-Write-Memory-Barriers" class="headerlink" title="Read and Write Memory Barriers"></a><strong>Read and Write Memory Barriers</strong></h2><p>在我们上面的例子中，memory barrier指令对store buffer和invalidate queue都进行了标注，不过，在实际的代码片段中，foo函数不需要mark invalidate queue，bar函数不需要mark store buffer<br>因此，许多CPU architecture提供了弱一点的memory barrier指令只mark其中之一。如果只mark invalidate queue，那么这种memory barrier被称为read memory barrier。相应的，write memory barrier只mark store buffer。一个全功能的memory barrier会同时mark store buffer和invalidate queue。<br>我们一起来看看读写内存屏障的执行效果：对于read memory barrier指令，它只是约束执行CPU上的load操作的顺序，具体的效果就是CPU一定是完成read memory barrier之前的load操作之后，才开始执行read memory barrier之后的load操作。read memory barrier指令象一道栅栏，严格区分了之前和之后的load操作。同样的，write memory barrier指令，它只是约束执行CPU上的store操作的顺序，具体的效果就是CPU一定是完成write memory barrier之前的store操作之后，才开始执行write memory barrier之后的store操作。全功能的memory barrier会同时约束load和store操作，当然只是对执行memory barrier的CPU有效。<br>现在，我们可以改一个用读写内存屏障的版本了，具体如下：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// On CPU 0 - b loaded</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">foo</span><span class="params">(<span class="type">void</span>)</span> </span>&#123;</span><br><span class="line">  a=<span class="number">1</span>;</span><br><span class="line">  <span class="built_in">smp_wmb</span>();</span><br><span class="line">  b=<span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// on CPU 1 - a loaded​</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">bar</span><span class="params">(<span class="type">void</span>)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">while</span> (b == <span class="number">0</span>) <span class="keyword">continue</span>;</span><br><span class="line">  <span class="built_in">smp_rmb</span>();</span><br><span class="line">  <span class="built_in">assert</span>(a == <span class="number">1</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="Memory-Consistency-Memory-Model"><a href="#Memory-Consistency-Memory-Model" class="headerlink" title="Memory Consistency (Memory Model)"></a>Memory Consistency (Memory Model)</h1><h2 id="Reorder"><a href="#Reorder" class="headerlink" title="Reorder"></a>Reorder</h2><p><strong>同一线程中，彼此没有依赖关系的指令会被乱序执行。</strong><br>我们编码并发布运行需要经过编译器编译后然后在CPU上运行，通常我们认为我们所写的代码是按照顺序执行下去的，就是说上一个语句一定在下一个语句执行之前执行。这是我们的潜意识，然而事实可能并不是这样，因为中间经过了编译器也经过了CPU。编译器和CPU为了充分提高程序运行性能会在内部进行一系列优化，这些优化方法有很多，也很复杂。比较典型的有reorder，Speculative execution等。编译器会对我们写的代码顺序进行reorder，CPU执行的时候也会进行reorder，也就是说在执行时，我们写的代码并不是一定按照我们所看到顺序。但是不用担心，CPU或者编译器在reorder的时候并不会无厘头的reorder，他们至少要保证的是，<strong>在reorder之后，程序所表现出来的行为效果与单线程执行效果是一致的</strong>。这里提到的是单线程，也就是说CPU和编译器并不能感知道你的代码是多线程还是单线程，他只能保证单线程状况时正确的，多线程就不得而知了。<br>比如下面两条指令的执行顺序完全无法预测：</p>
+<ol>
+<li>x&#x3D;1;</li>
+<li>y&#x3D;2;<br>但是下面两条指令将被串行执行（存在依赖关系）：<br>1. x &#x3D; some input value;<br>2. y&#x3D;x+z;</li>
+</ol>
+<h3 id="乱序执行的原因"><a href="#乱序执行的原因" class="headerlink" title="乱序执行的原因"></a>乱序执行的原因</h3><ol>
+<li><p><strong>编译器</strong><br> 编译优化假设程序是单线程（Single-Threaded Optimizations）：如果编译器希望对程序指令的执行顺序做出改变，只要这些改变不影响该程序在单线程情况下的运行结果，那么这些改变就是允许的。<br> <img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223113641723.png" alt="image.png"></p>
+</li>
+<li><p><strong>处理器</strong><br> 现代处理器允许指令乱序执行，<strong>以避免因指令等待资源而导致处理器处于闲置状态。</strong><br> 处理器顺序执行：</p>
+ <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">y=x; <span class="comment">//cache miss，没有立即得到×的值</span></span><br><span class="line">z=y<span class="number">+1</span>; <span class="comment">//等待直到×被读到</span></span><br><span class="line">w=m+n; <span class="comment">//等待直到z得到结果</span></span><br></pre></td></tr></table></figure>
+<p> 处理器乱序执行：</p>
+ <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">y=x; <span class="comment">//cache miss，没有立即得到×的值</span></span><br><span class="line">w=m+n; <span class="comment">//如果m和n已经准备好，这条指令可以先执行</span></span><br><span class="line">z=y<span class="number">+1</span>; <span class="comment">//等待直到被读到</span></span><br></pre></td></tr></table></figure></li>
+<li><p><strong>存储系统</strong><br> 为了省去写入一致性cache (l2 cache)需要的10个clock cycle和写入memory需要的100个clock cycle，引入了store buffer（写入只需要1个clock cycle）。所以在CPU流水线里一个写指令结束的时候，其实他的数据并没有真正写到memory或者cache里，而是进了store buffer。</p>
+</li>
+<li><p><strong>On-chip Network</strong><br> CPU核之间的通信</p>
+</li>
+</ol>
+<h2 id="Memory-consistency-motivation"><a href="#Memory-consistency-motivation" class="headerlink" title="Memory consistency motivation"></a>Memory consistency motivation</h2><p>对于C1而言，CPU可以执行S2-&gt;S1,也可以执行S1-&gt;S2, 对于这两种执行方式在C1看来是没有问题的，因为单线程而言这两种执行方式最后达到的效果是一样的。（因为S2和S1是对不同的memory location的操作，所以会reorder，如果是对同一个memory location操作是不允许出现这种reorder的）<br>如果C1的执行顺序是S2-&gt;L1-&gt;L2-&gt;S1，那么得到的结果r2 &#x3D; 0，而不是向我们预期的r2 &#x3D; NEW。对我们而言这种结果是超出预期的，是错的。<br>那么为了保证不会出现这种超出预期的行为，我们就需要一种规则来约束这种行为不能出现。这个任务就是memory consistency需要保证的。<br><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223113649801.png" alt="image.png"></p>
+<h2 id="Memory-order"><a href="#Memory-order" class="headerlink" title="Memory order"></a>Memory order</h2><p>代码执行的顺序，这个是全局的，每个CPU core对共享内存的执行都会出现在memory order中如下图所示，每个core的代码都会对应到memory order这条执行线上。<br><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223113655885.png" alt="image.png"></p>
+<h2 id="Sequential-Consistency-SC"><a href="#Sequential-Consistency-SC" class="headerlink" title="Sequential Consistency (SC)"></a>Sequential Consistency (SC)</h2><h3 id="并行程序中的顺序一致性"><a href="#并行程序中的顺序一致性" class="headerlink" title="并行程序中的顺序一致性"></a>并行程序中的顺序一致性</h3><p><strong>如果程序没有竞争（race）,那么程序运行起来就好像是顺序一致性</strong><br>这句话这么理解：<br><strong>竞争</strong>：两个线程访问同一个变量，而且其中有一个操作是写<br><strong>没有竞争</strong>：用某种方法把全局变量保护了起来，比如锁，原子指令等等<br><strong>顺序一致性</strong>：可以这么理解，在只有一个核的处理器上运行多线程程序，所以这些指令都是交织在一起，按照全局序执行的，这种方式运行的结果我们认为是正确的<br><strong>好像顺序一致性</strong>：运行结果跟某种顺序一致性程序运行的结果是一样的</p>
+<p>The result of any execution is the same as if the operations of all processors (cores) were executed in some sequential order, and the operations of each individual processor (core) appear in this sequence in the order specified by its program</p>
+<p>如上图中，S1 与 S2的program order可以表示为： S1 &lt;p S2； S1与L2的memory order可以表示为 S1 &lt;m L2。 用&lt;p 表示program order的先于顺序，&lt;m表示memory order的先于顺序。</p>
+<p><strong>定义</strong></p>
+<ol>
+<li>All cores insert their loads and stores into the order &lt;m respecting their program order, regardless of whether they are to the same or different addresses (i.e., a&#x3D;b or a&#x3D;̸b).<br> 所有对共享内存的操作都可以抽象成load(读取)和store(写入)，每一core执行load和store是按照其program order，那么就有S1 &lt;p S2肯定会推出 S1 &lt;m S2，SC的定义也由此引入了load和store的四种关系。在SC的定义中这四种关系是不允许被reorder的，即使是对不同memory location的操作。</li>
+<li>Every load gets its value from the last store before it (in global memory order) to the same address</li>
+</ol>
+<p>只要符合上述两个条件，那么我们就可以说这个memory操作是符合顺序一致性的。</p>
+<p>Example:<br><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223113707830.png" alt="image.png"></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223113714781.png" alt="image.png"></p>
+<p>从图中可以看出在保证program order不变的情况下，memory order的顺序可以随意排列。</p>
+<h3 id="竞争和-Object-Layout-有关"><a href="#竞争和-Object-Layout-有关" class="headerlink" title="竞争和 Object Layout 有关"></a>竞争和 Object Layout 有关</h3><p>第一种情况：全局变量s,类型是struct {char c;char d;}  &#x3D;&#x3D;没有竞争&#x3D;&#x3D;<br>第二种情况：全局变量s，类型是struct {int c:9;int d:7;} &#x3D;&#x3D;有竞争&#x3D;&#x3D;<br>在上述两种情况下，下面的程序是否有竞争？<br>线程1：s.c&#x3D;1;<br>线程2：s.d&#x3D;2;<br>在第二种情况下，声明了一个32 bit int大小的结构体，前9bit的是int c，后面7bit的是int d，然而bit并不是c++保证原子性的单位，因此写c或者d的时候，整个32 bit的int都会被牵连</p>
+<h2 id="Total-Store-Order-TSO"><a href="#Total-Store-Order-TSO" class="headerlink" title="Total Store Order (TSO)"></a>Total Store Order (TSO)</h2><p>TSO的定义与SC的定义有两个变化：<br>    1.  <strong>不保证storeload顺序</strong><br>        举个例子：Core C1中S1和L1， S1先去L1执行，但是S1只是将值送入了write buffer就返回了，紧接着执行L1，L1在memory order中的点执行完之后，S1的write buffer这时候flush到内存，那么S1在memory order这条线上真正执行的点在L1之后了，那么这时候S1与L1就出现了reorder了。<br>    2. <strong>Every load gets its value from the last store before it to the same address:</strong><br>     需要注意的是，无论是TSO还是SC都需要至少保证一点，即使允许reorder也要保证program执行的结果与单线程执行的结果是一致的。比如一对操作：  S1: x &#x3D; new  L1: y &#x3D; x.  无论是TSO还是SC都需要保证y读到的是x&#x3D;new的值（排除其他线程在这两个语句之前对x进行store操作。）<br>     因为TSO引入了write buffer，那么上述x&#x3D;new会写入buffer，如何确保L1会读到最新的值呢，TSO引入了一种叫“bypass”的概念，就是对于<strong>同一memory location</strong>的读写会保障load会读到store的最新值无论这个store会不会进入write buffer。<br>     如下图所示：  L1读取的是S1的值，即使L1 &lt;m S1 且 S1 &lt;p L1.<br>     <img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223113725472.png" alt="image.png"></p>
+<p>TSO在CPU与memory之间引入了write buffer。CPU写入的时候先写入write buffer然后就返回了，这样就将cpu与memory之间的差距隐藏了，但是这样同样带来了一个问题。<br><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223113731619.png" alt="image.png"></p>
+<p>还是上面这个例子，S1将x&#x3D;NEW放到了core C1的write buffer中，S2将y&#x3D;NEW放到了C2的write buffer中，那么在执行L1,L2的时候，r1与r2这时候从memory读到是0。这个是违背了SC的，但是这样的设计确实带来了性能的提升。那么在TSO模型下的执行结果如下：前三种与SC一致，第四个执行结果则是TSO独有的，可以看出，TSO中允许执行线交叉。<br><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223113738004.png" alt="image.png"></p>
+<p>如果我们想避免这种问题，那么需要在上层代码中添加FENCE，这个fence可以理解为memory barrier，他的作用是将write buffer中的记录flush到内存。<br>FENCE会强制保证program order。</p>
+<ul>
+<li>If S(a) &lt;p FENCE ⇒ S(a) &lt;m FENCE &#x2F;* Store → FENCE *&#x2F;</li>
+<li>If FENCE &lt;p L(a) ⇒ FENCE &lt;m L(a) &#x2F;* FENCE → Load *&#x2F;<br>如果再S1与L1之间加上FENCE，就保证了S1 &lt;p L1 和 S1 &lt;m L1.</li>
+<li><strong>Relaxed memory consistency</strong><br>  SC和TSO严格意义上来说都是一种强一致性模型，因为他们都对程序的执行顺序做了一定的约束，既然存在约束那么就会带来一定的性能损耗。<br>  那么有没有一种没这么多的约束的一致性模型，能够使机器进行深度的优化并发挥极致性能。那么执行顺序的正确性就只能有编码人员来保证了。<br>  relaxed memory consistency实现对于load与store顺序完全放开，除了对同一memory  location的操作保证load看到是最新的store以外其他都不进行约束，编码人员如果想强加order可以通过上述的FENCE。</li>
+</ul>
+<h1 id="Memory-Order"><a href="#Memory-Order" class="headerlink" title="Memory Order"></a>Memory Order</h1><p>C++11在标准库中引入了memory model，这应该是C++11最重要的特性之一了。C++11引入memory model的意义在于我们可以在high level language层面实现对在多处理器中多线程共享内存交互的控制。我们可以在语言层面忽略compiler，CPU arch的不同对多线程编程的影响了。我们的多线程可以跨平台了。<br>C++ atomic操作数中有一个选项可以指定对应的memory_order，这里的memory order可以理解为上面章节中的memory order。C++11中提供了六种不同memory_order选项，不同的选项会定义不同的memory consistency类型。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">namespace</span> std &#123;</span><br><span class="line">    <span class="keyword">typedef</span> <span class="keyword">enum</span> <span class="title class_">memory_order</span> &#123;</span><br><span class="line">    memory_order_relaxed, memory_order_consume, memory_order_acquire,</span><br><span class="line">      memory_order_release, memory_order_acq_rel, memory_order_seq_cst</span><br><span class="line">&#125; memory_order;</span><br><span class="line"><span class="function">The enumeration memory_order specifies the detailed <span class="title">regular</span> <span class="params">(non-atomic)</span> memory synchronization order as defined in 1.10 <span class="keyword">and</span> may provide <span class="keyword">for</span> operation ordering. [10]      </span></span><br></pre></td></tr></table></figure>
+
+<p>memory order指定了对应的对共享内存的operation order的关系。memory order也是一致性模型的一种反映。</p>
+<h2 id="Happens-before"><a href="#Happens-before" class="headerlink" title="Happens-before"></a>Happens-before</h2><p><strong>Happens-before</strong> 是一个非常重要的概念. 如果操作 a “happens-before” 操作 b, 则操作 a 的结果对于操作 b 可见. happens-before 的关系可以建立在用一个线程的两个操作之间, 也可以建立在不同的线程的两个操作之间.</p>
+<ul>
+<li><p><strong>单线程的情况: sequenced-before</strong><br>  函数的语句按顺序依次执行, 前面的语句先执行, 后面的后执行. 正式地说, 前面的语句总是 <strong>“sequenced-before”</strong> 后面的语句.</p>
+</li>
+<li><p><strong>多线程的情况: synchronizes-with 和 inter-thread happens-before</strong><br>  一般来说多线程都是并发执行的, 如果没有正确的同步操作, 就无法保证两个操作之间有 happens-before 的关系. 如果我们通过一些手段, 让不同线程的两个操作同步, 我们称这两个操作之间有 <strong>synchronizes-with</strong> 的关系<br>  <strong>if thread A stores a value and thread B reads that value, there’s a synchronizes-with relationship between the store in thread A and the load in thread B.</strong><br>  <img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223113748857.png" alt="image.png"></p>
+<p>  现在我们来看一个例子. 假设下面的代码中 <code>unlock()</code> 操作 “synchronizes-with” <code>lock()</code> 操作.</p>
+  <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">thread1</span><span class="params">()</span> </span>&#123;  </span><br><span class="line">	a += <span class="number">1</span> <span class="comment">// (1)  </span></span><br><span class="line">	<span class="built_in">unlock</span>(); <span class="comment">// (2)  </span></span><br><span class="line">&#125;  </span><br><span class="line">	  </span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">thread2</span><span class="params">()</span> </span>&#123;  </span><br><span class="line">	<span class="built_in">lock</span>(); <span class="comment">// (3)  </span></span><br><span class="line">	cout &lt;&lt; a &lt;&lt; endl; <span class="comment">// (4)  </span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<p>  假设直到 <code>thread1</code> 执行到 (2) 之前, <code>thread2</code> 都会阻塞在 (3) 处的 <code>lock()</code> 中. 那么可以推导出:</p>
+<ul>
+<li>根据语句顺序, 有 (1) “sequenced-before” (2) 且 (3) “sequenced-before” (4);</li>
+<li>因为 (2) “synchronizes-with” (3) 且 (3) “sequenced-before” (4), 所以 (2) “inter-thread happens-before” (4);</li>
+<li>因为 (1) “sequenced-before” (2) 且 (2) “inter-thread happens-before” (4), 所以 (1) “inter-thread happens-before” (4); 所以 (1) “happens-before” (4).</li>
+</ul>
+<p>  因此 (4) 可以读到 (1) 对变量 <code>a</code> 的修改.</p>
+</li>
+</ul>
+<p>	</p>
+<h2 id="memory-order-relaxed"><a href="#memory-order-relaxed" class="headerlink" title="memory_order_relaxed"></a><strong>memory_order_relaxed</strong></h2><p>宽松内存模型，这种内存模型对当前原子操作周围的内存访问顺序不做任何保证，也就是允许全部的内存乱序发生。包括 Load-Load、Load-Store、Store-Load 和 Store-Store 乱序。</p>
+<h3 id="使用场景"><a href="#使用场景" class="headerlink" title="使用场景"></a>使用场景</h3><h4 id="计数器（Counter）"><a href="#计数器（Counter）" class="headerlink" title="计数器（Counter）"></a>计数器（Counter）</h4><p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223113759993.png" alt="image.png"></p>
+<ul>
+<li>count是个原子变量，初值为0。</li>
+<li>这里可以用relaxed因为join_workers起到了acquire&#x2F;release的作用（可以假设join_workers内部包含一个 memory barrier）。而在join_workers之前，没有读操作，写操作的顺序也不重要(blindwrite)。</li>
+</ul>
+<h4 id="简单标志（Simple-Flag-Setting"><a href="#简单标志（Simple-Flag-Setting" class="headerlink" title="简单标志（Simple Flag Setting)"></a>简单标志（Simple Flag Setting)</h4><p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223113805089.png" alt="image.png"></p>
+<p>dirty 和 stop 是原子布尔变量，初始值为 false。dirty可以使用 relaxed 的 原因和计数器相同，dirty其实就是一个最大值为1的计数器。</p>
+<h4 id="引用计数（Reference-Counting）"><a href="#引用计数（Reference-Counting）" class="headerlink" title="引用计数（Reference Counting）"></a>引用计数（Reference Counting）</h4><p> <code>std::shared_ptr</code> 增加引用计数时用的就是 <code>memory_order_relaxed</code>, 因为不需要同步; 但是减小应用计数不能用它, 因为需要与析构操作同步.<br><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223114032860.png" alt="image.png"></p>
+<p>线程1：从0加到1，没有共享，私有变量，不存在memoryorder的问题：在1以上增加，没有区别，refcnt&#x3D;2或者3对删除来说都是一样的，即：不删除。所以我不关心谁把refcnt从1变成2，谁把它从2变成3。也就是说：加1操作的顺序不重要，只要最后加上去就可以。所以加1操作可以是relaxed。<br><strong>对于B操作需要 release 语义</strong><br><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223115041399.png" alt="image.png"></p>
+<p>如果B使用relaxed,那么A和B可以乱序，假设发生在线程2a中。2a的B把refcnt从2减到1，然后线程卡住。线程2b中A和B没有乱序，2b在2a睡眠期间把refcnt从1减到0，并且释放了control_block_ptr。然后线程2a醒过来执行A,就会访问已经释放的对象。为防止A和B乱序，B需要release语义。<br><strong>对于B操作需要 acquire_release 语义</strong><br><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223115131954.png" alt="image.png"><br>假设B使用release语义，线程2b中B后面的指令C和D就可以提前到B之前。因此线程2a写入的最新的×可能不能被2b看到。更有甚者，D被移到B之前是灾难性的。</p>
+<h4 id="单例模式-Singleton"><a href="#单例模式-Singleton" class="headerlink" title="单例模式 (Singleton)"></a>单例模式 (Singleton)</h4><h5 id="常见错误"><a href="#常见错误" class="headerlink" title="常见错误"></a>常见错误</h5><p>这个实现是否正确？double-check locking<br><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223115437774.png" alt="image.png"></p>
+<p>如果第一个线程执行到B,然后卡住，C尚未执行；第二线程会在A得到一个非空的指针，并返回给用户，但是这个指针指向一个未初始化的对象。<br><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223115453757.png" alt="image.png"></p>
+<h5 id="正确写法"><a href="#正确写法" class="headerlink" title="正确写法"></a>正确写法</h5><p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223115504723.png" alt="image.png"></p>
+<h5 id="最佳写法"><a href="#最佳写法" class="headerlink" title="最佳写法"></a>最佳写法</h5><p>c++11后 static 默认是线程安全的<br><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223115515680.png" alt="image.png"></p>
+<p>注意: singleton 通常是不释放的</p>
+<h4 id="初始化-atomic-array"><a href="#初始化-atomic-array" class="headerlink" title="初始化 atomic array"></a>初始化 atomic array</h4><p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223115524889.png" alt="image.png"></p>
+<p><strong>四种方法</strong><br><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223134818787.png" alt="image.png"></p>
+<ul>
+<li>方法1: 普通的 for 循环, 但是不安全, read, write的时候会 out of order</li>
+<li>方法2: 单次循环之后, 会有一个mfence, 很消耗时间</li>
+<li>方法3: 和方法1一模一样, mfence没了 </li>
+<li>方法4: mfence在循环体外面, 只执行一次, 性能开销小</li>
+</ul>
+<h4 id="“volatile”-关键字"><a href="#“volatile”-关键字" class="headerlink" title="“volatile” 关键字"></a>“volatile” 关键字</h4><ul>
+<li>volatile (Java) !&#x3D; volatile(C, C+)</li>
+<li>mutex, atomics和memory barriers用于控制程序对内存的访问(原子性和顺序)。</li>
+<li>volatile用于控制对I&#x2F;O的访问，比如I&#x2F;O寄存器，这些寄存器虽然映射在内存中，但是完全不遵循常规的内存模型。编译器唯一能做的就是不做任何优化，老老实实的去生成汇编指令。volatile不保证原子性。</li>
+</ul>
+<h3 id="Example"><a href="#Example" class="headerlink" title="Example"></a>Example</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">std::atomic&lt;<span class="type">bool</span>&gt; x&#123;<span class="literal">false</span>&#125;, y&#123;<span class="literal">false</span>&#125;;  </span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">thread1</span><span class="params">()</span> </span>&#123;  </span><br><span class="line">	x.<span class="built_in">store</span>(<span class="literal">true</span>, std::memory_order_relaxed); <span class="comment">// (1)  </span></span><br><span class="line">	y.<span class="built_in">store</span>(<span class="literal">true</span>, std::memory_order_relaxed); <span class="comment">// (2)  </span></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">thread2</span><span class="params">()</span> </span>&#123;  </span><br><span class="line">	<span class="keyword">while</span> (!y.<span class="built_in">load</span>(std::memory_order_relaxed)); <span class="comment">// (3)  </span></span><br><span class="line">	<span class="built_in">assert</span>(x.<span class="built_in">load</span>()); <span class="comment">// (4)  </span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>thread1</code> 对不同的变量执行 store 操作. 那么在某些线程看来, 有可能是 <code>x</code> 先变为 <code>true</code>, y 后变为 <code>true</code>; 另一些线程看来, 又有可能是 <code>y</code> 先变为 <code>true</code>, <code>x</code> 后变为 <code>true</code>.<br>(4) 处的断言就有可能失败. 因为 (2) 与 (3) 之间没有 synchronizes-with 的关系, 所以就不能保证 (1) “happens-before” (4). 因此 (4) 就有可能读到 <code>false</code>.</p>
+<h2 id="memory-order-seq-cst"><a href="#memory-order-seq-cst" class="headerlink" title="memory_order_seq_cst"></a>memory_order_seq_cst</h2><p>顺序一致性，也是默认的选项，这个选项不允许reorder。</p>
+<h3 id="Acquire-和-Release-不保证全局序"><a href="#Acquire-和-Release-不保证全局序" class="headerlink" title="Acquire 和 Release 不保证全局序"></a>Acquire 和 Release 不保证全局序</h3><p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223134832484.png" alt="image.png"></p>
+<p><strong>On-Chip Network 不保证全局序</strong><br><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223134838406.png" alt="image.png"></p>
+<p>片上网络不保证消息传播的序。比如：处理器3收到x&#x3D;1,但是处理器4还没有收到x&#x3D;1(消息还在路上)；同时，处理器4收到y&#x3D;1,但是处理器3还没有收到y&#x3D;1(消息还在路上)。这时处理器3和4都打印。</p>
+<h3 id="Sequentially-Consistency-SC-保证写操作全局序"><a href="#Sequentially-Consistency-SC-保证写操作全局序" class="headerlink" title="Sequentially Consistency(SC)保证写操作全局序"></a>Sequentially Consistency(SC)保证写操作全局序</h3><p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223134844716.png" alt="image.png"></p>
+<p><strong>SC强迫On-Chip Network保证全局序</strong><br><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223134850394.png" alt="image.png"></p>
+<p>片上网络保证消息传播的序，即：先传播×&#x3D;1到所有处理器，等到所有处理器都收到x&#x3D;1之后，再传播y&#x3D;1;或者反过来。总之，写操作串行地使用片上网络，从而在片上网络这一层产生了全局序。</p>
+<h3 id="std-atomic语义总结"><a href="#std-atomic语义总结" class="headerlink" title="std:atomic&lt;..&gt;语义总结"></a>std:atomic&lt;..&gt;语义总结</h3><ol>
+<li>原子性：读写都原子，你不会读到部分结果或者中间结果。</li>
+<li>顺序性：所有针对原子变量的读写都会按序执行，实现顺序一致性(SC)。(假定使用std:atomic&lt;..&gt;的默认内存模型)</li>
+</ol>
+<h3 id="Example-1"><a href="#Example-1" class="headerlink" title="Example"></a>Example</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">std::atomic&lt;<span class="type">bool</span>&gt; x&#123;<span class="literal">false</span>&#125;, y&#123;<span class="literal">false</span>&#125;;  </span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">thread1</span><span class="params">()</span> </span>&#123;  </span><br><span class="line">	x.<span class="built_in">store</span>(<span class="literal">true</span>, std::memory_order_seq_cst); <span class="comment">// (1)  </span></span><br><span class="line">&#125;  </span><br><span class="line">  </span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">thread2</span><span class="params">()</span> </span>&#123;  </span><br><span class="line">	y.<span class="built_in">store</span>(<span class="literal">true</span>, std::memory_order_seq_cst); <span class="comment">// (2)  </span></span><br><span class="line">&#125;</span><br><span class="line">std::atomic&lt;<span class="type">int</span>&gt; z&#123;<span class="number">0</span>&#125;;  </span><br><span class="line">  </span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">read_x_then_y</span><span class="params">()</span> </span>&#123;  </span><br><span class="line">	<span class="keyword">while</span> (!x.<span class="built_in">load</span>(std::memory_order_seq_cst)); <span class="comment">// (3)  </span></span><br><span class="line">	<span class="keyword">if</span> (y.<span class="built_in">load</span>(std::memory_order_seq_cst)) ++z; <span class="comment">// (4)  </span></span><br><span class="line">&#125;  </span><br><span class="line">  </span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">read_y_then_x</span><span class="params">()</span> </span>&#123;  </span><br><span class="line">	<span class="keyword">while</span> (!y.<span class="built_in">load</span>(std::memory_order_seq_cst)); <span class="comment">// (5)  </span></span><br><span class="line">	<span class="keyword">if</span> (x.<span class="built_in">load</span>(std::memory_order_seq_cst)) ++z; <span class="comment">// (6)  </span></span><br><span class="line">&#125;  </span><br><span class="line">  </span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;  </span><br><span class="line">	<span class="function">std::thread <span class="title">a</span><span class="params">(thread1)</span>, <span class="title">b</span><span class="params">(thread2)</span>, <span class="title">c</span><span class="params">(read_x_then_y)</span>, <span class="title">d</span><span class="params">(read_y_then_x)</span></span>;  </span><br><span class="line">	a.<span class="built_in">join</span>(), b.<span class="built_in">join</span>(), c.<span class="built_in">join</span>(), d.<span class="built_in">join</span>();  </span><br><span class="line">	<span class="built_in">assert</span>(z.<span class="built_in">load</span>() != <span class="number">0</span>); <span class="comment">// (7)  </span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>(7) 处的断言永远不会失败. 因为 <code>x</code> 和 <code>y</code> 的修改顺序是全局一致的, 如果先执行 (1) 后执行 (2), 则 <code>read_y_then_x</code> 中循环 (5) 退出时, 能保证 <code>y</code> 为 <code>true</code>, 此时 <code>x</code> 也必然为 <code>true</code>, 因此 (6) 会被执行; 同理, 如果先执行 (2) 后执行 (1), 则循环 (3) 退出时 <code>y</code> 也必然为 <code>true</code>, 因此 (4) 会被执行. 无论如何, <code>z</code> 最终都不会等于 0.</p>
+<p>Sequencial consistent 可以实现 synchronizes-with 的关系. 如果一个 <code>memory_order_seq_cst</code> 的 load 操作在某个原子变量上读到了一个 <code>memory_order_seq_cst</code> 的 store 操作在这个原子变量中写入的值, 则 store 操作 “synchronizes-with” load 操作. 在上面的例子中, 有 (1) “synchronizes-with” (3) 和 (2) “synchronizes-with” (5).</p>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>实现 sequencial consistent 模型有一定的开销. 现代 CPU 通常有多核, 每个核心还有自己的缓存. 为了做到全局顺序一致, 每次写入操作都必须同步给其他核心. 为了减少性能开销, 如果不需要全局顺序一致, 我们应该考虑使用更加宽松的顺序模型.</p>
+<h2 id="Acquire-Release"><a href="#Acquire-Release" class="headerlink" title="Acquire-Release"></a>Acquire-Release</h2><p><strong>Acquire means “after is after”：之后的所有指令不会早于这条指令开始执行，尤其是读指令不会。即后面访存指令勿重排至此条指令之前</strong><br><strong>Release means “before is before”：之前的所有指令都已经执行完，尤其是写指令的结果已经全局可见。即前面访存指令勿重排至此条指令之后，当此条指令的结果对其他线程可见后，之前的所有指令都可见</strong><br><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223134903299.png" alt="image.png"></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223134917311.png" alt="image.png"></p>
+<p>在 acquire-release 模型中, 会使用 <code>memory_order_acquire</code>, <code>memory_order_release</code> 和 <code>memory_order_acq_rel</code> 这三种内存顺序. 它们的用法具体是这样的:</p>
+<ul>
+<li>对原子变量的 load 可以使用 <code>memory_order_acquire</code> 内存顺序. 这称为 <strong>acquire 操作</strong>.</li>
+<li>对原子变量的 store 可以使用 <code>memory_order_release</code> 内存顺序. 这称为 <strong>release 操作</strong>.</li>
+<li>read-modify-write 操作即读 (load) 又写 (store), 它可以使用 <code>memory_order_acquire</code>, <code>memory_order_release</code> 和 <code>memory_order_acq_rel</code>:<ul>
+<li>如果使用 <code>memory_order_acquire</code>, 则作为 acquire 操作;</li>
+<li>如果使用 <code>memory_order_release</code>, 则作为 release 操作;</li>
+<li>如果使用 <code>memory_order_acq_rel</code>, 则同时为两者.<br>Acquire-release 可以实现 synchronizes-with 的关系. 如果一个 acquire 操作在同一个原子变量上读取到了一个 release 操作写入的值, 则这个 release 操作 “synchronizes-with” 这个 acquire 操作. 我们来看一个例子:<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">std::atomic&lt;<span class="type">bool</span>&gt; x&#123;<span class="literal">false</span>&#125;, y&#123;<span class="literal">false</span>&#125;;  </span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">thread1</span><span class="params">()</span> </span>&#123;  </span><br><span class="line">	x.<span class="built_in">store</span>(<span class="literal">true</span>, std::memory_order_relaxed); <span class="comment">// (1)  </span></span><br><span class="line">	y.<span class="built_in">store</span>(<span class="literal">true</span>, std::memory_order_release); <span class="comment">// (2)  </span></span><br><span class="line">&#125;  </span><br><span class="line">  </span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">thread2</span><span class="params">()</span> </span>&#123;  </span><br><span class="line">	<span class="keyword">while</span> (!y.<span class="built_in">load</span>(std::memory_order_acquire)); <span class="comment">// (3)  </span></span><br><span class="line">	<span class="built_in">assert</span>(x.<span class="built_in">load</span>(std::memory_order_relaxed)); <span class="comment">// (4)  </span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+在上面的例子中, 语句 (2) 使用 <code>memory_order_release</code> 在 <code>y</code> 中写入 <code>true</code>, 语句 (3) 中使用 <code>memory_order_acquire</code> 从 <code>y</code> 中读取值. 循环 (3) 退出时, 它已经读取到了 <code>y</code> 的值为 <code>true</code>, 也就是读取到了操作 (2) 中写入的值. 因此有 (2) “synchronizes-with” (3). 我们可以推导出:</li>
+</ul>
+</li>
+<li>因为 (2) “synchronizes-with” (3) 且 (3) “sequenced-before” (4), 所以 (2) “inter-thread happens-before” (4);</li>
+<li>因为 (1) “sequenced-before” (2) 且 (2) “inter-thread happens-before” (4), 所以 (1) “inter-thread happens-before” (4);<br>所以 (1) “happens-before” (4). 因此 (4) 能读取到 (1) 中写入的值, 断言永远不会失败. 即使 (1) 和 (4) 用的是 <code>memory_order_relaxed</code>.</li>
+</ul>
+<p>事实上, 内存顺序为 <code>memory_order_seq_cst</code> 的 load 操作和 store 操作可以分别视为 acquire 操作和 release 操作. 因此对于两个指定了 <code>memory_order_seq_cst</code> 的 store 操作和 load 操作, 如果后者读到了前者写入的值, 则前者 “synchronizes-with” 后者.</p>
+<p>为了实现 synchronizes-with 关系, acquire 操作和 release 操作应该成对出现. 如果 <code>memory_order_acquire</code> 的 load 读到了 <code>memory_order_relaxed</code> 的 store 写入的值, 或者 <code>memory_order_relaxed</code> 的 load 读到了 <code>memory_order_release</code> 的 store 写入的值, 都不能实现 synchronizes-with 的关系.</p>
+<p>虽然 sequencial consistent 模型能够像 acquire-release 一样实现同步, 但是反过来 acquire-release 模型不能像 sequencial consistent 一样提供全局顺序一致性. 如果将例子中的 <code>memory_order_seq_cst</code> 换成 <code>memory_order_acquire</code> 和 <code>memory_order_release</code></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">thread1</span><span class="params">()</span> </span>&#123;  </span><br><span class="line">	x.<span class="built_in">store</span>(<span class="literal">true</span>, std::memory_order_release); <span class="comment">// (1)  </span></span><br><span class="line">&#125;  </span><br><span class="line">  </span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">thread2</span><span class="params">()</span> </span>&#123;  </span><br><span class="line">	y.<span class="built_in">store</span>(<span class="literal">true</span>, std::memory_order_release); <span class="comment">// (2)  </span></span><br><span class="line">&#125;  </span><br><span class="line">  </span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">read_x_then_y</span><span class="params">()</span> </span>&#123;  </span><br><span class="line">	<span class="keyword">while</span> (!x.<span class="built_in">load</span>(std::memory_order_acquire)); <span class="comment">// (3)  </span></span><br><span class="line">	<span class="keyword">if</span> (y.<span class="built_in">load</span>(std::memory_order_acquire)) ++z; <span class="comment">// (4)  </span></span><br><span class="line">&#125;  </span><br><span class="line">  </span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">read_y_then_x</span><span class="params">()</span> </span>&#123;  </span><br><span class="line">	<span class="keyword">while</span> (!y.<span class="built_in">load</span>(std::memory_order_acquire)); <span class="comment">// (5)  </span></span><br><span class="line">	<span class="keyword">if</span> (x.<span class="built_in">load</span>(std::memory_order_acquire)) ++z; <span class="comment">// (6)  </span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>则最终不能保证 <code>z</code> 不为 0. 在同一次运行中, <code>read_x_then_y</code> 有可能看到先 (1) 后 (2), 而 <code>read_y_then_x</code> 有可能看到先 (2) 后 (1). 这样有可能 (4) 和 (6) 的 load 的结果都为 <code>false</code>, 导致最后 <code>z</code> 仍然为 0.</p>
+<p>Acquire-release 的开销比 sequencial consistent 小. 在 x86 架构下, <code>memory_order_acquire</code> 和 <code>memory_order_release</code> 的操作不会产生任何其他的指令, 只会影响编译器的优化: 任何指令都不能重排到 acquire 操作的前面, 且不能重排到 release 操作的后面; 否则会违反 acquire-release 的语义. 因此很多需要实现 synchronizes-with 关系的场景都会使用 acquire-release.</p>
+<h3 id="Acquire-和-Release-的实现（编译器）"><a href="#Acquire-和-Release-的实现（编译器）" class="headerlink" title="Acquire 和 Release 的实现（编译器）"></a>Acquire 和 Release 的实现（编译器）</h3><p>1. Acquire 和 release 操作的内部实现需要利用 memory barrier 指令。<br>2. Acquire和 release操作内部由汇编语言编写，因此可以排除编译优化的影响，同时通过汇编语言也可以方便地嵌入memory barrier指令。<br>3. 当编译器看到 memory barrier 指令时，不会把 acquire后面的指令挪到acquire前面，也不会把 release前面的指令挪到 release后面。<br>4. 编译器不能把一个函数调用后面的指令挪到该函数调用的前面，也不能把一个函数调用前面的指令挪到该函数调用的后面，因为编译器不知道该函数调用内部是否使用了memory barrier指令（如果编译器能够判断该函数内部不涉及 memory barrier指令，另当别论）。</p>
+<h3 id="Acquire-和-Release-的实现（处理器）"><a href="#Acquire-和-Release-的实现（处理器）" class="headerlink" title="Acquire 和 Release 的实现（处理器）"></a>Acquire 和 Release 的实现（处理器）</h3><p>PowerPC的 lwsync指令是 memory barrier指令，其工作原理是堵在处理器流水线的入口，不让后续指令进入流水线，直到前面已经进入流水线的指令执行完，并且storebuffer清空。逻辑上看：lwsync保证它前面的指令不会被挪到它后面，它后面的指令不会被挪到它前面，因此是一个双向的 memory barrier。<br><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223134932447.png" alt="image.png"></p>
+<h4 id="单独的-memory-barrier-指令代价大"><a href="#单独的-memory-barrier-指令代价大" class="headerlink" title="单独的 memory barrier 指令代价大"></a>单独的 memory barrier 指令代价大</h4><p>Release操作的要求：</p>
+<ol>
+<li>lwsync前面的指令（比如“writex”）不能挪到lwsync之后；</li>
+<li>“Ready&#x3D;1”这一条写指令不能挪到lwsync之前。lwsync可以满足1，但同时要求lwsync之后所有指令都不能挪到lwsync之前，超过了实际需要，有损编译优化。 <img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223134941526.png" alt="image.png"></li>
+</ol>
+<h4 id="合并的“Acquire”和“Release”"><a href="#合并的“Acquire”和“Release”" class="headerlink" title="合并的“Acquire”和“Release”"></a>合并的“Acquire”和“Release”</h4><p>Intel IA64处理器把 memory barrier指令和读写指令合并，提供了带 acquire语义的读指令ld.acq（称为acquire load）和带 release语义的写指令 st.rel（称为release store）。因此，线程1的”read&#x2F;writey’可以挪到“st.rel ready1”之前，线程2的“read&#x2F;writez”可以挪到“ld.acqr0,ready”之后，增加了编译优化的可能性。<img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223134950542.png" alt="image.png"></p>
+<h4 id="Acquire和-release-自动化"><a href="#Acquire和-release-自动化" class="headerlink" title="Acquire和 release 自动化"></a>Acquire和 release 自动化</h4><ol>
+<li>不要自己手工地使用 memory barrier指令。</li>
+<li>使用锁或者原子变量来自动实现acquire和 release操作。</li>
+</ol>
+<ul>
+<li>Lock acquire&#x2F;release<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">mutex<span class="number">1.l</span>ock(); <span class="comment">//ld.acq mutex1</span></span><br><span class="line">read/write x;</span><br><span class="line">mutex<span class="number">1.</span><span class="built_in">unlock</span>(); <span class="comment">//st.rel mutex1</span></span><br></pre></td></tr></table></figure></li>
+<li>std:atomic&lt;bool&gt; flag &#x3D; 0;<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">while</span> (!flag.<span class="built_in">compre_exchange_strong</span>(..); <span class="comment">//ld.acq flag</span></span><br><span class="line">read/write x;</span><br><span class="line">flag = <span class="number">0</span>; <span class="comment">//st.rel flag</span></span><br></pre></td></tr></table></figure></li>
+</ul>
+<h3 id="Release-sequences"><a href="#Release-sequences" class="headerlink" title="Release sequences"></a>Release sequences</h3><p>到目前为止我们看到的, 无论是 sequencial consistent 还是 acquire-release, 要想实现 synchronizes-with 的关系, acquire 操作必须在同一个原子变量上读到 release 操作的写入的值. 如果 acquire 操作没有读到 release 操作写入的值, 那么它俩之间通常没有 synchronizes-with 的关系. 例如</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">std::atomic&lt;<span class="type">int</span>&gt; x&#123;<span class="number">0</span>&#125;, y&#123;<span class="number">0</span>&#125;;  </span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">thread1</span><span class="params">()</span> </span>&#123;  </span><br><span class="line">	x.<span class="built_in">store</span>(<span class="number">1</span>, std::memory_order_relaxed); <span class="comment">// (1)  </span></span><br><span class="line">	y.<span class="built_in">store</span>(<span class="number">1</span>, std::memory_order_release); <span class="comment">// (2)  </span></span><br><span class="line">&#125;  </span><br><span class="line">  </span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">thread2</span><span class="params">()</span> </span>&#123;  </span><br><span class="line">	y.<span class="built_in">store</span>(<span class="number">2</span>, std::memory_order_release); <span class="comment">// (3)  </span></span><br><span class="line">&#125;  </span><br><span class="line">  </span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">thread3</span><span class="params">()</span> </span>&#123;  </span><br><span class="line">	<span class="keyword">while</span> (!y.<span class="built_in">load</span>(std::memory_order_acquire)); <span class="comment">// (4)  </span></span><br><span class="line">	<span class="built_in">assert</span>(x.<span class="built_in">load</span>(std::memory_order_relaxed) == <span class="number">1</span>); <span class="comment">// (5)  </span></span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
+<p>上面的例子中, 只要 <code>y</code> 的值非 0 循环 (4) 就会退出. 当它退出时, 有可能读到 (2) 写入的值, 也有可能读到 (3) 写入的值. 如果是后者, 则只能保证 (3) “synchronizes-with” (4), 不能保证与 (2) 与 (4) 之间有同步关系. 因此 (5) 处的断言就有可能失败.</p>
+<p>但并不是只有在 acquire 操作读取到 release 操作写入的值时才能构成 synchronizes-with 关系. 为了说这种情况, 我们需要引入 <strong>release sequence</strong> 这个概念.</p>
+<p>针对一个原子变量 M 的 release 操作 A 完成后, 接下来 M 上可能还会有一连串的其他操作. 如果这一连串操作是由</p>
+<ul>
+<li>同一线程上的写操作, 或者</li>
+<li>任意线程上的 read-modify-write 操作<br>这两种构成的, 则称这一连串的操作为<strong>以 release 操作 A 为首的 release sequence</strong>. 这里的写操作和 read-modify-write 操作可以使用任意内存顺序.</li>
+</ul>
+<p>如果一个 acquire 操作在同一个原子变量上读到了一个 release 操作写入的值, 或者读到了以这个 release 操作为首的 release sequence 写入的值, 那么这个 release 操作 “synchronizes-with” 这个 acquire 操作. 我们来看个例子</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">std::vector&lt;<span class="type">int</span>&gt; data;  </span><br><span class="line">std::atomic&lt;<span class="type">int</span>&gt; flag&#123;<span class="number">0</span>&#125;;  </span><br><span class="line">  </span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">thread1</span><span class="params">()</span> </span>&#123;  </span><br><span class="line">	data.<span class="built_in">push_back</span>(<span class="number">42</span>); <span class="comment">// (1)  </span></span><br><span class="line">	flag.<span class="built_in">store</span>(<span class="number">1</span>, std::memory_order_release); <span class="comment">// (2)  </span></span><br><span class="line">&#125;  </span><br><span class="line">  </span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">thread2</span><span class="params">()</span> </span>&#123;  </span><br><span class="line"><span class="type">int</span> expected = <span class="number">1</span>;  </span><br><span class="line">	<span class="keyword">while</span> (!flag.<span class="built_in">compare_exchange_strong</span>(expected, <span class="number">2</span>, std::memory_order_relaxed)) <span class="comment">// (3)  </span></span><br><span class="line">	expected = <span class="number">1</span>;  </span><br><span class="line">&#125;  </span><br><span class="line">  </span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">thread3</span><span class="params">()</span> </span>&#123;  </span><br><span class="line">	<span class="keyword">while</span> (flag.<span class="built_in">load</span>(std::memory_order_acquire) &lt; <span class="number">2</span>); <span class="comment">// (4)  </span></span><br><span class="line">	<span class="built_in">assert</span>(data.<span class="built_in">at</span>(<span class="number">0</span>) == <span class="number">42</span>); <span class="comment">// (5)  </span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上面的例子中, (3) 处的 <code>compare_exchange_strong</code> 是一种 read-modify-write 操作, 它判断原子变量的值是否与期望的值 (第一个参数) 相等, 如果相等则将原子变量设置成目标值 (第二个参数) 并返回 <code>true</code>, 否则将第一个参数 (引用传递) 设置成原子变量当前值并返回 <code>false</code>. 操作 (3) 会一直循环检查, 当 <code>flag</code> 当值为 1 时, 将其替换成 2. 所以 (3) 属于 (2) 的 release sequence. 而循环 (4) 退出时, 它已经读到了 (3) 写入的值, 也就是 release 操作 (2) 为首的 release sequence 写入的值. 所以有 (2) “synchronizes-with” (4). 因此 (1) “happens-before” (5), (5) 处的断言不会失败.</p>
+<p>注意 (3) 处的 <code>compare_exchange_strong</code> 的内存顺序是 <code>memory_order_relaxed</code>, 所以 (2) 与 (3) 并不构成 synchronizes-with 的关系. 也就是说, 当循环 (3) 退出时, 并不能保证 <code>thread2</code> 能读到 <code>data.at(0)</code> 为 42. 但是 (3) 属于 (2) 的 release sequence, 当 (4) 以 <code>memory_order_acquire</code> 的内存顺序读到 (2) 的 release sequence 写入的值时, 可以与 (2) 构成 synchronizes-with 的关系.</p>
+<h2 id="memory-order-consume"><a href="#memory-order-consume" class="headerlink" title="memory_order_consume"></a>memory_order_consume</h2><p><strong>后面依赖此原子变量的访存指令勿重排至此条指令之前</strong><br><code>memory_order_consume</code> 其实是 acquire-release 模型的一部分, 但是它比较特殊, 它涉及到数据间相互依赖的关系. 为此我们又要提出两个新概念: <strong>carries dependency</strong> 和 <strong>dependency-ordered before</strong>.<br>如果操作 a “sequenced-before” b, 且 b 依赖 a 的数据, 则 a “carries a dependency into” b. 一般来说, 如果 a 的值用作 b 的一个操作数, 或者 b 读取到了 a 写入的值, 都可以称为 b 依赖于 a. 例如</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">p++; <span class="comment">// (1)  </span></span><br><span class="line">i++; <span class="comment">// (2)  </span></span><br><span class="line">p[i]; <span class="comment">// (3)</span></span><br></pre></td></tr></table></figure>
+<p>有 (1) “sequenced-before” (2) “sequenced-before” (3); (1) 和 (2) 的值作为 (3) 的下标运算符 <code>[]</code> 的操作数, 所以有 (1) “carries a dependency into” (3) 和 (2) “carries a dependency into” (3). 但是 (1) 和 (2) 并没有相互依赖, 它们之间没有 carries dependency 的关系. 类似于 sequenced-before, carries dependency 关系具有传递性.</p>
+<p><code>memory_order_consume</code> 可以用于 load 操作. 使用 <code>memory_order_consume</code> 的 load 称为 consume 操作. 如果一个 consume 操作在同一个原子变量上读到了一个 release 操作写入的值, 或以其为首的 release sequence 写入的值, 则这个 release 操作 “dependency-ordered before” 这个 consume 操作.</p>
+<p>概念很复杂, 但是基本思路是:</p>
+<ul>
+<li>release 操作和 acquire 操作构成的 synchronizes-with 可以后接 sequenced-before 构成 inter-thread happens-before 的关系;</li>
+<li>release 操作和 consume 操作构成的 dependency-ordered before 则只能后接 carries dependency 构成 inter-thread happens-before 的关系.</li>
+<li>无论 inter-thread happens-before 是怎么构成的, 都可以前接 sequenced-before 以延伸其范围.</li>
+</ul>
+<p>我们来看一个例子:</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">std::atomic&lt;std::string*&gt; ptr;  </span><br><span class="line"><span class="type">int</span> data;  </span><br><span class="line">  </span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">thread1</span><span class="params">()</span> </span>&#123;  </span><br><span class="line">	std::string* p = <span class="keyword">new</span> std::<span class="built_in">string</span>(<span class="string">&quot;Hello&quot;</span>); <span class="comment">// (1)  </span></span><br><span class="line">	data = <span class="number">42</span>; <span class="comment">// (2)  </span></span><br><span class="line">	ptr.<span class="built_in">store</span>(p, std::memory_order_release); <span class="comment">// (3)  </span></span><br><span class="line">&#125;  </span><br><span class="line">  </span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">thread2</span><span class="params">()</span> </span>&#123;  </span><br><span class="line">	std::string* p2;  </span><br><span class="line">	<span class="keyword">while</span> (!(p2 = ptr.<span class="built_in">load</span>(std::memory_order_consume))); <span class="comment">// (4)  </span></span><br><span class="line">	<span class="built_in">assert</span>(*p2 == <span class="string">&quot;Hello&quot;</span>); <span class="comment">// (5)  </span></span><br><span class="line">	<span class="built_in">assert</span>(data == <span class="number">42</span>); <span class="comment">// (6)  </span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>(4) 处的循环退出时, consume 操作 (4) 读取到 release 操作 (3) 写入的值, 因此 (3) “dependency-ordered before” (4). 由此可以推导出:</p>
+<ul>
+<li><code>p2</code> 的值作为 (5) 的操作数, 因此 (4) “carries a dependency into” (5);</li>
+<li>因为 (3) “dependency-ordered before” (4) 且 (4) “carries a dependency into” (5), 所以 (3) “inter-thread happens-before” (5);</li>
+<li>因为 (1) “sequenced-before” (3) 且 (3) “inter-thread happens-before” (5), 所以 (1) “inter-thread happens-before” (5);</li>
+</ul>
+<p>所以 (1) “happens-before” (5). 因此 (5) 可以读到 (1) 写入的值, 断言 (5) 不会失败. 但是操作 (6) 并不依赖于 (4), 所以 (3) 和 (6) 之间没有 inter-thread happens-before 的关系, 因此断言 (6) 就有可能失败. 回想 2.2 节强调过的, happens-before 没有传递性. 所以不能说因为 (3) “happens-before” (4) 且 (4) “happens-before” (6) 所以 (2) “happens-before” (6).</p>
+<p>与 acquire-release 类似, 在 x86 下使用 <code>memory_order_consume</code> 的操作不会产生任何其他的指令, 只会影响编译器优化. 与 consume 操作有依赖关系的指令都不会重排到 consume 操作前面. 它对重排的限制比 acquire 宽松些, acquire 要求所有的指令都不能重排到它的前面, 而 consume 只要求有依赖关系的指令不能重排到它的前面. 因此在某些情况下, consume 的性能可能会高一些.</p>
+<h2 id="一些例子"><a href="#一些例子" class="headerlink" title="一些例子"></a>一些例子</h2><ul>
+<li><p><strong>自旋锁</strong><br>  在一些场景下, 如果锁被占用的时间很短, 我们会选择自旋锁, 以减少上下文切换的开销. 锁一般用来保护临界数据的读写, 我们希望同一时间只有一个线程能获取到锁, 且获取到锁后, 被锁保护的数据总是最新的. 前者通过原子操作即可保证, 而后者就需要考虑内存顺序了.</p>
+  <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">std::deque&lt;<span class="type">int</span>&gt; queue;  </span><br><span class="line">spinlock mu;  </span><br><span class="line">  </span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">thread1</span><span class="params">()</span> </span>&#123;  </span><br><span class="line">	<span class="type">int</span> val;  </span><br><span class="line">	<span class="keyword">while</span> ((val = <span class="built_in">read_from_remote</span>())) &#123;  </span><br><span class="line">		mu.<span class="built_in">lock</span>(); <span class="comment">// (1)  </span></span><br><span class="line">		queue.<span class="built_in">push_back</span>(val); <span class="comment">// (2)  </span></span><br><span class="line">		mu.<span class="built_in">unlock</span>(); <span class="comment">// (3)  </span></span><br><span class="line">	&#125;  </span><br><span class="line">&#125;  </span><br><span class="line">  </span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">thread2</span><span class="params">()</span> </span>&#123;  </span><br><span class="line">	<span class="keyword">while</span> (<span class="literal">true</span>) &#123;  </span><br><span class="line">		mu.<span class="built_in">lock</span>(); <span class="comment">// (4)  </span></span><br><span class="line">		cout &lt;&lt; queue.<span class="built_in">front</span>() &lt;&lt; endl;  </span><br><span class="line">		queue.<span class="built_in">pop_front</span>(); <span class="comment">// (5)  </span></span><br><span class="line">		mu.<span class="built_in">unlock</span>(); <span class="comment">// (6)  </span></span><br><span class="line">	&#125;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>  两个线程并发运行, <code>thread1</code> 往队列里写入数据, <code>thread2</code> 从队列里读出数据. 入队操作 (2) 可能需要复制数据, 移动指针, 甚至 resize 队列, 因此我们要保证获取到锁时, 这些操作的结果完全可见. 出队操作也是同理. 所以自旋锁要保证 unlock 操作 “synchronizes-with” lock 操作, 保证锁保护的数据是完整的.</p>
+<p>  我们可以用 acquire-release 模型实现自旋锁. 下面是一个简单的实现:</p>
+  <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">spinlock</span> &#123;  </span><br><span class="line">	std::atomic&lt;<span class="type">bool</span>&gt; flag&#123;<span class="literal">false</span>&#125;;  </span><br><span class="line">	<span class="keyword">public</span>:  </span><br><span class="line">	<span class="function"><span class="type">void</span> <span class="title">lock</span><span class="params">()</span> </span>&#123;  </span><br><span class="line">		<span class="keyword">while</span> (flag.<span class="built_in">exchange</span>(<span class="literal">true</span>, std::memory_order_acquire)); <span class="comment">// (1)  </span></span><br><span class="line">	&#125;  </span><br><span class="line">	<span class="function"><span class="type">void</span> <span class="title">unlock</span><span class="params">()</span> </span>&#123;  </span><br><span class="line">		flag.<span class="built_in">store</span>(<span class="literal">false</span>, std::memory_order_release); <span class="comment">// (2)  </span></span><br><span class="line">	&#125;  </span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>  上面的实现中, (1) 处加锁用到的 <code>exchange</code> 是一种 read-modify-write 操作, 它将目标值 (第一个参数) 写入原子变量, 并返回写入前的值. 在这个实现中, 锁被占用时 <code>flag</code> 为 <code>true</code>. 如果锁被占用, (1) 处的 exchange 操作会一直返回 <code>true</code>, 线程阻塞在循环中; 直到锁被释放, <code>flag</code> 为 <code>false</code>, exchange 操作将 <code>flag</code> 重新置为 <code>true</code> 以抢占锁, 并且返回其原来的值 <code>false</code>, 循环退出, 加锁成功. 解锁则很简单, 将 <code>flag</code> 置为 <code>false</code> 即可.</p>
+<p>  由于解锁操作使用 <code>memory_order_release</code> 且加锁操作使用 <code>memory_order_acquire</code>, 所以能保证加锁成功时与上一次解锁操作构成 “synchronizes-with” 的关系, 也就是 unlock 操作 “synchronizes-with” lock 操作.</p>
+<p>  加锁时的 exchange 操作是一个 read-modify-write 操作, 它既读又写. 当它使用 <code>memory_order_acquire</code> 时, 只能保证它读的部分是一个 acquire 操作. 如果有两个线程抢占同一个锁</p>
+  <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">spinlock mu;  </span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">thread1</span><span class="params">()</span> </span>&#123;  </span><br><span class="line">	<span class="comment">// some operations  </span></span><br><span class="line">	mu.<span class="built_in">lock</span>(); <span class="comment">// (1)  </span></span><br><span class="line">&#125;  </span><br><span class="line">  </span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">thread2</span><span class="params">()</span> </span>&#123;  </span><br><span class="line">	mu.<span class="built_in">lock</span>(); <span class="comment">// (2)  </span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>  (1) 和 (2) 之间没有任何同步关系, 假设先执行操作 (1) 后执行操作 (2), 那么 <code>thread1</code> 中 (1) 之前的操作结果不一定对 <code>thread2</code> 可见. 但能确定的是, 只会有一个线程得到锁, 这是由原子变量的修改顺序 (modification order) 所保证的. 要么 <code>thread1</code> 先将 <code>flag</code> 置为 <code>true</code>, 要么 <code>thread2</code> 先将 <code>flag</code> 置为 <code>true</code>, 这个顺序是全局一致的.</p>
+</li>
+</ul>
+<h2 id="性能评估"><a href="#性能评估" class="headerlink" title="性能评估"></a>性能评估</h2><h3 id="Atomics-Code-Gen-for-x86-x64"><a href="#Atomics-Code-Gen-for-x86-x64" class="headerlink" title="Atomics Code Gen for x86&#x2F;x64"></a>Atomics Code Gen for x86&#x2F;x64</h3><p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223135006264.png" alt="image.png"></p>
+<p>在 x86&#x2F;x64 处理器上：</p>
+<ul>
+<li>Reads are not reordered with other reads. <strong>load自带acquire语义</strong></li>
+<li>Writes are not reordered with other writes (with some minor exceptions). <strong>write自带release语义</strong></li>
+<li>Writes are not reordered with older reads. </li>
+<li>Reads may be reordered with older writes to different locations. <strong>可以理解为x86处理器没有out of order. 但是由于芯片里有store buffer, 后面的load可能会超越之前的store (因为存在store buffer里), 看上去好像out of order了. 因此使用强一致性的store时, 会加上一个mfence, 防止后面的load读不到store的值.</strong></li>
+</ul>
+<h3 id="测试程序"><a href="#测试程序" class="headerlink" title="测试程序"></a>测试程序</h3><p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223135016920.png" alt="image.png"></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223135022786.png" alt="image.png"></p>
+<h3 id="性能综述"><a href="#性能综述" class="headerlink" title="性能综述"></a>性能综述</h3><p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223135027809.png" alt="image.png"></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223135033175.png" alt="image.png"></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223135039124.png" alt="image.png"></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241223135046595.png" alt="image.png"></p>
+<h2 id="总结-1"><a href="#总结-1" class="headerlink" title="总结"></a>总结</h2><ul>
+<li><code>memory_order_relaxed</code>: 最宽松的内存顺序, 只保证操作的<strong>原子性</strong>和<strong>修改顺序 (modification order)</strong>.</li>
+<li><code>memory_order_acquire</code>, <code>memory_order_release</code> 和 <code>memory_order_acq_rel</code>: 实现 <strong>acquire 操作</strong>和 <strong>release 操作</strong>, 如果 acquire 操作读到了 release 操作写入的值, 或其 release sequence 写入的值, 则构成 <strong>synchronizes-with 关系</strong>, 进而可以推导出 <strong>happens-before 的关系</strong>.</li>
+<li><code>memory_order_consume</code>: 实现 <strong>consume 操作</strong>, 能实现数据依赖相关的同步关系. 如果 consume 操作读到了 release 操作写入的值, 或其 release sequence 写入的值, 则构成 <strong>dependency-ordered before 的关系</strong>, 对于有数据依赖的操作可以进而推导出 <strong>happens-before 的关系</strong>.</li>
+<li><code>memory_order_seq_cst</code>: 加强版的 acquire-release 模型, 除了可以实现 <strong>synchronizes-with 关系</strong>, 还保证<strong>全局顺序一致</strong>.</li>
+</ul>
+<h1 id="Memory-Order-v-s-Memory-Model-v-s-Cache-Coherence"><a href="#Memory-Order-v-s-Memory-Model-v-s-Cache-Coherence" class="headerlink" title="Memory Order v.s. Memory Model v.s. Cache Coherence"></a>Memory Order v.s. Memory Model v.s. Cache Coherence</h1><ul>
+<li><strong>Memory order</strong><br>  因为每个 CPU 硬件平台提供的内存一致性模型不一样（比如 X86 是 TSO 模型，而 arm 则是弱内存模型），因此默认情况下，每个 CPU 执行指令期间允许的内存乱序情况是不一样的。编程语言在语言层面上都提供了一些接口，能够忽略compiler，CPU arch的不同对多线程编程的影响。</li>
+<li><strong>Memory Model</strong><br>  处理器执行期间的指令重排，注重的是全局的memory order，是保证多处理器编程中的正确性，我们在讨论这个的时候可以把cache当做一个黑盒子来处理，也就是说即使没有cache，我们也同样需要memory consistency来保证正确性。</li>
+<li><strong>Cache Coherence</strong><br>  处理器执行期间因为缓存不一致引起的数据不可见，关注于一个memory location。</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/c/" rel="tag"># c++</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2024/12/16/%E5%B9%B6%E8%A1%8C%E6%97%A0%E9%94%81%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84-%E4%B8%8B-%E8%B7%B3%E8%A1%A8-LRU-Cache-FIFO%E9%98%9F%E5%88%97/" rel="prev" title="并行无锁数据结构(下) - 跳表, LRU Cache, FIFO队列">
+                  <i class="fa fa-angle-left"></i> 并行无锁数据结构(下) - 跳表, LRU Cache, FIFO队列
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2024/12/23/Transformer/" rel="next" title="Transformer">
+                  Transformer <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Ronny Lu</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">75k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">1:08</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">
+    <!--由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动 -->
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+</body>
+</html>

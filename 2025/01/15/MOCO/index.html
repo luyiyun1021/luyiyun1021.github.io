@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha256-5eIC48iZUHmSlSUz9XtjRyK2mzQkHScZY1WdMaoz74E=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-minimal.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"luyiyun1021.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.21.1","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="论文地址 : https:&#x2F;&#x2F;arxiv.org&#x2F;abs&#x2F;1911.05722﻿ 论文代码(官方) : https:&#x2F;&#x2F;github.com&#x2F;facebookresearch&#x2F;moco﻿ 视频解读 : MoCo 论文逐段精读【论文精读】_哔哩哔哩_bilibili">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MOCO">
+<meta property="og:url" content="https://luyiyun1021.github.io/2025/01/15/MOCO/index.html">
+<meta property="og:site_name" content="Ronny Lu&#39;s blog">
+<meta property="og:description" content="论文地址 : https:&#x2F;&#x2F;arxiv.org&#x2F;abs&#x2F;1911.05722﻿ 论文代码(官方) : https:&#x2F;&#x2F;github.com&#x2F;facebookresearch&#x2F;moco﻿ 视频解读 : MoCo 论文逐段精读【论文精读】_哔哩哔哩_bilibili">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250115201923281.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250115201931470.png">
+<meta property="article:published_time" content="2025-01-15T12:20:16.000Z">
+<meta property="article:modified_time" content="2025-01-16T07:09:57.094Z">
+<meta property="article:author" content="Ronny Lu">
+<meta property="article:tag" content="大模型">
+<meta property="article:tag" content="论文精读">
+<meta property="article:tag" content="对比学习">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250115201923281.png">
+
+
+<link rel="canonical" href="https://luyiyun1021.github.io/2025/01/15/MOCO/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://luyiyun1021.github.io/2025/01/15/MOCO/","path":"2025/01/15/MOCO/","title":"MOCO"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>MOCO | Ronny Lu's blog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<style>.darkmode--activated{--body-bg-color:#282828;--content-bg-color:#333;--card-bg-color:#555;--text-color:#ccc;--blockquote-color:#bbb;--link-color:#ccc;--link-hover-color:#eee;--brand-color:#ddd;--brand-hover-color:#ddd;--table-row-odd-bg-color:#282828;--table-row-hover-bg-color:#363636;--menu-item-bg-color:#555;--btn-default-bg:#222;--btn-default-color:#ccc;--btn-default-border-color:#555;--btn-default-hover-bg:#666;--btn-default-hover-color:#ccc;--btn-default-hover-border-color:#666;--highlight-background:#282b2e;--highlight-foreground:#a9b7c6;--highlight-gutter-background:#34393d;--highlight-gutter-foreground:#9ca9b6}.darkmode--activated img{opacity:.75}.darkmode--activated img:hover{opacity:.9}.darkmode--activated code{color:#69dbdc;background:0 0}button.darkmode-toggle{z-index:9999}.darkmode-ignore,img{display:flex!important}.beian img{display:inline-block!important}</style></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Ronny Lu's blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0"><span class="nav-number">1.</span> <span class="nav-text">对比学习</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#MoCo%E5%AE%9E%E7%8E%B0%E6%80%9D%E8%B7%AF"><span class="nav-number">2.</span> <span class="nav-text">MoCo实现思路</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#MoCo%E6%9E%B6%E6%9E%84"><span class="nav-number">3.</span> <span class="nav-text">MoCo架构</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#MOCO%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0"><span class="nav-number">4.</span> <span class="nav-text">MOCO代码实现</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Ronny Lu"
+      src="/images/avatar.jpeg">
+  <p class="site-author-name" itemprop="name">Ronny Lu</p>
+  <div class="site-description" itemprop="description">Tech notes on LLM, LLM Infra, C++</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">29</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/01/15/MOCO/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpeg">
+      <meta itemprop="name" content="Ronny Lu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ronny Lu's blog">
+      <meta itemprop="description" content="Tech notes on LLM, LLM Infra, C++">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="MOCO | Ronny Lu's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          MOCO
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2025-01-15 20:20:16" itemprop="dateCreated datePublished" datetime="2025-01-15T20:20:16+08:00">2025-01-15</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2025-01-16 15:09:57" itemprop="dateModified" datetime="2025-01-16T15:09:57+08:00">2025-01-16</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">大模型</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E8%AE%BA%E6%96%87%E7%B2%BE%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">论文精读</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E8%AE%BA%E6%96%87%E7%B2%BE%E8%AF%BB/%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0/" itemprop="url" rel="index"><span itemprop="name">对比学习</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>1.6k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>1 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>论文地址 : <a target="_blank" rel="noopener" href="https://arxiv.org/abs/1911.05722">https://arxiv.org/abs/1911.05722</a>﻿</p>
+<p>论文代码(官方) : <a target="_blank" rel="noopener" href="https://github.com/facebookresearch/moco">https://github.com/facebookresearch/moco</a>﻿</p>
+<p>视频解读 : <a target="_blank" rel="noopener" href="https://www.bilibili.com/video/av422340209">MoCo 论文逐段精读【论文精读】_哔哩哔哩_bilibili</a>﻿</p>
+<span id="more"></span>
+
+<h1 id="对比学习"><a href="#对比学习" class="headerlink" title="对比学习"></a>对比学习</h1><p>参考 CLIP 对比学习章节</p>
+<h1 id="MoCo实现思路"><a href="#MoCo实现思路" class="headerlink" title="MoCo实现思路"></a>MoCo实现思路</h1><p>传统的对比学习可以归纳成一种任务：给定一个query和若干keys，找出这个query和以下那个key相似。</p>
+<p>如图所示：</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250115201923281.png" alt="image.png"></p>
+<p>其中keys集合的大小就是Batch Size的大小。（Keys集合也称为“字典”）</p>
+<p>如果想要训练出好的模型，那我们就需要如下两点：</p>
+<ul>
+<li><p>字典越大越好</p>
+</li>
+<li><p>字典中的key的特征要保持一致性。换句话说：这些正负样本要保证是从一个Encoder中提取的特征。即使不是从一个Encoder提取的，也要是从相似的Encoder中提取的。</p>
+</li>
+</ul>
+<p>而之前的对比学习方法对于这两点没有办法做到兼容。例如对于上述提到的SimCLR的字典大小就是Batch Size大小，所以受限于显卡内存无法做到太大。 而一些其他论文虽然构建了一个大词典，但是词典中的特征向量都是来自不同阶段的Encoder，所以一致性不高。（不同阶段是指在训练过程中，Encoder参数是不断变化的）</p>
+<blockquote>
+<p>与之前对比学习论文不同，在MoCo中，锚点称为query，而正负样本称为Key。</p>
+</blockquote>
+<h1 id="MoCo架构"><a href="#MoCo架构" class="headerlink" title="MoCo架构"></a>MoCo架构</h1><p>MoCo主要就是解决了两个问题：</p>
+<ol>
+<li><p>字典可以搞的很大</p>
+</li>
+<li><p>字典中的key的一致性很高。</p>
+</li>
+</ol>
+<p>MoCo的架构如下:</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250115201931470.png" alt="image.png"></p>
+<p>MoCo架构与之前对比学习类似，query和keys（就是锚点和正负样本）分别经过两个不同的Encoder，然后再计算相似度，最终预测字典中哪个key和query是一对儿。</p>
+<p>MoCo与之前对比学习方法的区别主要在keys这边，主要有两点：</p>
+<ul>
+<li><p><strong>Queue</strong>: MoCo维护了一个先进先出队列(FIFO queue)，这个队列就是字典，里面存储的是图片的特征向量，所以可以很大。而队列的维护方式就是每次入队最新一批图片的特征向量，出队最早一批图片的特征向量。</p>
+</li>
+<li><p><strong>Momentum Encoder</strong>：为了保证queue中key的一致性，字典这边的encoder必须要缓慢的更新。所以作者采用了动量的方式。简单来说，就是Momentum Encoder &#x3D; 0.99 * Momentum Encoder + 0.01 * Encoder。每次Encoder更新后，只拿它参数的0.01来更新Momentum Encoder，这样就可以保证Momentum Encoder更新缓慢了。</p>
+</li>
+</ul>
+<p>举个例子来描述整个过程：假设字典(队列)大小为65536, batch size为128, Encoder编码的特征向量大小为256.</p>
+<ol>
+<li><p>初始化Encoder：首先初始化两个Encoder，一个作为Encoder，一个作为Momentum Encoder。然后让两个Encoder的参数保持一致。</p>
+</li>
+<li><p>初始化队列：拿65536张图片通过Momentum Encoder进行特征提取，然后放入队列。其中每个图片的特征为256.</p>
+</li>
+<li><p>接下来开始训练：</p>
+<ol>
+<li><p>从数据集中随机采样128张图片</p>
+</li>
+<li><p>将这128张图片进行随机数据增强后送给Encoder，计算出其特征向量。</p>
+</li>
+<li><p>将这128张图片再次随机数据增强后送给Momentum Encoder，计算其特征向量。此时我们就得到了两组特征向量，每组都有128个256维的特征向量。我们这里将其命名为$x_q$和$x_k$﻿</p>
+</li>
+<li><p>将$x_q$和$x_k$中元素“对应相乘”，得到128个数值。也就是得到了128个锚点与其对应的正样本的内积（相当于将向量内积作为相似度）</p>
+</li>
+<li><p>将$x_q$和队列中的向量“两两相乘”，得到128x65536个数值。也就是128个锚点和队列中所有负样本的内积。</p>
+</li>
+<li><p>将锚点和与正样本的内积和与负样本的内积concat到一起，得到128x(1+65536)个内积。</p>
+</li>
+<li><p>使用CrossEntropyLoss求出锚点与正样本对应的loss。即锚点与正样本越接近loss越小，锚点与负样本远离loss越大。</p>
+</li>
+<li><p>反向传播更新encoder参数</p>
+</li>
+<li><p>使用momentum机制更新Momentum Encoder，即Momentum Encoder &#x3D; 0.99 * Momentum Encoder + 0.01 * Encoder</p>
+</li>
+<li><p>将$x_k$入队，响应的最早的一批128个特征向量出队。</p>
+</li>
+</ol>
+</li>
+<li><p>重复3的训练过程</p>
+</li>
+</ol>
+<h1 id="MOCO代码实现"><a href="#MOCO代码实现" class="headerlink" title="MOCO代码实现"></a>MOCO代码实现</h1><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 首先假设存在这么几个对象</span></span><br><span class="line"><span class="comment"># f_q, f_k: query和key的Encoder，也就是Encoder和Momentum Encoder</span></span><br><span class="line"><span class="comment"># queue: 字典队列。为一个Shape为CxK的Tensor。其中C为特征向量的维度，K为词典的大小。例如：256x65536</span></span><br><span class="line"><span class="comment"># m: momentum超参。例如 0.99</span></span><br><span class="line"><span class="comment"># t: temperature。温度超参。例如：0.05</span></span><br><span class="line"></span><br><span class="line">f_k.params = f_q.params <span class="comment"># 初始f_k的参数和f_q保持一致</span></span><br><span class="line"><span class="keyword">for</span> x <span class="keyword">in</span> loader: <span class="comment"># 从dataloader中拿出 N 个数据。x为一个batch的图片，例如x的shape为(128, 3, 224, 224)</span></span><br><span class="line">	x_q = aug(x) <span class="comment"># 对 x 进行随机的数据增强</span></span><br><span class="line">	x_k = aug(x) <span class="comment"># 对 x 进行另一种随机的数据增强</span></span><br><span class="line">	</span><br><span class="line">	q = f_q.forward(x_q) <span class="comment"># 使用Encoder提取x_q的特征。q的shape为 NxC。 例如128x256, 即128张图片，每张图片的特征向量为256维</span></span><br><span class="line">	k = f_k.forward(x_k) <span class="comment"># 使用Momentum Encoder提取x_k的特征，q的shape也为 NxC</span></span><br><span class="line">	k = k.detach() <span class="comment"># Momentum Encoder不计算梯度</span></span><br><span class="line">	</span><br><span class="line">	<span class="comment"># 求出锚点与正样本的内积。l_pos的shape为 Nx1。即每个锚点和对应正样本的向量内积（两两相乘）。例如 shape为128x1</span></span><br><span class="line">	l_pos = bmm(q.view(N,<span class="number">1</span>,C), k.view(N,C,<span class="number">1</span>))</span><br><span class="line"></span><br><span class="line">	<span class="comment"># 让锚点和队列中所有的负样本计算内积。l_neg的shape为 NxK。例如 shape为128x65536</span></span><br><span class="line">	l_neg = mm(q.view(N,C), queue.view(C,K))</span><br><span class="line"></span><br><span class="line">	<span class="comment"># 将正样本和负样本concat到一起，正样本放在最前面。logits的shape为 Nx(K+1)。例如 128x(65536+1)</span></span><br><span class="line">	logits = cat([l_pos, l_neg], dim=<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">	labels = zeros(N) <span class="comment"># 构造Label，因为正样本都是在0这个位置，所以构造N个0就行了。</span></span><br><span class="line">	</span><br><span class="line">	<span class="comment"># 使用CrossEntropyLoss计算损失，这里需要除以温度</span></span><br><span class="line">	loss = CrossEntropyLoss(logits/t, labels)</span><br><span class="line">	</span><br><span class="line">	<span class="comment"># 反向传播并更新f_q的参数。</span></span><br><span class="line">	loss.backward()</span><br><span class="line">	update(f_q.params)</span><br><span class="line"></span><br><span class="line">	<span class="comment"># 使用momentum的方式更新f_k</span></span><br><span class="line">	f_k.params = m*f_k.params+(<span class="number">1</span>-m)*f_q.params</span><br><span class="line">	</span><br><span class="line">	<span class="comment"># 更新字典</span></span><br><span class="line">	enqueue(queue, k) <span class="comment"># 将当前的 N 个样本的特征向量入队。</span></span><br><span class="line">	dequeue(queue) <span class="comment"># 同时再将最早的 N 个样本出队</span></span><br></pre></td></tr></table></figure>
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" rel="tag"># 大模型</a>
+              <a href="/tags/%E8%AE%BA%E6%96%87%E7%B2%BE%E8%AF%BB/" rel="tag"># 论文精读</a>
+              <a href="/tags/%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0/" rel="tag"># 对比学习</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/01/10/DALL%C2%B7E-2/" rel="prev" title="DALL·E 2">
+                  <i class="fa fa-angle-left"></i> DALL·E 2
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2025/01/16/ViLT/" rel="next" title="ViLT">
+                  ViLT <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Ronny Lu</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">75k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">1:08</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">
+    <!--由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动 -->
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+</body>
+</html>

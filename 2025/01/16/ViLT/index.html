@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha256-5eIC48iZUHmSlSUz9XtjRyK2mzQkHScZY1WdMaoz74E=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-minimal.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"luyiyun1021.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.21.1","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="ViLT：最简单的多模态Transformer 综述作者根据下面两点将当前 VLP(Vision-and-Language Pre-training) 模型分成了四大类，并且总结了不同类别方法的特点：  图像和文本的表达力度是不是平衡，如参数量和计算  图像和文本两个模态的信息是怎么融合的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ViLT">
+<meta property="og:url" content="https://luyiyun1021.github.io/2025/01/16/ViLT/index.html">
+<meta property="og:site_name" content="Ronny Lu&#39;s blog">
+<meta property="og:description" content="ViLT：最简单的多模态Transformer 综述作者根据下面两点将当前 VLP(Vision-and-Language Pre-training) 模型分成了四大类，并且总结了不同类别方法的特点：  图像和文本的表达力度是不是平衡，如参数量和计算  图像和文本两个模态的信息是怎么融合的">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116160713958.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116160726329.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116160811143.png">
+<meta property="article:published_time" content="2025-01-16T08:06:46.000Z">
+<meta property="article:modified_time" content="2025-01-16T08:08:55.342Z">
+<meta property="article:author" content="Ronny Lu">
+<meta property="article:tag" content="大模型">
+<meta property="article:tag" content="论文精读">
+<meta property="article:tag" content="多模态">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116160713958.png">
+
+
+<link rel="canonical" href="https://luyiyun1021.github.io/2025/01/16/ViLT/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://luyiyun1021.github.io/2025/01/16/ViLT/","path":"2025/01/16/ViLT/","title":"ViLT"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>ViLT | Ronny Lu's blog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<style>.darkmode--activated{--body-bg-color:#282828;--content-bg-color:#333;--card-bg-color:#555;--text-color:#ccc;--blockquote-color:#bbb;--link-color:#ccc;--link-hover-color:#eee;--brand-color:#ddd;--brand-hover-color:#ddd;--table-row-odd-bg-color:#282828;--table-row-hover-bg-color:#363636;--menu-item-bg-color:#555;--btn-default-bg:#222;--btn-default-color:#ccc;--btn-default-border-color:#555;--btn-default-hover-bg:#666;--btn-default-hover-color:#ccc;--btn-default-hover-border-color:#666;--highlight-background:#282b2e;--highlight-foreground:#a9b7c6;--highlight-gutter-background:#34393d;--highlight-gutter-foreground:#9ca9b6}.darkmode--activated img{opacity:.75}.darkmode--activated img:hover{opacity:.9}.darkmode--activated code{color:#69dbdc;background:0 0}button.darkmode-toggle{z-index:9999}.darkmode-ignore,img{display:flex!important}.beian img{display:inline-block!important}</style></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Ronny Lu's blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%BB%BC%E8%BF%B0"><span class="nav-number">1.</span> <span class="nav-text">综述</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#ViLT-%E6%96%B9%E6%B3%95"><span class="nav-number">2.</span> <span class="nav-text">ViLT 方法</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">3.</span> <span class="nav-text">参考</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Ronny Lu"
+      src="/images/avatar.jpeg">
+  <p class="site-author-name" itemprop="name">Ronny Lu</p>
+  <div class="site-description" itemprop="description">Tech notes on LLM, LLM Infra, C++</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">29</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/01/16/ViLT/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpeg">
+      <meta itemprop="name" content="Ronny Lu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ronny Lu's blog">
+      <meta itemprop="description" content="Tech notes on LLM, LLM Infra, C++">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="ViLT | Ronny Lu's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          ViLT
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-01-16 16:06:46 / 修改时间：16:08:55" itemprop="dateCreated datePublished" datetime="2025-01-16T16:06:46+08:00">2025-01-16</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">大模型</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E8%AE%BA%E6%96%87%E7%B2%BE%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">论文精读</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E8%AE%BA%E6%96%87%E7%B2%BE%E8%AF%BB/%E5%A4%9A%E6%A8%A1%E6%80%81/" itemprop="url" rel="index"><span itemprop="name">多模态</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>1.3k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>1 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p><strong>ViLT：最简单的多模态Transformer</strong></p>
+<h1 id="综述"><a href="#综述" class="headerlink" title="综述"></a>综述</h1><p>作者根据下面两点将当前 VLP(Vision-and-Language Pre-training) 模型分成了四大类，并且总结了不同类别方法的特点：</p>
+<ul>
+<li><p>图像和文本的表达力度是不是平衡，如参数量和计算</p>
+</li>
+<li><p>图像和文本两个模态的信息是怎么融合的</p>
+</li>
+</ul>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116160713958.png" alt="image.png"></p>
+<span id="more"></span>
+
+<p><strong>VSE、VSE++和SCAN属于(a)类型。</strong>对图像和文本独立使用encoder，图像的更重，文本的更轻，使用简单的<a target="_blank" rel="noopener" href="https://zhida.zhihu.com/search?content_id=170292842&content_type=Article&match_order=1&q=%E7%82%B9%E7%A7%AF&zhida_source=entity">点积</a>或者浅层attention层来表示两种模态特征的相似性。</p>
+<p><strong>CLIP属于(b)类型。</strong>每个模态单独使用重的transformer encoder，使用池化后的<a target="_blank" rel="noopener" href="https://zhida.zhihu.com/search?content_id=170292842&content_type=Article&match_order=1&q=%E5%9B%BE%E5%83%8F%E7%89%B9%E5%BE%81&zhida_source=entity">图像特征</a>点积计算特征相似性。</p>
+<p><strong>ViLBERT、UNTER和</strong><a target="_blank" rel="noopener" href="https://zhida.zhihu.com/search?content_id=170292842&content_type=Article&match_order=1&q=Pixel-BERT&zhida_source=entity"><strong>Pixel-BERT</strong></a><strong>属于(c)类型。</strong>这些方法使用深层transformer进行交互作用，但是由于VE仍然使用重的<a target="_blank" rel="noopener" href="https://zhida.zhihu.com/search?content_id=170292842&content_type=Article&match_order=1&q=%E5%8D%B7%E7%A7%AF%E7%BD%91%E7%BB%9C&zhida_source=entity">卷积网络</a>进行特征抽取，导致计算量依然很大。</p>
+<p><strong>作者提出的ViLT属于(d)类型。</strong>ViLT是首个将VE设计的如TE一样轻量的方法，该方法的主要计算量都集中在<a target="_blank" rel="noopener" href="https://zhida.zhihu.com/search?content_id=170292842&content_type=Article&match_order=1&q=%E6%A8%A1%E6%80%81%E4%BA%A4%E4%BA%92&zhida_source=entity">模态交互</a>上。</p>
+<p>模态融合很重要，所以要看看当前的模态融合是怎么做的：</p>
+<ul>
+<li><p><strong>single-stream：</strong>把两个序列 concat 成一个序列，然后让 transformer 自己去学习怎么融合</p>
+</li>
+<li><p><strong>dual-stream：</strong>先各自对各自的输入做处理，挖掘单独模态中包含的信息，然后再融合</p>
+</li>
+</ul>
+<p>两种融合方法基本效果差不多，dual-stream 有时候会更好一点，但 dual-stream 引入了更多的参数，ViLT 作者还是使用了 single-stream 更轻量的方法</p>
+<p>多模态融合之前，特征怎么提取：</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116160726329.png" alt="image.png"></p>
+<p><strong>文本端：</strong>使用预训练好的 BERT</p>
+<p><strong>视觉端：</strong></p>
+<ul>
+<li><p>之前的方法是先将输入图像通过 backbone 来提取特征，然后使用 RPN 网络来抽取一些 ROI，做一次 NMS 降低区域的数量，然后经过 head 得到 bbox，整个过程非常贵</p>
+</li>
+<li><p>还有一些方法使用 Grid Feature，就是直接用抽出的特征，拉平后直接用，但效果不好</p>
+</li>
+<li><p>所以 ViLT 借鉴 ViT 的 patch embedding layer 来抽取特征，又快又好</p>
+</li>
+</ul>
+<h1 id="ViLT-方法"><a href="#ViLT-方法" class="headerlink" title="ViLT 方法"></a>ViLT 方法</h1><p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116160811143.png" alt="image.png"></p>
+<p>ViLT 是一个 single-stream 的结构，所以只有一个模型：</p>
+<ul>
+<li><p>文本输入：文本先输入 BERT tokenizer，得到 word embedding，假设文本的长度是 L，H 就是 embedding 维度，一般 base 模型就是 768，就是 Lx H 大小</p>
+</li>
+<li><p>图像输入：把图像打成 patch，每个 patch 进行 patch embedding，得到一系列的 token 编码（紫色），假设图像 token 长度为 N 维度也是 H 那么就 NxH 的特征</p>
+</li>
+<li><p>*：cls token，绿色的是文本的，紫色的是图像的</p>
+</li>
+<li><p>灰色：表示模态，0 表示文本模态，1 表示图像模态，需要 modal-type embedding 的原因在于，对于 single stream 的方法来说，是会把图像和文本的输入拼接在一起的，如果不告诉模型哪些是文本或哪些是图像的话，是不利于学习的，如果告诉了后，模型就可能互相学习文本和图像之间的关系，更有利于找到潜在的关系</p>
+</li>
+<li><p>输入输出序列长度：每个 token embedding 输入 transformer encoder 之前呢，都是由三部分组成的：灰色+绿色+淡绿色的，是加到一起的，而不是 concat，然后所有相加后的特征会被 concat 起来，送入 transformer encoder，所以输入长度就是 1+L+1+N，整个输入的特征就是（N+L+2)xH，输出的序列也是（N+L+2)xH</p>
+</li>
+</ul>
+<p>预训练的两个 Loss：</p>
+<ul>
+<li><p>Image-text matching loss：</p>
+<ul>
+<li><p>该 loss 是用于衡量文本和图像之间的距离，是人为设计的任务，也就是二分类的任务，判断匹配与否，真正有用的位置是 Pooler 位置，在 Pooler 之前呢，这个位置输出的特征是 1xH，经过 Pooler 相当于权重矩阵，得到 HxH，经过 FC 得到 1xH 的输出，做二分类。</p>
+</li>
+<li><p>ViLT 中还使用了 word patch alignment loss，使用最优传输理论来计算分布之间的距离</p>
+</li>
+</ul>
+</li>
+<li><p>Masked language modeling loss：</p>
+<ul>
+<li>针对文本的目标函数，也就是 NLP 那边常见的完形填空，也就是在输入文本的时候，随机 MASK 掉一个单词，然后在输出的时候重建出来这个 mask</li>
+</ul>
+</li>
+</ul>
+<p>文本模型中使用的小技巧：whole word masking：</p>
+<ul>
+<li><p>作者使用将整个单词都 mask 掉的方法，能进一步的加强文本和图像之间的关系的学习</p>
+</li>
+<li><p>当把单词抹掉之后，句子重建就很困难，那就只能从图像中来拿取信息，所以就能迫使模型来建立图像和文本的关系</p>
+</li>
+</ul>
+<p>图像模型中使用的小技巧：</p>
+<ul>
+<li><p>前面说过数据增强在图像中很有用，但多模态中不太能用好数据增强</p>
+</li>
+<li><p>本文作者做了改动，也就是不用 color 和 cutout，就能尽可能的保证图像和文本保持原有的匹配关系</p>
+</li>
+</ul>
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ul>
+<li><p>﻿<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/369733979">https://zhuanlan.zhihu.com/p/369733979</a>﻿</p>
+</li>
+<li><p>﻿<a target="_blank" rel="noopener" href="https://blog.csdn.net/jiaoyangwm/article/details/132247400">【多模态】25、ViLT | 轻量级多模态预训练模型（ICML2021）_vilt预训练模型-CSDN博客</a></p>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" rel="tag"># 大模型</a>
+              <a href="/tags/%E8%AE%BA%E6%96%87%E7%B2%BE%E8%AF%BB/" rel="tag"># 论文精读</a>
+              <a href="/tags/%E5%A4%9A%E6%A8%A1%E6%80%81/" rel="tag"># 多模态</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/01/15/MOCO/" rel="prev" title="MOCO">
+                  <i class="fa fa-angle-left"></i> MOCO
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2025/01/16/ALBEF/" rel="next" title="ALBEF">
+                  ALBEF <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Ronny Lu</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">75k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">1:08</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">
+    <!--由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动 -->
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+</body>
+</html>

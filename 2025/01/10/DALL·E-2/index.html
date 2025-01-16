@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha256-5eIC48iZUHmSlSUz9XtjRyK2mzQkHScZY1WdMaoz74E=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-minimal.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"luyiyun1021.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.21.1","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="《Hierarchical Text-Conditional Image Generation with CLIP Latents》﻿ Paper: https:&#x2F;&#x2F;cdn.openai.com&#x2F;papers&#x2F;dall-e-2.pdf﻿ Project: https:&#x2F;&#x2F;openai.com&#x2F;product&#x2F;dall-e-2﻿ Author: OpenAI">
+<meta property="og:type" content="article">
+<meta property="og:title" content="DALL·E 2">
+<meta property="og:url" content="https://luyiyun1021.github.io/2025/01/10/DALL%C2%B7E-2/index.html">
+<meta property="og:site_name" content="Ronny Lu&#39;s blog">
+<meta property="og:description" content="《Hierarchical Text-Conditional Image Generation with CLIP Latents》﻿ Paper: https:&#x2F;&#x2F;cdn.openai.com&#x2F;papers&#x2F;dall-e-2.pdf﻿ Project: https:&#x2F;&#x2F;openai.com&#x2F;product&#x2F;dall-e-2﻿ Author: OpenAI">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110183739514.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110183747747.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110183754130.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110183800592.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110183810503.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110183819046.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110183829472.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110183837941.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110183912860.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110183921032.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110183928002.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110183935982.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110183944101.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110183953965.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110184000723.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110184009679.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110184021236.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110184027705.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110184033514.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110184039857.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110184046392.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110184054203.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110184100962.png">
+<meta property="article:published_time" content="2025-01-10T10:41:14.000Z">
+<meta property="article:modified_time" content="2025-01-16T08:43:12.438Z">
+<meta property="article:author" content="Ronny Lu">
+<meta property="article:tag" content="大模型">
+<meta property="article:tag" content="论文精读">
+<meta property="article:tag" content="AIGC">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110183739514.png">
+
+
+<link rel="canonical" href="https://luyiyun1021.github.io/2025/01/10/DALL%C2%B7E-2/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://luyiyun1021.github.io/2025/01/10/DALL%C2%B7E-2/","path":"2025/01/10/DALL·E-2/","title":"DALL·E 2"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>DALL·E 2 | Ronny Lu's blog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<style>.darkmode--activated{--body-bg-color:#282828;--content-bg-color:#333;--card-bg-color:#555;--text-color:#ccc;--blockquote-color:#bbb;--link-color:#ccc;--link-hover-color:#eee;--brand-color:#ddd;--brand-hover-color:#ddd;--table-row-odd-bg-color:#282828;--table-row-hover-bg-color:#363636;--menu-item-bg-color:#555;--btn-default-bg:#222;--btn-default-color:#ccc;--btn-default-border-color:#555;--btn-default-hover-bg:#666;--btn-default-hover-color:#ccc;--btn-default-hover-border-color:#666;--highlight-background:#282b2e;--highlight-foreground:#a9b7c6;--highlight-gutter-background:#34393d;--highlight-gutter-foreground:#9ca9b6}.darkmode--activated img{opacity:.75}.darkmode--activated img:hover{opacity:.9}.darkmode--activated code{color:#69dbdc;background:0 0}button.darkmode-toggle{z-index:9999}.darkmode-ignore,img{display:flex!important}.beian img{display:inline-block!important}</style></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Ronny Lu's blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%89%8D%E7%BD%AE"><span class="nav-number">1.</span> <span class="nav-text">前置</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#CLIP"><span class="nav-number">1.1.</span> <span class="nav-text">CLIP</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#GAN"><span class="nav-number">1.2.</span> <span class="nav-text">GAN</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#AE%EF%BC%88Auto-encoder%EF%BC%89"><span class="nav-number">1.3.</span> <span class="nav-text">AE（Auto-encoder）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#DAE%EF%BC%88Denoising-Auto-encoder%EF%BC%89"><span class="nav-number">1.4.</span> <span class="nav-text">DAE（Denoising Auto-encoder）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#VAE%EF%BC%88Variational-Auto-Encoder%EF%BC%89"><span class="nav-number">1.5.</span> <span class="nav-text">VAE（Variational Auto-Encoder）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#VQ-VAE%EF%BC%88Vector-Quantized-Variational-Auto-Encoder%EF%BC%89"><span class="nav-number">1.6.</span> <span class="nav-text">VQ-VAE（Vector Quantized Variational Auto-Encoder）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#DALL-E"><span class="nav-number">1.7.</span> <span class="nav-text">DALL-E</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Diffusion-model-%E6%89%A9%E6%95%A3%E6%A8%A1%E5%9E%8B"><span class="nav-number">1.8.</span> <span class="nav-text">Diffusion model (扩散模型)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%89%A9%E6%95%A3%E6%A8%A1%E5%9E%8B%E7%9A%84%E6%96%B9%E6%B3%95"><span class="nav-number">1.8.1.</span> <span class="nav-text">扩散模型的方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%89%A9%E6%95%A3%E6%A8%A1%E5%9E%8B%E7%9A%84%E5%8F%91%E5%B1%95%E5%8E%86%E7%A8%8B"><span class="nav-number">1.8.2.</span> <span class="nav-text">扩散模型的发展历程</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%91%98%E8%A6%81"><span class="nav-number">2.</span> <span class="nav-text">摘要</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#DALL%C2%B7E-2-%E6%A8%A1%E5%9E%8B%E8%A7%A3%E8%AF%BB"><span class="nav-number">3.</span> <span class="nav-text">DALL·E 2 模型解读</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E8%A7%88"><span class="nav-number">3.1.</span> <span class="nav-text">总览</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%AD%E7%BB%83%E8%BF%87%E7%A8%8B"><span class="nav-number">3.2.</span> <span class="nav-text">训练过程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8E%A8%E7%90%86%E8%BF%87%E7%A8%8B%EF%BC%88%E7%94%B1%E6%96%87%E6%9C%AC%E7%94%9F%E6%88%90%E5%9B%BE%E5%83%8F%E8%BF%87%E7%A8%8B%EF%BC%89"><span class="nav-number">3.3.</span> <span class="nav-text">推理过程（由文本生成图像过程）</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%BA%94%E7%94%A8"><span class="nav-number">4.</span> <span class="nav-text">应用</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%8D%E8%B6%B3"><span class="nav-number">5.</span> <span class="nav-text">不足</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="nav-number">6.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Ronny Lu"
+      src="/images/avatar.jpeg">
+  <p class="site-author-name" itemprop="name">Ronny Lu</p>
+  <div class="site-description" itemprop="description">Tech notes on LLM, LLM Infra, C++</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">29</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/01/10/DALL%C2%B7E-2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpeg">
+      <meta itemprop="name" content="Ronny Lu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ronny Lu's blog">
+      <meta itemprop="description" content="Tech notes on LLM, LLM Infra, C++">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="DALL·E 2 | Ronny Lu's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          DALL·E 2
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2025-01-10 18:41:14" itemprop="dateCreated datePublished" datetime="2025-01-10T18:41:14+08:00">2025-01-10</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2025-01-16 16:43:12" itemprop="dateModified" datetime="2025-01-16T16:43:12+08:00">2025-01-16</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">大模型</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E8%AE%BA%E6%96%87%E7%B2%BE%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">论文精读</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E8%AE%BA%E6%96%87%E7%B2%BE%E8%AF%BB/AIGC/" itemprop="url" rel="index"><span itemprop="name">AIGC</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>5.2k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>5 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p><a target="_blank" rel="noopener" href="https://cdn.openai.com/papers/dall-e-2.pdf">《Hierarchical Text-Conditional Image Generation with CLIP Latents》</a>﻿</p>
+<p>Paper: <a target="_blank" rel="noopener" href="https://cdn.openai.com/papers/dall-e-2.pdf">https://cdn.openai.com/papers/dall-e-2.pdf</a>﻿</p>
+<p>Project: <a target="_blank" rel="noopener" href="https://openai.com/product/dall-e-2">https://openai.com/product/dall-e-2</a>﻿</p>
+<p>Author: OpenAI</p>
+<span id="more"></span>
+<p><strong>DALL·E 2能做什么</strong></p>
+<ul>
+<li><p><strong>DALL·E 2 can create original, realistic images and art from a text description. It can combine concepts, attributes, and styles.</strong></p>
+<ul>
+<li><p><strong>生成原创性的图片</strong></p>
+</li>
+<li><p><strong>组合concepts、attributes，and styles</strong></p>
+</li>
+</ul>
+</li>
+</ul>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110183739514.png" alt="image.png"></p>
+<ul>
+<li><strong>DALL·E 2 can expand images beyond what’s in the original canvas, creating expansive new compositions.</strong></li>
+</ul>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110183747747.png" alt="image.png"></p>
+<ul>
+<li><strong>DALL·E 2 can make realistic edits to existing images from a natural language caption. It can add and remove elements while taking shadows, reflections, and textures into account.</strong></li>
+</ul>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110183754130.png" alt="image.png"></p>
+<ul>
+<li><strong>DALL·E 2 can take an image and create different variations of it inspired by the original.</strong></li>
+</ul>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110183800592.png" alt="image.png"></p>
+<p><strong>DALLE 2 的hierarchical：</strong>先生成64<em>64小分辨率图片，再利用一个模型上采样到256</em>256，再利用一个模型上采样到1024*1024。</p>
+<p>DALLE 2就是： CLIP模型+GLIDE模型（一个基于diffusion model的文本图像生成方法）；</p>
+<h1 id="前置"><a href="#前置" class="headerlink" title="前置"></a>前置</h1><h2 id="CLIP"><a href="#CLIP" class="headerlink" title="CLIP"></a>CLIP</h2><p>CLIP通过对比学习将图像和文本映射到同一特征空间，实现了图像与文本之间的多模态理解。</p>
+<h2 id="GAN"><a href="#GAN" class="headerlink" title="GAN"></a>GAN</h2><p>GAN的思想其实就是左右手互博，同时训练两个网络：生成器G(generator) 和判别器D(discriminator)。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110183810503.png" alt="image.png"></p>
+<ul>
+<li><p><strong>生成器</strong>: 给定一个随机噪声Z, 生成一个比较真实的图片X’</p>
+</li>
+<li><p><strong>判别器</strong>: 把生成的图片X’给判别器. 同时再给真实的图片X给这个判别器, 然后让这个判别器去看, 到底哪个是真图片, 哪个是假图片.</p>
+</li>
+</ul>
+<p>其实就是一个0-1的这个二分类问题.</p>
+<p>通过generator和discriminator这两个网络之间互相较量, 然后判别器不停地提高自己, 生成器也不停地提高自己, 所以说最后能生成比较真实的图片.</p>
+<p><strong>优点：</strong>因为GAN的目标就是以假乱真，所以其生成图像的保真度比较高</p>
+<p><strong>缺点：</strong></p>
+<ol>
+<li><p>训练不够稳定，因为要同时训练两个网络；</p>
+</li>
+<li><p>因为是以保真度为目标，所以生成图像的多样性较差；</p>
+</li>
+<li><p>不是概率模型，它的生成都是隐式完成的。你不知道它做了什么，不知道遵循了什么分布，因此GAN在数学上不如后续的VAE、扩散模型优美。</p>
+</li>
+</ol>
+<h2 id="AE（Auto-encoder）"><a href="#AE（Auto-encoder）" class="headerlink" title="AE（Auto-encoder）"></a>AE（Auto-encoder）</h2><p>自编码器是很早的技术，目的是将高维的信息通过encoder压缩到一个低维的code内，然后再使用decoder对其进行重建，关于它的细节可参阅文章：<a target="_blank" rel="noopener" href="https://blog.csdn.net/DUDUDUTU/article/details/129286398?spm=1001.2014.3001.5502">Auto-encoder系列</a>。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110183819046.png" alt="image.png"></p>
+<p>给定一个输入X, 通过一个编码器, 然后就能得到一个特征Z, 这个特征的维度一般都会小很多, 所以也叫bottleneck. 然后再从bottleneck开始, 通过一个解码器, 最后得到一个图像X’.</p>
+<p>训练的目标函数: 我们希望这个图像X’能尽可能的重建之前的这个X.</p>
+<p>因为是自己重建自己, 所以说这也就是为什么叫auto-encoder.</p>
+<h2 id="DAE（Denoising-Auto-encoder）"><a href="#DAE（Denoising-Auto-encoder）" class="headerlink" title="DAE（Denoising Auto-encoder）"></a>DAE（Denoising Auto-encoder）</h2><p>先把原图进行了一定程度的打乱变成了一个Xc, 也就是corrupted x, 然后把这个经过扰乱过后的输入传给编码器, 后续都是一样的, 我们仍然希望这个图像X’能尽可能的重建之前的这个X, 而不是扰动后的Xc.</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110183829472.png" alt="image.png"></p>
+<p>这个改进证明非常的有用, 会让这个训练出来的模型非常的稳健, 也不容易过拟合. 主要原因是图像这边像素的冗余性太高了, 即使把原来的这个图片做一些污染, 其实模型还是能抓住它的本质, 然后去把它重建出来的. 这个其实也就有点何恺明MAE (Masked AutoEncoders)的意思也就是masked auto-encoder, 这个掩码自编码器在训练的时候能够mask掉75%, 还能把这个图像很好的重建出来, 也就说明了图像的冗余性确实是高, 也就从侧面证明了这种denoising auto-encoder或者masked auto-encoder的有效性</p>
+<h2 id="VAE（Variational-Auto-Encoder）"><a href="#VAE（Variational-Auto-Encoder）" class="headerlink" title="VAE（Variational Auto-Encoder）"></a>VAE（Variational Auto-Encoder）</h2><p>无论是AE，DAE，还是MAE，核心上都是学习bottleneck处这个特征的，然后去做目标检测、分割、分类这些下游任务，并不是去做生成的。原因就是中间特征Z并不是一个概率分布，我们没法对它采样，它是一个用于重建的特征。因此就有了VAE，中间不再生成一个特征，而是生成一个分布（高斯）。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110183837941.png" alt="image.png"></p>
+<p>因为VAE学到的是一个概率分布，从分布里去抽样生成图像的多样性就会好很多。</p>
+<p>VAE的本质思想是学习一个分布，而不是一个特征。后续的诸多工作也是基于这一本质思想进行展开的。</p>
+<p>关于VAE的细节也可参阅文章：<a target="_blank" rel="noopener" href="https://blog.csdn.net/DUDUDUTU/article/details/129286398?spm=1001.2014.3001.5502">Auto-encoder系列</a>。</p>
+<h2 id="VQ-VAE（Vector-Quantized-Variational-Auto-Encoder）"><a href="#VQ-VAE（Vector-Quantized-Variational-Auto-Encoder）" class="headerlink" title="VQ-VAE（Vector Quantized Variational Auto-Encoder）"></a>VQ-VAE（Vector Quantized Variational Auto-Encoder）</h2><p>VQ-VAE 的核心思想是将连续的高维向量编码（例如语音信号、图像、视频等）离散化，从而减少模型的复杂度和存储需求。具体来说，VQ-VAE 通过将连续的编码向量映射到一组离散的“码本”（codebook）中的最近邻，从而将高维连续编码转换为低维的离散编码。在解码器中，这些离散编码被解码回原始的高维向量。</p>
+<p>VQ-VAE就是将特征进行量化的VAE。相对于VAE，优化起来相对容易。codebook可以理解为聚类中心，有K*D个聚类中心。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110183912860.png" alt="image.png"></p>
+<p>但是VQ-VAE学习的是一个固定的codebook，因此无法像VAE一样做随机采样，因此VQ-VAE更像是VQ-AE。若想像VAE那样，就需要有一个prior网络。在VQ-VAE中，prior网络是一个用于生成离散码本（codebook）的神经网络。离散码本是一组预定义的离散向量，用于将连续的向量空间映射到一个离散的向量空间。这种离散化的表示方式使得VQ-VAE可以对输入数据进行高效地编码和解码。</p>
+<p>具体来说，prior网络的输入是由编码器生成的连续向量，输出是一个由离散向量组成的码本。prior网络的训练目标是最小化输入向量和最近的码本向量之间的欧几里得距离，从而实现向量量化。在训练过程中，prior网络不仅学习生成码本，还学习将连续向量映射到码本中最近的向量。通过将编码器生成的连续向量量化为码本中最近的向量，VQ-VAE可以保留输入数据的局部结构信息，并且可以在编码和解码过程中实现高效的计算。因此，prior网络在VQ-VAE中起着非常重要的作用。</p>
+<p>VQ-VAE 已经在许多领域得到了应用，包括图像生成、音频压缩、语音识别、自然语言处理等。DALL·E 第一版就是基于VQ-VAE做的。</p>
+<h2 id="DALL-E"><a href="#DALL-E" class="headerlink" title="DALL-E"></a>DALL-E</h2><p>对于一个图像文本对，文本用BPE编码生成256维的特征，图像用现成的VQ-VAE（codebook）编码为32*32维的特征，然后将这两个特征拼接成一个1280维的序列，再输入至GPT中。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110183921032.png" alt="image.png"></p>
+<p>训练时，将1280维序列的部分遮住，让GPT进行预测。</p>
+<p>推理时，只需要输入文本的特征（256维），让GPT自回归的做预测就行。</p>
+<h2 id="Diffusion-model-扩散模型"><a href="#Diffusion-model-扩散模型" class="headerlink" title="Diffusion model (扩散模型)"></a>Diffusion model (扩散模型)</h2><h3 id="扩散模型的方法"><a href="#扩散模型的方法" class="headerlink" title="扩散模型的方法"></a>扩散模型的方法</h3><p>扩散模型分为 forward diffusion 和 reverse diffusion 两个阶段。对于一个图像，forward diffusion 做的就是往$X_{0}$中不断添加噪声，一共添加T次，最后得到$X_{t} - N(0,z)$。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110183928002.png" alt="image.png"></p>
+<p>为什么叫“扩散”，这启发于热力学。热力学中有一个名词叫“diffusion”，如果有两个物质分别是高密度和低密度的，那高密度的物质会慢慢地向低密度的做扩散，最后达到一种平衡。在Diffusion model 中，这种“平衡”的体现就是 forward diffusion 过程最后得到的趋近于各向同性的正态分布。</p>
+<p>reverse diffusion过程要做的就是训练一个模型，使得从$X_{t}$恢复至$X_{t-1}$，然后再训练一个模型，使得从$X_{t-1}$恢复至$X_{t-2}$，以此类推直至恢复至$X_{0}$。在reverse diffusion 过程中所有使用到的模型都是共享参数的，也就是说整体其实只有一个模型，只是需要抽样生成很多次。 因此扩散模型目前最大的不足就是：相比于其他生成模型，训练很慢，且推理是最慢的。因为对于一个随机采样的噪声，要往前推T次才能生成Image。此外，目前reverse diffusion 过程中的网络大部分选用的都是U-Net。</p>
+<h3 id="扩散模型的发展历程"><a href="#扩散模型的发展历程" class="headerlink" title="扩散模型的发展历程"></a>扩散模型的发展历程</h3><p>扩散模型这个想法在2015年就有人提出来了，但是并不能训练很好，生成图像的效果并不如其他的生成模型，比如GAN等。直至2020年有一篇论文——<strong>DDPM对扩散模型的思想进行了改进，使得训练更方便，其核心思想是：在 reverse diffusion 过程中，给定，不去直接预测（训练起来很难），而是预测使变为的噪声。</strong>这将扩散模型的问题简化了很多，直接让网络去预测一个噪声即可（类似于ResNet中去预测一个残差），比如对于正态分布而言，就是预测均值和方差，DDPM作者还发现，将方差设为一个常数，只去预测均值的话，就已经可以使扩散模型生成很好的图像。</p>
+<p><strong>给U-Net中加入temporal embedding，目的是使 reverse diffusion 是一个 coarse-to-fine 的过程，让模型知道目前处于哪一步</strong>，希望在最开始先生成一些粗糙的信息，最后快结束时再生成一些细致的信息，即高频的信息（比如物体的边边角角）。损失函数就是：，就是U-Net网络，t是temporal embedding，是前向过程中添加的噪声，是已知的，因此可以拿来当作Ground truth，目的是希望U-Net在每一步预测的噪声与前向过程中的相同。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110183935982.png" alt="image.png"></p>
+<p>DDPM与VAE其实是有相似之处，比如DDPM 也可以看做的一个 encoder-decoder 结构，分别对应forward、reverse的过程。但他们也有不同，如下：</p>
+<ul>
+<li><p>DDPM的前向过程是固定的，而VAE的encoder是学习的；</p>
+</li>
+<li><p>DDPM的每一步的特征维度都是相同的，而VAE的bottle neck的维度是比输入小很多的。</p>
+</li>
+<li><p>扩散模型有 step 的概念，有很多步；VAE没有；</p>
+</li>
+</ul>
+<p>在DDPM 证明了扩散模型可以work很好之后，后续出现了很多工作，比如2021年OpenAI的这篇论文<strong>《Diffusion Models Beat GANs on Image Synthesis》</strong>。在这篇论文出现之前扩散模型生成的图像已经很逼真了，但是在各项指标上还比不过GAN，然后这篇论文提出了一个Classifier guidance方法来引导模型生成图片，使得生成的效果更好，并且只做25次采样即可实现。</p>
+<p>Classifier guided diffusion的意思是：<strong>在训练diffusion的同时，再去训练一个图片分类器</strong>(classifier，一般是在ImageNet的加了noise的图片上训练)。这个classifier的作用是：有了后，就可以丢给classifier计算一个类别损失，也就是计算出了一个梯度来辅助U-Net的训练过程。这个梯度中暗含了中是否有这个物体，或者说当前的这个物体真不真实的信息，以此来告诉U-Net要在生成的图片中在颜色、纹理等要跟真实的物体匹配上。</p>
+<p>这个操作的核心思想是利用梯度来引导diffusion的生成，它牺牲了一定的diversity，来换取生成图片的逼真性。这种思想提出来之后，后续有人思考不用classifier来当作引导信号，而是用CLIP来进行引导，这样文本和图像就可以联系起来了，不再用梯度，而是用文本来引导引导diffusion的采样和生成。所有的引导都是目标函数中的y，也就是输入不只是和t，同时还有一个condition（y），至于是什么就看你往里加入什么。</p>
+<p>但是Classifier guided diffusion这类方法也有一个缺陷，就是：必须用另外一个模型来进行guidance，要么是pre-trained，要么是再训练一个，这样的话成本较高且不可控。因此就出现了后续的Classifier free guidance方法，GLIDE、DALLE·2、Imagen都是基于这类方法的思想。Classifier free guidance方法不想用之前的那种guidance，而是希望找到另外一种指导信号。它的思想就是在训练时同时做两个输出，一个有条件的，一个没条件的，最后就会知道二者的差距是多少，这样在测试时，在没有条件引导的情况下，也可以推测出有条件引导的输出是多少。但是这种训练成本也很高，同时要有两个输出。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110183944101.png" alt="image.png"></p>
+<p>GLIDE采用了classifier free guidance的扩散模型，可以实现很好的图像生成。OpenAI也因此摒弃了DALL·E用VQ-VAE的思路，在DALL·E 2中转而使用扩散模型来进行图像生成，也就是基于GLIDE，并在其之前加入了prior网络，以及一些层级生成的技巧等。</p>
+<h1 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h1><p><strong>像CLIP这些对比学习的模型已经可以学习到很稳健的图像特征，既能捕捉语义信息，又能捕捉风格信息</strong>。这种良好特征只用来做分类就很可惜，因此为了借助于这种良好特征来完成图像生成任务，我们提出了一个<strong>两阶段的模型：a prior （给定一个文本，先用现成的CLIP模型生成对应的textual embedding，然后接下来用这个textual embedding生成image embedding的过程就叫做prior），and a decoder（基于image embedding生成图像）</strong>。此外，由于是text-to-image任务，因此可以基于CLIP，可以实现zero-shot。</p>
+<p>作者发现： 显式地生成图像特征的这种方式（就是先从文本生成image embedding，再将其解码为Image），可以很显著地提升生成图像的diversity（多样性）。</p>
+<h1 id="DALL·E-2-模型解读"><a href="#DALL·E-2-模型解读" class="headerlink" title="DALL·E 2 模型解读"></a>DALL·E 2 模型解读</h1><h2 id="总览"><a href="#总览" class="headerlink" title="总览"></a>总览</h2><p>对于一段话，DALLE 2是能够捕捉其中的层次关系，并在画图时也考虑进来的。比如给出下面这句话，DALLE 2 生成的图片，是真的把熊画在滑板之上了，也就是说捕捉到并解码出目标之间的关联关系的。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110183953965.png" alt="image.png"></p>
+<p>在DALLE 2这篇论文里，CLIP这个模型是锁住的，只是被用，没有被训练。DALLE 2模型的整体框架如下，虚线之上是CLIP 模型，虚线之下才是DALLE 2模型。unCLIP是指：CLIP的目的是从文本、图像中获取特征，本文的方法是为了从特征中还原出图像，因此叫unCLIP。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110184000723.png" alt="image.png"></p>
+<p>DALLE 2的训练数据是图像文本对(x, y)，过程分以下两个阶段：</p>
+<ul>
+<li><p><strong>Prior阶段</strong>：<strong>对于一个文本x，经由fixed CLIP可以产生一个texual embedding（蓝色）</strong>和Image embedding（红色），产生的texual embedding经过 autoregressive或difussion的prior模型生成Image embedding，这一个阶段<strong>用刚才CLIP中生成的Image embedding对其做监督。</strong>这样做的目的是：等在做推理的时候，即使只有文本特征，也可以生成比较好的图像特征。</p>
+</li>
+<li><p><strong>Decoder阶段</strong>：用于从Image embedding中解码出图像。</p>
+</li>
+</ul>
+<p>如果DALLE 2的输入是图像的话，会通过CLIP生成文本特征，然后再经过prior、decoder生成图像。</p>
+<h2 id="训练过程"><a href="#训练过程" class="headerlink" title="训练过程"></a>训练过程</h2><p>DALL·E 2是将其子模块分开训练的，最后将这些训练好的子模块拼接在一起，最后实现由文本生成图像的功能。</p>
+<p><strong>1. 训练CLIP，使其能够编码文本和对应图像</strong></p>
+<p>这一步是与CLIP模型的训练方式完全一样的，目的是能够得到训练好的text encoder和img encoder。这么一来，文本和图像都可以被编码到相应的<a target="_blank" rel="noopener" href="https://zhida.zhihu.com/search?content_id=205119088&content_type=Article&match_order=1&q=%E7%89%B9%E5%BE%81%E7%A9%BA%E9%97%B4&zhida_source=entity">特征空间</a>。对应上图中的虚线以上部分。</p>
+<p><strong>2. 训练prior，使文本编码可以转换为图像编码</strong></p>
+<p>论文中对于该步骤作用的解释为：</p>
+<blockquote>
+<p>A prior $P(z_i|y)$that produces CLIP image embeddings$z_i$conditioned on captions$y$.</p>
+</blockquote>
+<p>实际的训练过程为：将CLIP中训练好的text encoder拿出来，输入文本$y$，得到文本编码$z_t$。同样的，将CLIP中训练好的img encoder拿出来，输入图像$x$得到图像编码$z_i$。我们希望prior能从$z_t$获取相对应的$z_i$。假设$z_t$经过prior输出的特征为$z_i’$，那么我们自然希望$z_i’$与$z_i$越接近越好，这样来更新我们的prior模块。最终训练好的prior，将与CLIP的text encoder串联起来，它们可以根据我们的输入文本$y$生成对应的图像编码特征$z_i$了。关于具体如何训练prior，可以精度一下原文，作者使用了<a target="_blank" rel="noopener" href="https://zhida.zhihu.com/search?content_id=205119088&content_type=Article&match_order=1&q=%E4%B8%BB%E6%88%90%E5%88%86%E5%88%86%E6%9E%90%E6%B3%95&zhida_source=entity">主成分分析法</a>PCA来提升训练的稳定性。</p>
+<p>在DALL·E 2 模型中，作者团队尝试了两种先验模型：自回归式Autoregressive (AR) prior 和扩散模型Diffusion prior。实验效果上发现两种模型的性能相似，而因为扩散模型效率较高，因此最终选择了扩散模型作为prior模块。</p>
+<p><strong>3. 训练decoder生成最终的图像</strong></p>
+<p>论文中对于该步骤作用的解释为：</p>
+<blockquote>
+<p>A decoder$P(x|z_i,y)$ that produces images $x$ conditioned on CLIP image embeddings $z_i$ (and optionally text captions $y$ ).</p>
+</blockquote>
+<p>也就是说我们要训练decoder模块，从<a target="_blank" rel="noopener" href="https://zhida.zhihu.com/search?content_id=205119088&content_type=Article&match_order=1&q=%E5%9B%BE%E5%83%8F%E7%89%B9%E5%BE%81&zhida_source=entity">图像特征</a>﻿$z_i$还原出真实的图像$x$，如下图左边所示。这个过程与<a target="_blank" rel="noopener" href="https://zhida.zhihu.com/search?content_id=205119088&content_type=Article&match_order=1&q=%E8%87%AA%E7%BC%96%E7%A0%81%E5%99%A8&zhida_source=entity">自编码器</a>类似，从中间特征层还原出输入图像，但又不完全一样。我们需要生成出的图像，只需要保持原始图像的显著特征就可以了，这样以便于多样化生成，例如下图右边的示例。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110184009679.png" alt="image.png"></p>
+<p>DALL-E 2使用的是改进的GLIDE模型 [2]。这个模型可以根据CLIP图像编码的$z_i$，还原出具有相同与$x$有相同语义，而又不是与$x$完全一致的图像。</p>
+<h2 id="推理过程（由文本生成图像过程）"><a href="#推理过程（由文本生成图像过程）" class="headerlink" title="推理过程（由文本生成图像过程）"></a>推理过程（由文本生成图像过程）</h2><p>经过以上三个步骤的训练，已经可以完成DALL·E 2预训练模型的搭建了。我们这事丢掉CLIP中的img encoder，留下CLIP中的text encoder，以及新训练好的prior和decoder。这么一来流程自然很清晰了：由text encoder将文本进行编码，再由prior将文本<a target="_blank" rel="noopener" href="https://zhida.zhihu.com/search?content_id=205119088&content_type=Article&match_order=1&q=%E7%BC%96%E7%A0%81%E8%BD%AC%E6%8D%A2&zhida_source=entity">编码转换</a>为图像编码，最后由decoder进行解码生成图像。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110184021236.png" alt="image.png"></p>
+<h1 id="应用"><a href="#应用" class="headerlink" title="应用"></a>应用</h1><p>DALL·E 2的几种应用场景：</p>
+<ul>
+<li><strong>text-to-image</strong></li>
+</ul>
+<p>DALL·E 2可以生成各式各样的沙发，变换颜色、样式、位置</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110184027705.png" alt="image.png"></p>
+<ul>
+<li><strong>image-to-image</strong></li>
+</ul>
+<p>给定一个图像，可以生成很多风格类似的图像（整体语义信息不变）：</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110184033514.png" alt="image.png"></p>
+<ul>
+<li><strong>通过对两个图像的特征做内插，生成新图像</strong></li>
+</ul>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110184039857.png" alt="image.png"></p>
+<ul>
+<li><strong>通过对两个文本的特征做内插，生成新图像</strong></li>
+</ul>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110184046392.png" alt="image.png"></p>
+<h1 id="不足"><a href="#不足" class="headerlink" title="不足"></a>不足</h1><ul>
+<li><strong>DALL-E 2不能很好的将attribute绑定到 object 上。</strong></li>
+</ul>
+<p>比如下面这个图，object就是方块，属性就是颜色。给一句话：“a red cube on top of a blue cube”，GLIDE的效果要比DALL-E 2好很多。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110184054203.png" alt="image.png"></p>
+<p>作者解释很可能是使用CLIP的原因。虽然使用CLIP后可以是图像和文本的联系更紧密，这使得更容易去做文本生成图像的任务。但是CLIP模型学习的时候，只是考虑相似性，它只是去找红方块、蓝方块来把相似性提升到最高就行了，但是CLIP模型不了解”on top of”这种东西，不了解什么叫做“上下左右”，它从头到尾都在找物体间的相似性。</p>
+<p>因此在做CLIP特征做下游任务的时候，就不能很好的区分object和其对应的attribute。</p>
+<p>此外，在对图片进行重建时，decoder会将object的attribute混淆。</p>
+<ul>
+<li><strong>直接生成文字，效果很差</strong></li>
+</ul>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110184100962.png" alt="image.png"></p>
+<p>作者解释可能是使用BPE编码的原因，这种是词根词缀编码。但可能还有其他原因。</p>
+<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><ul>
+<li><p>﻿<a target="_blank" rel="noopener" href="https://blog.csdn.net/DUDUDUTU/article/details/129438597">DALL·E 2 论文阅读笔记_dalle论文-CSDN博客</a>﻿</p>
+</li>
+<li><p>﻿<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/526438544">https://zhuanlan.zhihu.com/p/526438544</a></p>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" rel="tag"># 大模型</a>
+              <a href="/tags/%E8%AE%BA%E6%96%87%E7%B2%BE%E8%AF%BB/" rel="tag"># 论文精读</a>
+              <a href="/tags/AIGC/" rel="tag"># AIGC</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/01/10/CLIP/" rel="prev" title="CLIP">
+                  <i class="fa fa-angle-left"></i> CLIP
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2025/01/15/MOCO/" rel="next" title="MOCO">
+                  MOCO <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Ronny Lu</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">75k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">1:08</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">
+    <!--由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动 -->
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+</body>
+</html>

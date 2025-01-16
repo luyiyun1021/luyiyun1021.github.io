@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha256-5eIC48iZUHmSlSUz9XtjRyK2mzQkHScZY1WdMaoz74E=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-minimal.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"luyiyun1021.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.21.1","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="这一章节将探讨第二个CUDA优化重点，即高效利用内存子系统（memory subsystems） 内存层级结构">
+<meta property="og:type" content="article">
+<meta property="og:title" content="04 Fundamental CUDA Optimization (Part 2)">
+<meta property="og:url" content="https://luyiyun1021.github.io/2025/01/16/04-Fundamental-CUDA-Optimization-Part-2/index.html">
+<meta property="og:site_name" content="Ronny Lu&#39;s blog">
+<meta property="og:description" content="这一章节将探讨第二个CUDA优化重点，即高效利用内存子系统（memory subsystems） 内存层级结构">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163332513.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163340975.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163348818.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163354805.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163400595.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163406857.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163411994.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163422653.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163430150.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163437442.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163446716.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163453826.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163502578.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163515541.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163553301.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163600875.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163609859.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163621621.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163627802.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163633978.png">
+<meta property="article:published_time" content="2025-01-16T08:45:38.000Z">
+<meta property="article:modified_time" content="2025-01-16T08:46:03.924Z">
+<meta property="article:author" content="Ronny Lu">
+<meta property="article:tag" content="cuda">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163332513.png">
+
+
+<link rel="canonical" href="https://luyiyun1021.github.io/2025/01/16/04-Fundamental-CUDA-Optimization-Part-2/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://luyiyun1021.github.io/2025/01/16/04-Fundamental-CUDA-Optimization-Part-2/","path":"2025/01/16/04-Fundamental-CUDA-Optimization-Part-2/","title":"04 Fundamental CUDA Optimization (Part 2)"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>04 Fundamental CUDA Optimization (Part 2) | Ronny Lu's blog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<style>.darkmode--activated{--body-bg-color:#282828;--content-bg-color:#333;--card-bg-color:#555;--text-color:#ccc;--blockquote-color:#bbb;--link-color:#ccc;--link-hover-color:#eee;--brand-color:#ddd;--brand-hover-color:#ddd;--table-row-odd-bg-color:#282828;--table-row-hover-bg-color:#363636;--menu-item-bg-color:#555;--btn-default-bg:#222;--btn-default-color:#ccc;--btn-default-border-color:#555;--btn-default-hover-bg:#666;--btn-default-hover-color:#ccc;--btn-default-hover-border-color:#666;--highlight-background:#282b2e;--highlight-foreground:#a9b7c6;--highlight-gutter-background:#34393d;--highlight-gutter-foreground:#9ca9b6}.darkmode--activated img{opacity:.75}.darkmode--activated img:hover{opacity:.9}.darkmode--activated code{color:#69dbdc;background:0 0}button.darkmode-toggle{z-index:9999}.darkmode-ignore,img{display:flex!important}.beian img{display:inline-block!important}</style></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Ronny Lu's blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%86%85%E5%AD%98%E5%B1%82%E7%BA%A7%E7%BB%93%E6%9E%84"><span class="nav-number">1.</span> <span class="nav-text">内存层级结构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%A8%E5%B1%80%E5%86%85%E5%AD%98%E4%BC%98%E5%8C%96"><span class="nav-number">2.</span> <span class="nav-text">全局内存优化</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#LD-ST-%E6%93%8D%E4%BD%9C"><span class="nav-number">2.1.</span> <span class="nav-text">LD&#x2F;ST 操作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Load-Operation"><span class="nav-number">2.2.</span> <span class="nav-text">Load Operation</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%A8%E5%B1%80%E5%86%85%E5%AD%98%E4%BC%98%E5%8C%96%E5%87%86%E5%88%99"><span class="nav-number">2.3.</span> <span class="nav-text">全局内存优化准则</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%B1%E4%BA%AB%E5%86%85%E5%AD%98%E4%BC%98%E5%8C%96"><span class="nav-number">3.</span> <span class="nav-text">共享内存优化</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B1%E4%BA%AB%E5%86%85%E5%AD%98%E7%9A%84%E7%BB%93%E6%9E%84"><span class="nav-number">3.1.</span> <span class="nav-text">共享内存的结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E9%81%BF%E5%85%8D-Bank-%E5%86%B2%E7%AA%81"><span class="nav-number">3.2.</span> <span class="nav-text">如何避免 Bank 冲突</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">4.</span> <span class="nav-text">总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Ronny Lu"
+      src="/images/avatar.jpeg">
+  <p class="site-author-name" itemprop="name">Ronny Lu</p>
+  <div class="site-description" itemprop="description">Tech notes on LLM, LLM Infra, C++</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">29</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/01/16/04-Fundamental-CUDA-Optimization-Part-2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpeg">
+      <meta itemprop="name" content="Ronny Lu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ronny Lu's blog">
+      <meta itemprop="description" content="Tech notes on LLM, LLM Infra, C++">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="04 Fundamental CUDA Optimization (Part 2) | Ronny Lu's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          04 Fundamental CUDA Optimization (Part 2)
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-01-16 16:45:38 / 修改时间：16:46:03" itemprop="dateCreated datePublished" datetime="2025-01-16T16:45:38+08:00">2025-01-16</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/cuda/" itemprop="url" rel="index"><span itemprop="name">cuda</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>677</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>1 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p><strong>这一章节将探讨第二个CUDA优化重点，即高效利用内存子系统（memory subsystems）</strong></p>
+<h2 id="内存层级结构"><a href="#内存层级结构" class="headerlink" title="内存层级结构"></a>内存层级结构</h2><p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163332513.png" alt="image.png"></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163340975.png" alt="image.png"></p>
+<span id="more"></span>
+
+<p>多图方便理解</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163348818.png" alt="image.png"></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163354805.png" alt="image.png"></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163400595.png" alt="image.png"></p>
+<h2 id="全局内存优化"><a href="#全局内存优化" class="headerlink" title="全局内存优化"></a><strong>全局内存优化</strong></h2><h3 id="LD-ST-操作"><a href="#LD-ST-操作" class="headerlink" title="LD&#x2F;ST 操作"></a>LD&#x2F;ST 操作</h3><p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163406857.png" alt="image.png"></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163411994.png" alt="image.png"></p>
+<p>使用 Non-caching Load 操作的场景举例：当希望在一个线程写入数据，并使其对另一线程可见，而该线程可能运行在另一SM中时，这两个SM之间的L1缓存并不保证一致性。</p>
+<h3 id="Load-Operation"><a href="#Load-Operation" class="headerlink" title="Load Operation"></a>Load Operation</h3><p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163422653.png" alt="image.png"></p>
+<ul>
+<li><p>内存操作是按warp为单位发出的。</p>
+</li>
+<li><p>warp中的每个线程可能正在为该加载操作请求不同的内存地址</p>
+</li>
+<li><p>内存控制器的作用是，一旦指令发出，它將获取那些多达32个地址的模式，并确定需要哪些行或段。</p>
+</li>
+<li><p>从DRAM请求的数据并非单个字节、浮点数或其他类似形式，而是一个内存事务 (memory transaction)，所请求或存储的单位为32字节的段</p>
+</li>
+</ul>
+<p><strong>四种 Caching Load 的情况</strong></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163430150.png" alt="image.png"></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163437442.png" alt="image.png"></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163446716.png" alt="image.png"></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163453826.png" alt="image.png"></p>
+<p><strong>Non-Caching Load 的情况：由于cache line 大小从128字节变为32字节，增加了利用率</strong></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163502578.png" alt="image.png"></p>
+<h3 id="全局内存优化准则"><a href="#全局内存优化准则" class="headerlink" title="全局内存优化准则"></a><strong>全局内存优化准则</strong></h3><p>基本思路是，我们希望一个 warp 尽可能在连续区域内进行访问</p>
+<p>对于memory bound的代码，尽可能提高并发数来使总线利用率饱和</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163515541.png" alt="image.png"></p>
+<h2 id="共享内存优化"><a href="#共享内存优化" class="headerlink" title="共享内存优化"></a>共享内存优化</h2><p>共享内存是每个SM的资源，其功能一是提升性能，功能二是为线程块内的线程间通信提供了一种方式</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163553301.png" alt="image.png"></p>
+<h3 id="共享内存的结构"><a href="#共享内存的结构" class="headerlink" title="共享内存的结构"></a>共享内存的结构</h3><p>可以将共享内存视为一个二维的内存数组，列是bank（存储体），每个bank的宽度是4 bytes，数组的行数是共享内存的大小（比如48KB）&#x2F;每行的大小（128B</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163600875.png" alt="image.png"></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163609859.png" alt="image.png"></p>
+<p>最优访问（行式访问）：从 Bank 0-31各取4 byte</p>
+<p>最差访问（列式访问）：从全部从 Bank 0 访问，完全串行化</p>
+<h3 id="如何避免-Bank-冲突"><a href="#如何避免-Bank-冲突" class="headerlink" title="如何避免 Bank 冲突"></a>如何避免 Bank 冲突</h3><p><strong>在不改变物理结构的情况下，我们可以改变逻辑数组的结构，如果我们将32列的二维数组拓展为33列，则可以利用到共享内存的最佳性能</strong></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163621621.png" alt="image.png"></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163627802.png" alt="image.png"></p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163633978.png" alt="image.png"></p>
+<ul>
+<li><p>全局内存具有一种倾向于合并的访问模式，为了最大限度地提高全局内存的吞吐量，需使同一个 wrap 内线程的访问地址尽可能连续，相邻，成组。</p>
+</li>
+<li><p>当我们使用共享内存时，需要留意“bank冲突“</p>
+</li>
+<li><p>共享内存相较于全局内存在进行分散访问时，具有更多的灵活性</p>
+</li>
+</ul>
+<p>04-CUDA-Fundamental-Optimization-Part-2.pdf</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/cuda/" rel="tag"># cuda</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/01/16/03-Fundamental-CUDA-Optimization-Part-1/" rel="prev" title="03 Fundamental CUDA Optimization (Part 1)">
+                  <i class="fa fa-angle-left"></i> 03 Fundamental CUDA Optimization (Part 1)
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2025/01/16/05-Atomics-Reductions-and-Warp-Shuffle/" rel="next" title="05 Atomics, Reductions, and Warp Shuffle">
+                  05 Atomics, Reductions, and Warp Shuffle <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Ronny Lu</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">75k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">1:08</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">
+    <!--由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动 -->
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+</body>
+</html>

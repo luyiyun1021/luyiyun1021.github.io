@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha256-5eIC48iZUHmSlSUz9XtjRyK2mzQkHScZY1WdMaoz74E=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-minimal.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"luyiyun1021.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.21.1","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="课程链接﻿【Nvidia官方课程】CUDA入门课【中英字幕】_哔哩哔哩_bilibili﻿﻿https:&#x2F;&#x2F;www.olcf.ornl.gov&#x2F;cuda-training-series&#x2F; CUDA Intro异构计算  GPU加速">
+<meta property="og:type" content="article">
+<meta property="og:title" content="01 CUDA C Basics">
+<meta property="og:url" content="https://luyiyun1021.github.io/2025/01/16/01-CUDA-C-Basics/index.html">
+<meta property="og:site_name" content="Ronny Lu&#39;s blog">
+<meta property="og:description" content="课程链接﻿【Nvidia官方课程】CUDA入门课【中英字幕】_哔哩哔哩_bilibili﻿﻿https:&#x2F;&#x2F;www.olcf.ornl.gov&#x2F;cuda-training-series&#x2F; CUDA Intro异构计算  GPU加速">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116162334293.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116162343989.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116162352994.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116162400442.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116162407419.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116162415839.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116162422783.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116162432922.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116162445545.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116162455671.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116162503572.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116162516907.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116162525426.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116162533645.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116162542386.png">
+<meta property="article:published_time" content="2025-01-16T08:41:38.000Z">
+<meta property="article:modified_time" content="2025-01-16T08:44:09.708Z">
+<meta property="article:author" content="Ronny Lu">
+<meta property="article:tag" content="cuda">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116162334293.png">
+
+
+<link rel="canonical" href="https://luyiyun1021.github.io/2025/01/16/01-CUDA-C-Basics/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://luyiyun1021.github.io/2025/01/16/01-CUDA-C-Basics/","path":"2025/01/16/01-CUDA-C-Basics/","title":"01 CUDA C Basics"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>01 CUDA C Basics | Ronny Lu's blog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<style>.darkmode--activated{--body-bg-color:#282828;--content-bg-color:#333;--card-bg-color:#555;--text-color:#ccc;--blockquote-color:#bbb;--link-color:#ccc;--link-hover-color:#eee;--brand-color:#ddd;--brand-hover-color:#ddd;--table-row-odd-bg-color:#282828;--table-row-hover-bg-color:#363636;--menu-item-bg-color:#555;--btn-default-bg:#222;--btn-default-color:#ccc;--btn-default-border-color:#555;--btn-default-hover-bg:#666;--btn-default-hover-color:#ccc;--btn-default-hover-border-color:#666;--highlight-background:#282b2e;--highlight-foreground:#a9b7c6;--highlight-gutter-background:#34393d;--highlight-gutter-foreground:#9ca9b6}.darkmode--activated img{opacity:.75}.darkmode--activated img:hover{opacity:.9}.darkmode--activated code{color:#69dbdc;background:0 0}button.darkmode-toggle{z-index:9999}.darkmode-ignore,img{display:flex!important}.beian img{display:inline-block!important}</style></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Ronny Lu's blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AF%BE%E7%A8%8B%E9%93%BE%E6%8E%A5"><span class="nav-number">1.</span> <span class="nav-text">课程链接</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CUDA-Intro"><span class="nav-number">2.</span> <span class="nav-text">CUDA Intro</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E4%B8%80%E4%B8%AAcuda%E7%A8%8B%E5%BA%8F%EF%BC%9A1-D-%E5%90%91%E9%87%8F%E5%8A%A0%E6%B3%95"><span class="nav-number">3.</span> <span class="nav-text">第一个cuda程序：1-D 向量加法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B1%82%E6%AC%A1%E7%BB%93%E6%9E%84"><span class="nav-number">3.1.</span> <span class="nav-text">层次结构</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Ronny Lu"
+      src="/images/avatar.jpeg">
+  <p class="site-author-name" itemprop="name">Ronny Lu</p>
+  <div class="site-description" itemprop="description">Tech notes on LLM, LLM Infra, C++</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">29</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/01/16/01-CUDA-C-Basics/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpeg">
+      <meta itemprop="name" content="Ronny Lu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ronny Lu's blog">
+      <meta itemprop="description" content="Tech notes on LLM, LLM Infra, C++">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="01 CUDA C Basics | Ronny Lu's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          01 CUDA C Basics
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-01-16 16:41:38 / 修改时间：16:44:09" itemprop="dateCreated datePublished" datetime="2025-01-16T16:41:38+08:00">2025-01-16</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/cuda/" itemprop="url" rel="index"><span itemprop="name">cuda</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>848</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>1 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h2 id="课程链接"><a href="#课程链接" class="headerlink" title="课程链接"></a>课程链接</h2><p>﻿<a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1JJ4m1P7xW">【Nvidia官方课程】CUDA入门课【中英字幕】_哔哩哔哩_bilibili</a>﻿<br>﻿<a target="_blank" rel="noopener" href="https://www.olcf.ornl.gov/cuda-training-series/">https://www.olcf.ornl.gov/cuda-training-series/</a></p>
+<h2 id="CUDA-Intro"><a href="#CUDA-Intro" class="headerlink" title="CUDA Intro"></a>CUDA Intro</h2><p><strong>异构计算</strong></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116162334293.png" alt="image.png"></p>
+<p>GPU加速</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116162343989.png" alt="image.png"></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116162352994.png" alt="image.png"></p>
+<span id="more"></span>
+
+<h2 id="第一个cuda程序：1-D-向量加法"><a href="#第一个cuda程序：1-D-向量加法" class="headerlink" title="第一个cuda程序：1-D 向量加法"></a><strong>第一个cuda程序：1-D 向量加法</strong></h2><p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116162400442.png" alt="image.png"></p>
+<p>关键词<code>__global__</code>告诉<code>nvcc</code>编译器这个函数编译成能在gpu上运行的代码，其他函数用<code>gcc</code>等编译</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116162407419.png" alt="image.png"></p>
+<p>gpu函数调用方法</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116162415839.png" alt="image.png"></p>
+<p>内存管理</p>
+<p>使用<code>cudaMalloc</code>创建的指针仅能在gpu中解引用，使用<code>malloc</code>创建的指针仅能在cpu中解引用</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116162422783.png" alt="image.png"></p>
+<h3 id="层次结构"><a href="#层次结构" class="headerlink" title="层次结构"></a>层次结构</h3><p>GPU 层次结构：Thread, Block 以及 Grid：</p>
+<ul>
+<li><p>Thread 是最基本的执行单位，<strong>每一个 Thread 都会把你写的 CUDA Kernel 从头到尾完整地执行一遍</strong>。</p>
+</li>
+<li><p>每一个 Block 中包含若干个 Thread，每一个 Thread 都会有一个<code>threadIdx</code>，代表这个 Thread 在它所在的 Block 中的 id。可以使用<code>blockDim</code>来获取 Block 中有多少个 Thread。</p>
+</li>
+<li><p>每一个 Grid 包含若干个 Block，每一个 Thread 也有一个<code>blockIdx</code>，代表这个 Thread 所在的 Block 在 Grid 中的 id。可以使用<code>gridDim</code>来获取 Grid 中有多少个 Block。每一次启动 CUDA Kernel 时都会生成一个 Grid（某种意义上可以理解为一个 “执行上下文”。</p>
+</li>
+</ul>
+<p>每一个cuda线程都有自己的<strong>控制流、PC、寄存器、堆栈</strong>，能够访问GPU任意全局内存地址</p>
+<p>threadIdx.{x,y,z}<br>blockIdx.{x,y}</p>
+<p>Kernel上的两层线程组织结构如下(2-dim)</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116162432922.png" alt="image.png"></p>
+<p>并行运行 <code>block</code>﻿</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116162445545.png" alt="image.png"></p>
+<p>&lt;&lt;&lt;&gt;&gt;&gt; 表示 &lt;&lt;&lt;每个 Grid 中有多少 Block, 每个 Block 中有多少 Thread&gt;&gt;&gt;</p>
+<p>向量加法函数<code>add</code>编写方法</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116162455671.png" alt="image.png"></p>
+<p>内存分配过程</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116162503572.png" alt="image.png"></p>
+<blockquote>
+<p>声明<code>int *a</code>但未初始化时</p>
+<ul>
+<li><p>﻿<code>a</code> 的值是未定义的，因为它指向一个随机的内存地址。</p>
+</li>
+<li><p>﻿<code>*a</code> 的值是未定义的，访问它可能导致程序崩溃。</p>
+</li>
+<li><p>﻿<code>&amp;a</code> 的值是指针变量 <code>a</code> 的内存地址，它是定义明确的。</p>
+</li>
+</ul>
+</blockquote>
+<p>把数据复制到gpu -&gt; 在gpu上并行计算 -&gt; 把数据复制回cpu -&gt; 释放内存</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116162516907.png" alt="image.png"></p>
+<p>尽管cuda宣称符合c++14的标准，但它并未将标准库纳入其中，这意味着 std:: 开头的函数不被支持</p>
+<p>﻿<code>thread</code>﻿</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116162525426.png" alt="image.png"></p>
+<p>全局 index</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116162533645.png" alt="image.png"></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116162542386.png" alt="image.png"></p>
+<p>一个线程需要两个内置的坐标变量<code>(blockIdx,threadIdx)</code>来唯一标识，都是<code>dim3</code>变量。</p>
+<p>关于<code>dim3</code>的结构类型</p>
+<ul>
+<li><p>﻿<code>dim3</code>是基于<code>uint3</code>定义的矢量类型，相当于由3个<code>unsigned int</code>型组成的结构体。<code>uint3</code>类型有三个数据成员<code>unsigned int x; unsigned int y; unsigned int z;</code>﻿</p>
+</li>
+<li><p>可使用于一维、二维或三维的索引来标识线程，构成一维、二维或三维线程块(block)。</p>
+</li>
+<li><p>相关的几个内置变量</p>
+<ul>
+<li><p>﻿<code>threadIdx</code>，顾名思义获取线程<code>thread</code>的ID索引；如果线程是一维的那么就取<code>threadIdx.x</code>，二维的还可以多取到一个值<code>threadIdx.y</code>，以此类推到三维<code>threadIdx.z</code>。</p>
+</li>
+<li><p>﻿<code>blockIdx</code>，线程块的ID索引；同样有<code>blockIdx.x</code>，<code>blockIdx.y</code>，<code>blockIdx.z</code>。</p>
+</li>
+<li><p>﻿<code>blockDim</code>，线程块的维度，同样有<code>blockDim.x</code>，<code>blockDim.y</code>，<code>blockDim.z</code>。</p>
+</li>
+<li><p>﻿<code>gridDim</code>，线程格的维度，同样有<code>gridDim.x</code>，<code>gridDim.y</code>，<code>gridDim.z</code>。</p>
+</li>
+</ul>
+</li>
+<li><p>对于一维的<code>block</code>，线程的<code>threadID = threadIdx.x</code>﻿</p>
+</li>
+<li><p>对于大小为<code>(blockDim.x, blockDim.y)</code>的二维<code>block</code>﻿</p>
+<ul>
+<li><p>﻿<code>int i = blockIdx.x * blockDim.x + threadIdx.x;</code>﻿</p>
+</li>
+<li><p>﻿<code>int j = blockIdx.y * blockDim.y + threadIdx.y;</code></p>
+</li>
+</ul>
+<p>﻿
+      </p>
+</li>
+<li><p>对于大小为<code>(blockDim.x, blockDim.y, blockDim.z)</code>的三维<code>block</code>，线程的<code>threadID = threadIdx.x+threadIdx.y*blockDim.x+threadIdx.z*blockDim.x*blockDim.y</code>﻿</p>
+</li>
+<li><p>对于计算线程索引偏移增量为已启动线程的总数，如<code>stride = blockDim.x * gridDim.x; threadId += stride</code></p>
+</li>
+</ul>
+<p>﻿</p>
+<p>01-CUDA-C-Basics.pdf</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/cuda/" rel="tag"># cuda</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/01/16/%E5%A4%9A%E6%A8%A1%E6%80%81%E6%80%BB%E7%BB%93/" rel="prev" title="多模态总结">
+                  <i class="fa fa-angle-left"></i> 多模态总结
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2025/01/16/02-CUDA-Shared-Memory/" rel="next" title="02 CUDA Shared Memory">
+                  02 CUDA Shared Memory <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Ronny Lu</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">75k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">1:08</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">
+    <!--由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动 -->
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+</body>
+</html>

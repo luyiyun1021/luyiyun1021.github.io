@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha256-5eIC48iZUHmSlSUz9XtjRyK2mzQkHScZY1WdMaoz74E=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-minimal.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"luyiyun1021.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.21.1","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="VIT 是什么在计算机视觉领域中，多数算法都是保持CNN整体结构不变，在CNN中增加attention模块或者使用attention模块替换CNN中的某些部分。有研究者提出，没有必要总是依赖于CNN。因此，作者提出ViT (Vision Transformer) 算法，仅仅使用Transformer结构也能够在图像分类任务中表现很好。 受到NLP领域中Transformer成功应用的启发，ViT算">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ViT (Vision Transformer)">
+<meta property="og:url" content="https://luyiyun1021.github.io/2025/01/10/ViT-Vision-Transformer/index.html">
+<meta property="og:site_name" content="Ronny Lu&#39;s blog">
+<meta property="og:description" content="VIT 是什么在计算机视觉领域中，多数算法都是保持CNN整体结构不变，在CNN中增加attention模块或者使用attention模块替换CNN中的某些部分。有研究者提出，没有必要总是依赖于CNN。因此，作者提出ViT (Vision Transformer) 算法，仅仅使用Transformer结构也能够在图像分类任务中表现很好。 受到NLP领域中Transformer成功应用的启发，ViT算">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/18f056b695693c40b440e3ba9c368e07%20(1).gif">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110181841575.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110181859449.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110181908858.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110181919268.png">
+<meta property="article:published_time" content="2025-01-10T10:19:54.000Z">
+<meta property="article:modified_time" content="2025-01-10T10:48:02.173Z">
+<meta property="article:author" content="Ronny Lu">
+<meta property="article:tag" content="大模型">
+<meta property="article:tag" content="论文精读">
+<meta property="article:tag" content="cv">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/18f056b695693c40b440e3ba9c368e07%20(1).gif">
+
+
+<link rel="canonical" href="https://luyiyun1021.github.io/2025/01/10/ViT-Vision-Transformer/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://luyiyun1021.github.io/2025/01/10/ViT-Vision-Transformer/","path":"2025/01/10/ViT-Vision-Transformer/","title":"ViT (Vision Transformer)"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>ViT (Vision Transformer) | Ronny Lu's blog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<style>.darkmode--activated{--body-bg-color:#282828;--content-bg-color:#333;--card-bg-color:#555;--text-color:#ccc;--blockquote-color:#bbb;--link-color:#ccc;--link-hover-color:#eee;--brand-color:#ddd;--brand-hover-color:#ddd;--table-row-odd-bg-color:#282828;--table-row-hover-bg-color:#363636;--menu-item-bg-color:#555;--btn-default-bg:#222;--btn-default-color:#ccc;--btn-default-border-color:#555;--btn-default-hover-bg:#666;--btn-default-hover-color:#ccc;--btn-default-hover-border-color:#666;--highlight-background:#282b2e;--highlight-foreground:#a9b7c6;--highlight-gutter-background:#34393d;--highlight-gutter-foreground:#9ca9b6}.darkmode--activated img{opacity:.75}.darkmode--activated img:hover{opacity:.9}.darkmode--activated code{color:#69dbdc;background:0 0}button.darkmode-toggle{z-index:9999}.darkmode-ignore,img{display:flex!important}.beian img{display:inline-block!important}</style></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Ronny Lu's blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#VIT-%E6%98%AF%E4%BB%80%E4%B9%88"><span class="nav-number">1.</span> <span class="nav-text">VIT 是什么</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A8%A1%E5%9E%8B%E7%BB%93%E6%9E%84%E4%B8%8E%E5%AE%9E%E7%8E%B0"><span class="nav-number">2.</span> <span class="nav-text">模型结构与实现</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9B%BE%E5%83%8F%E5%88%86%E5%9D%97%E5%B5%8C%E5%85%A5"><span class="nav-number">2.1.</span> <span class="nav-text">图像分块嵌入</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A4%9A%E5%A4%B4%E6%B3%A8%E6%84%8F%E5%8A%9B"><span class="nav-number">2.2.</span> <span class="nav-text">多头注意力</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#MLP-%E5%A4%B4"><span class="nav-number">2.3.</span> <span class="nav-text">MLP 头</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%A8%E8%AE%BA"><span class="nav-number">3.</span> <span class="nav-text">讨论</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Ronny Lu"
+      src="/images/avatar.jpeg">
+  <p class="site-author-name" itemprop="name">Ronny Lu</p>
+  <div class="site-description" itemprop="description">Tech notes on LLM, LLM Infra, C++</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">29</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/01/10/ViT-Vision-Transformer/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpeg">
+      <meta itemprop="name" content="Ronny Lu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ronny Lu's blog">
+      <meta itemprop="description" content="Tech notes on LLM, LLM Infra, C++">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="ViT (Vision Transformer) | Ronny Lu's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          ViT (Vision Transformer)
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-01-10 18:19:54 / 修改时间：18:48:02" itemprop="dateCreated datePublished" datetime="2025-01-10T18:19:54+08:00">2025-01-10</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">大模型</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E8%AE%BA%E6%96%87%E7%B2%BE%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">论文精读</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E8%AE%BA%E6%96%87%E7%B2%BE%E8%AF%BB/cv/" itemprop="url" rel="index"><span itemprop="name">cv</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>1.8k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>2 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h2 id="VIT-是什么"><a href="#VIT-是什么" class="headerlink" title="VIT 是什么"></a>VIT 是什么</h2><p>在计算机视觉领域中，多数算法都是保持CNN整体结构不变，在CNN中增加attention模块或者使用attention模块替换CNN中的某些部分。有研究者提出，没有必要总是依赖于CNN。因此，作者提出<strong>ViT (Vision Transformer)</strong> 算法，仅仅使用Transformer结构也能够在图像分类任务中表现很好。</p>
+<p>受到NLP领域中Transformer成功应用的启发，ViT算法中尝试将标准的Transformer结构直接应用于图像，并对整个图像分类流程进行最少的修改。具体来讲，ViT算法中，会将整幅图像拆分成小图像块，然后把这些小图像块的线性嵌入序列作为Transformer的输入送入网络，然后使用监督学习的方式进行图像分类的训练。</p>
+<span id="more"></span>
+<p>该算法在中等规模（例如ImageNet）以及大规模（例如ImageNet-21K、JFT-300M）数据集上进行了实验验证，发现：</p>
+<ul>
+<li><p>Transformer相较于CNN结构，缺少一定的平移不变性和局部感知性，因此在数据量不充分时，很难达到同等的效果。具体表现为使用中等规模的ImageNet训练的Transformer会比ResNet在精度上低几个百分点。</p>
+</li>
+<li><p>当有大量的训练样本时，结果则会发生改变。使用大规模数据集进行预训练后，再使用迁移学习的方式应用到其他数据集上，可以达到或超越当前的SOTA水平。</p>
+</li>
+</ul>
+<h2 id="模型结构与实现"><a href="#模型结构与实现" class="headerlink" title="模型结构与实现"></a>模型结构与实现</h2><p>我们先结合下面的动图来粗略地分析一下ViT的工作流程，如下：<br><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/18f056b695693c40b440e3ba9c368e07%20(1).gif"></p>
+<ul>
+<li><p>将一张图片分成patches</p>
+</li>
+<li><p>将patches铺平</p>
+</li>
+<li><p>将铺平后的patches的线性映射到更低维的空间</p>
+</li>
+<li><p>添加位置embedding编码信息</p>
+</li>
+<li><p>将图像序列数据送入标准Transformer encoder中去</p>
+</li>
+<li><p>在较大的数据集上预训练</p>
+</li>
+<li><p>在下游数据集上微调用于图像分类</p>
+</li>
+</ul>
+<h3 id="图像分块嵌入"><a href="#图像分块嵌入" class="headerlink" title="图像分块嵌入"></a>图像分块嵌入</h3><p>  <img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110181841575.png" alt="image.png"></p>
+<p>考虑到在Transformer结构中，输入是一个二维的矩阵，矩阵的形状可以表示为$(N,D)$，其中$N$是sequence的长度，而$D$是sequence中每个向量的维度。因此，在ViT算法中，首先需要设法将$H×W×C (224 \times 224 \times 3)$的三维图像转化为$(N,D)$的二维输入。</p>
+<p>ViT中的具体实现方式为：将$H×W×C$的图像，变为一个$N×(P^2∗C) &#x3D; 196 \times (16^2 * 3)$的序列。这个序列可以看作是一系列展平的图像块，也就是将图像切分成小块后，再将其展平。该序列中一共包含了$N&#x3D;HW&#x2F;P^2 &#x3D; 196$个图像块，每个图像块的维度则是$P^2∗C &#x3D; 16^2 * 3$。其中$P$是图像块的大小，$C$是通道数量。经过如上变换，就可以将$N$视为sequence的长度了。</p>
+<p>但是，此时每个图像块的维度是$(P^2∗C)$，而我们实际需要的向量维度是$D$，因此我们还需要对图像块进行 Embedding。这里 Embedding 的方式非常简单，只需要对每个$(P^2∗C)$的图像块做一个线性变换，将维度压缩为$D&#x3D;768$即可。</p>
+<p>参考了BERT，在头部插入了维度为768的一个表征分类结果的 embedding，因此最后的输入维度为 197 * 768</p>
+<h3 id="多头注意力"><a href="#多头注意力" class="headerlink" title="多头注意力"></a>多头注意力</h3><p>将图像转化为 N×(P2∗C) 的序列后，就可以将其输入到 Transformer 结构中进行特征提取了，如图所示。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110181859449.png" alt="image.png"></p>
+<p>Transformer 结构中最重要的结构就是 Multi-head Attention，即多头注意力结构。具有2个head的 Multi-head Attention 结构如图所示。输入$a^i$经过转移矩阵，并切分生成 $q^{(i,1)}、q^{(i,2)}、k^{(i,1)}、k^{(i,2)}、v^{(i,1)}、v^{(i,2)}$，然后 $q^{(i,1)}$与 $k^{(i,1)}$做 attention，得到权重向量 $\alpha$，将 $\alpha$与 $v^{(i,1)}$进行加权求和，得到最终的$b^{(i,1)}$，同理可以得到$b^{(i,2)}$。接着将它们拼接起来，通过一个线性层进行处理，得到最终的结果。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110181908858.png" alt="image.png"></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110181919268.png" alt="image.png"></p>
+<h3 id="MLP-头"><a href="#MLP-头" class="headerlink" title="MLP 头"></a>MLP 头</h3><p>上面通过Transformer Encoder后输出的shape和输入的shape是保持不变的，以ViT-B&#x2F;16为例，输入的是[197, 768]输出的还是[197, 768]。这里我们只是需要分类的信息，所以我们只需要提取出[class]token生成的对应结果就行，即[197, 768]中抽取出[class]token对应的[1, 768]。接着我们通过MLP Head得到我们最终的分类结果。</p>
+<h2 id="讨论"><a href="#讨论" class="headerlink" title="讨论"></a>讨论</h2><ul>
+<li>为什么小数据时CNN效果要好于VIT，大数据时VIT效果更好一些？</li>
+</ul>
+<p>传统的CNN卷积神经网络有很强的inductive biases（归纳偏置），是根据图像的本质而设计的一种网络，比如卷积核的平移不变性和局部性。因此在小数据时，VIT学不到这些，自然效果就不好，但是数据多起来后，就不太需要针对图像特意去设计这些小tips了。</p>
+<ul>
+<li>混合架构</li>
+</ul>
+<p>作为原始图像图块的替代，可以从CNN的特征图形成输入序列。在该混合模型中，将patch embedding投影应用于从CNN特征图提取的图块。（即，将图像块先经过CNN网络，然后将CNN的网络输出的特征矩阵输进Transformer中，这样也是可以的，论文有尝试过）</p>
+<ul>
+<li>位置信息</li>
+</ul>
+<p>Transformer和CNN不同，需要position embedding来编码tokens的位置信息，这主要是因为self-attention是permutation-invariant，即打乱sequence里的tokens的顺序并不会改变结果。如果不给模型提供patch的位置信息，那么模型就需要通过patchs的语义来学习拼图，这就额外增加了学习成本。但是CNN是滑动的，是本身就具有位置信息的。所以在使用VIT时要手动加上位置信息。论文中试验过使用1-D和2-D的位置信息效果差不多。</p>
+<ul>
+<li>微调和更高的分辨率</li>
+</ul>
+<p>通常，我们在大型数据集上对ViT进行预训练，并微调到（较小的）下游任务。为此，我们删除了预训练的预测head，并附加了一个零初始化的D*K的前馈层，其中K是下游类的数量。以比预训练更高的分辨率进行微调通常是有益的。当提供更高分辨率的图像时，我们将图块大小保持不变，这会导致更大的有效序列长度。ViT可以处理任意序列长度（直到内存限制），但是，预训练的位置embedding可能不再有意义。因此，我们根据预先训练的位置嵌入在原始图像中的位置执行2D插值。请注意，只有在分辨率调整和色块提取中，将有关图像2D结构的感应偏差手动注入到Vision Transformer中。</p>
+<p>参考链接：</p>
+<ul>
+<li><p>﻿<a target="_blank" rel="noopener" href="https://blog.csdn.net/lsb2002/article/details/135320751">Visual Transformer (ViT)模型详解-CSDN博客</a>﻿</p>
+</li>
+<li><p>﻿<a target="_blank" rel="noopener" href="https://paddlepedia.readthedocs.io/en/latest/tutorials/computer_vision/classification/ViT.html">https://paddlepedia.readthedocs.io/en/latest/tutorials/computer_vision&#x2F;classification&#x2F;ViT.html</a>﻿</p>
+</li>
+<li><p>﻿<a target="_blank" rel="noopener" href="https://blog.csdn.net/gailj/article/details/123664828">经典论文阅读笔记——VIT、Swin Transformer、MAE、CILP_clip与vit的关系-CSDN博客</a></p>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" rel="tag"># 大模型</a>
+              <a href="/tags/%E8%AE%BA%E6%96%87%E7%B2%BE%E8%AF%BB/" rel="tag"># 论文精读</a>
+              <a href="/tags/cv/" rel="tag"># cv</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/01/10/LLaMA%E7%B3%BB%E5%88%97/" rel="prev" title="LLaMA系列">
+                  <i class="fa fa-angle-left"></i> LLaMA系列
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2025/01/10/MAE-Masked-AutoEncoders/" rel="next" title="MAE (Masked AutoEncoders)">
+                  MAE (Masked AutoEncoders) <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Ronny Lu</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">75k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">1:08</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">
+    <!--由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动 -->
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+</body>
+</html>

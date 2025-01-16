@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha256-5eIC48iZUHmSlSUz9XtjRyK2mzQkHScZY1WdMaoz74E=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-minimal.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"luyiyun1021.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.21.1","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="论文链接﻿ BERT 是什么BERT (Bidirectional Encoder Representations from Transformers) 是一种基于Transformer架构的预训练语言模型, 它的主要模型结构是trasnformer的encoder堆叠而成。 它通过在大规模文本数据上的预训练来捕捉语言的深层双向表征，然后再针对不同的自然语言处理（NLP）任务进行微调（fine-t">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Bert">
+<meta property="og:url" content="https://luyiyun1021.github.io/2025/01/09/Bert/index.html">
+<meta property="og:site_name" content="Ronny Lu&#39;s blog">
+<meta property="og:description" content="论文链接﻿ BERT 是什么BERT (Bidirectional Encoder Representations from Transformers) 是一种基于Transformer架构的预训练语言模型, 它的主要模型结构是trasnformer的encoder堆叠而成。 它通过在大规模文本数据上的预训练来捕捉语言的深层双向表征，然后再针对不同的自然语言处理（NLP）任务进行微调（fine-t">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250109154955337.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250109155030883.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250109155111095.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250109155131598.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250109155143822.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250109155153118.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250109155227065.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250109155235236.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250109155245956.png">
+<meta property="article:published_time" content="2025-01-09T07:53:58.000Z">
+<meta property="article:modified_time" content="2025-01-09T07:54:45.122Z">
+<meta property="article:author" content="Ronny Lu">
+<meta property="article:tag" content="大模型">
+<meta property="article:tag" content="论文精读">
+<meta property="article:tag" content="nlp">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250109154955337.png">
+
+
+<link rel="canonical" href="https://luyiyun1021.github.io/2025/01/09/Bert/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://luyiyun1021.github.io/2025/01/09/Bert/","path":"2025/01/09/Bert/","title":"Bert"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Bert | Ronny Lu's blog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<style>.darkmode--activated{--body-bg-color:#282828;--content-bg-color:#333;--card-bg-color:#555;--text-color:#ccc;--blockquote-color:#bbb;--link-color:#ccc;--link-hover-color:#eee;--brand-color:#ddd;--brand-hover-color:#ddd;--table-row-odd-bg-color:#282828;--table-row-hover-bg-color:#363636;--menu-item-bg-color:#555;--btn-default-bg:#222;--btn-default-color:#ccc;--btn-default-border-color:#555;--btn-default-hover-bg:#666;--btn-default-hover-color:#ccc;--btn-default-hover-border-color:#666;--highlight-background:#282b2e;--highlight-foreground:#a9b7c6;--highlight-gutter-background:#34393d;--highlight-gutter-foreground:#9ca9b6}.darkmode--activated img{opacity:.75}.darkmode--activated img:hover{opacity:.9}.darkmode--activated code{color:#69dbdc;background:0 0}button.darkmode-toggle{z-index:9999}.darkmode-ignore,img{display:flex!important}.beian img{display:inline-block!important}</style></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Ronny Lu's blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#BERT-%E6%98%AF%E4%BB%80%E4%B9%88"><span class="nav-number">1.</span> <span class="nav-text">BERT 是什么</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#BERT-%E7%9A%84%E9%A2%84%E8%AE%AD%E7%BB%83"><span class="nav-number">2.</span> <span class="nav-text">BERT 的预训练</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#BERT-%E8%83%BD%E5%B9%B2%E4%BB%80%E4%B9%88"><span class="nav-number">3.</span> <span class="nav-text">BERT 能干什么</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88BERT%E4%BB%85%E7%94%A8%E7%BC%96%E7%A0%81%E5%99%A8%EF%BC%8C%E8%80%8CGPT%E4%BB%85%E7%94%A8%E8%A7%A3%E7%A0%81%E5%99%A8%EF%BC%9F"><span class="nav-number">4.</span> <span class="nav-text">为什么BERT仅用编码器，而GPT仅用解码器？</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#BERT%EF%BC%9A%E4%BB%85%E4%BD%BF%E7%94%A8%E7%BC%96%E7%A0%81%E5%99%A8"><span class="nav-number">4.1.</span> <span class="nav-text">BERT：仅使用编码器</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-%E5%8F%8C%E5%90%91%E6%80%A7%E7%90%86%E8%A7%A3"><span class="nav-number">4.1.1.</span> <span class="nav-text">1. 双向性理解</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-%E9%A2%84%E8%AE%AD%E7%BB%83%E4%BB%BB%E5%8A%A1"><span class="nav-number">4.1.2.</span> <span class="nav-text">2. 预训练任务</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">4.1.3.</span> <span class="nav-text">总结</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#GPT%EF%BC%9A%E4%BB%85%E4%BD%BF%E7%94%A8%E8%A7%A3%E7%A0%81%E5%99%A8"><span class="nav-number">4.2.</span> <span class="nav-text">GPT：仅使用解码器</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-%E8%87%AA%E5%9B%9E%E5%BD%92%E6%A8%A1%E5%9E%8B"><span class="nav-number">4.2.1.</span> <span class="nav-text">1. 自回归模型</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-%E5%8D%95%E5%90%91%E6%80%A7%E7%94%9F%E6%88%90"><span class="nav-number">4.2.2.</span> <span class="nav-text">2. 单向性生成</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-%E9%A2%84%E8%AE%AD%E7%BB%83%E4%BB%BB%E5%8A%A1"><span class="nav-number">4.2.3.</span> <span class="nav-text">3. 预训练任务</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%80%BB%E7%BB%93-1"><span class="nav-number">4.2.4.</span> <span class="nav-text">总结</span></a></li></ol></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Ronny Lu"
+      src="/images/avatar.jpeg">
+  <p class="site-author-name" itemprop="name">Ronny Lu</p>
+  <div class="site-description" itemprop="description">Tech notes on LLM, LLM Infra, C++</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">29</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/01/09/Bert/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpeg">
+      <meta itemprop="name" content="Ronny Lu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ronny Lu's blog">
+      <meta itemprop="description" content="Tech notes on LLM, LLM Infra, C++">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Bert | Ronny Lu's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Bert
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-01-09 15:53:58 / 修改时间：15:54:45" itemprop="dateCreated datePublished" datetime="2025-01-09T15:53:58+08:00">2025-01-09</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">大模型</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E8%AE%BA%E6%96%87%E7%B2%BE%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">论文精读</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E8%AE%BA%E6%96%87%E7%B2%BE%E8%AF%BB/nlp/" itemprop="url" rel="index"><span itemprop="name">nlp</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>4.3k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>4 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p><a target="_blank" rel="noopener" href="https://arxiv.org/pdf/1810.04805">论文链接</a>﻿</p>
+<h2 id="BERT-是什么"><a href="#BERT-是什么" class="headerlink" title="BERT 是什么"></a><strong>BERT 是什么</strong></h2><p><strong>BERT</strong> (<strong>B</strong>idirectional <strong>E</strong>ncoder <strong>R</strong>epresentations from <strong>T</strong>ransformers) 是一种基于Transformer架构的<strong>预训练语言模型,</strong> 它的主要模型结构是trasnformer的encoder堆叠而成。</p>
+<p>它通过在大规模文本数据上的预训练来捕捉语言的深层双向表征，然后再针对不同的自然语言处理（NLP）任务进行微调（fine-tuning）。BERT的出现标志着NLP领域的一个重要进步，因为它能够更好地理解语言的上下文和语义关系。Bert 训练阶段具体如下：</p>
+<p><strong>1）预训练阶段</strong>：BERT通过预训练任务来学习语言的深层表示。这些任务通常包括“遮蔽语言模型”（Masked Language Model，MLM）（类似于完形填空）和“下一句预测”（Next Sentence Prediction，NSP）。在MLM任务中，模型被训练来预测输入句子中被遮蔽的词；而在NSP任务中，模型需要判断两个句子是否是连续的文本序列。</p>
+<p><strong>2）微调阶段</strong>：预训练完成后，BERT模型可以通过添加任务特定的输出层来进行微调，以适应不同的NLP任务，如情感分析、问答、命名实体识别等。微调过程利用了预训练阶段学到的语言表征，使得模型能够快速适应新的任务并取得优异的性能。</p>
+<span id="more"></span>
+
+<p><strong>Q1: 什么是预训练语言模型？</strong></p>
+<p>预训练：预训练是一种迁移学习的概念。所谓预训练模型，举个例子，假设我们有大量的维基百科数据，那么我们可以用这部分巨大的数据来训练一个泛化能力很强的模型（一个知识渊博的人，见多识广），当我们需要在特定场景使用时，例如做医学命名实体识别，那么，只需要简单的修改一些输出层，再用我们自己的数据进行一个增量训练，对权重进行一个轻微的调整即可（增加行业知识后，这个知识渊博的人就是行业专家）。预训练语言模型有很多，典型的如ELMO、GPT、BERT等。</p>
+<p><strong>Q2: 什么是双向（Bidirectional）？</strong></p>
+<p>因为BERT之前的预训练语言模型如ELMO和GPT都是单向的（ELMO可以说是双向的，但其实是两个方向相反的单向语言模型的拼接），而结合上下文信息对自然语言处理是非常重要的。Bidirectional也是Bert的主要创新点。</p>
+<p><strong>ELMo和OpenAI GPT的问题</strong></p>
+<p>ELMo和GPT最大的问题就是传统的语言模型是单向的——我们是根据之前的历史来预测当前词。但是我们不能利用后面的信息。比如句子”The animal didn’t cross the street because it was too tired”。我们在编码it的语义的时候需要同时利用前后的信息，因为在这个句子中，it可能指代animal也可能指代street。根据tired，我们推断它指代的是animal，因为street是不能tired。但是如果把tired改成wide，那么it就是指代street了。传统的语言模型，不管是RNN还是Transformer，它都只能利用单方向的信息。比如前向的RNN，在编码it的时候它看到了animal和street，但是它还没有看到tired，因此它不能确定it到底指代什么。如果是后向的RNN，在编码的时候它看到了tired，但是它还根本没看到animal，因此它也不能知道指代的是animal。Transformer的Self-Attention理论上是可以同时attend to到这两个词的，但是根据前面的介绍，由于我们需要用Transformer来学习语言模型，因此必须用Mask来让它看不到未来的信息，所以它也不能解决这个问题的。</p>
+<p>注意：即使ELMo训练了双向的两个RNN，但是一个RNN只能看一个方向，因此也是无法”同时”利用前后两个方向的信息的。也许有的读者会问，我的RNN有很多层，比如第一层的正向RNN在编码it的时候编码了animal和street的语义，反向RNN编码了tired的语义，然后第二层的RNN就能同时看到这两个语义，然后判断出it指代animal。理论上是有这种可能，但是实际上很难。举个反例，理论上一个三层(一个隐层)的全连接网络能够拟合任何函数，那我们还需要更多层词的全连接网络或者CNN、RNN干什么呢？如果数据不是足够足够多，如果不对网络结构做任何约束，那么它有很多中拟合的方法，其中很多是过拟合的。但是通过对网络结构的约束，比如CNN的局部特效，RNN的时序特效，多层网络的层次结构，对它进行了很多约束，从而使得它能够更好的收敛到最佳的参数。我们研究不同的网络结构(包括resnet、dropout、batchnorm等等)都是为了对网络增加额外的(先验的)约束。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250109154955337.png" alt="image.png"></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250109155030883.png" alt="image.png"></p>
+<h2 id="BERT-的预训练"><a href="#BERT-的预训练" class="headerlink" title="BERT 的预训练"></a>BERT 的预训练</h2><p>BERT的预训练阶段包括两个任务，一个是Masked LM ，还有一个是下句预测（Next Sentence Prediction，NSP）。</p>
+<p><strong>Task #1：Masked LM</strong></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250109155111095.png" alt="image.png"></p>
+<p>Masked LM 可以形象地称为完形填空问题，随机掩盖掉每一个句子中15%的词，用其上下文来去判断被盖住的词原本应该是什么。举例来说，有这样一个未标注句子 <code>my dog is hairy</code> ，我们可能随机选择了hairy进行遮掩，就变成 <code>my dog is [mask]</code> ，训练模型去预测 [mask] 位置的词，使预测出 hairy的可能性最大，在这个过程中就将上下文的语义信息学习并体现到模型参数中去了。</p>
+<p>这里需要说明，GPT使用统计语言模型，这限制了它只能是单向的，而BERT通过Masked LM能够提取上下文信息。更一般地：</p>
+<p><strong>AR模型，auto regressive，自回归模型。</strong> 自回归模型可以类比为早期的统计语言模型（Statistical Language Model），也就是根据上文预测下一个单词，或者根据下文预测前面的单词，只能考虑单侧信息，典型的如GPT，而ELMo 是将两个方向（从左至右和从右至左）的自回归模型进行了拼接，实现了双向语言模型，但本质上仍然属于自回归模型</p>
+<p><strong>AE模型，auto encoding，自编码模型。</strong> 从损坏的输入数据（相当于加入噪声）中预测重建原始数据，可以使用上下文的信息。BERT使用的就是AE。劣势是在下游的微调阶段不会出现掩码词，因此[MASK] 标记会导致<strong>预训练和微调阶段不一致</strong>的问题。</p>
+<p>所以该方法有一个问题，因为是mask15%的词，其数量已经很高了，这样就会导致某些词在fine-tuning阶段从未见过，为了解决这个问题，作者做了如下的处理：</p>
+<p>80%的时间是采用[mask]，<code>my dog is hairy</code> → <code>my dog is [MASK]</code>﻿</p>
+<p>10%的时间是随机取一个词来代替mask的词，<code>my dog is hairy</code> -&gt; <code>my dog is apple</code>﻿</p>
+<p>10%的时间保持不变，<code>my dog is hairy</code> -&gt; <code>my dog is hairy</code>﻿</p>
+<p><strong>为什么使用这个策略？</strong></p>
+<p>（其实我目前还不能很好的理解，先将其他地方看到的说法放在这里）</p>
+<p>这是因为transformer要保持对每个输入token分布式的表征，否则Transformer很可能会记住这个[MASK]就是”hairy”（这个地方的理解，强行记住了位置和masked的分布，而没有真正理解上下文），从而导致若训练样本和微调的样本mask不一致的情况下，模型预测出现很大的偏差。</p>
+<p>如果仅使用[MASK]或者随机的词，那么模型可能学习到的信息都是错误的单词（认为这个地方的单词就是不正确的）；</p>
+<p>若仅使用正确的单词，那么模型学到的方法就是直接copy（根据学到的上下文，直接断定），从而学不到完整的上下文信息。</p>
+<p>综上三个特点，必须在正确的信息（10%）、未知的信息（80% MASK，使模型具有预测能力）、错误的信息（加入噪声10%，使模型具有纠错能力）都有的情况下，模型才能获取全局全量的信息。</p>
+<p><strong>Task #2：Next Sentence Prediction</strong></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250109155131598.png" alt="image.png"></p>
+<p>很多下游任务（QA和natural language inference）都是基于两个句子之间关系的理解，基于此项任务，为了增强模型对句子之间关系的理解能力。训练数据选择两个句子（50%情况下是真正相连的两个句子，50%是随机拼接的两个句子），判断第二个句子是不是真正的第一个句子的下文。</p>
+<p>其输入形式是，开头是一个特殊符号<code>[CLS]</code>，然后两个句子之间用<code>[SEP]</code>隔断：</p>
+<p>Input &#x3D; <code>[CLS] the man went to [MASK] store [SEP]he bought a gallon [MASK] milk [SEP]</code>﻿</p>
+<p>Label &#x3D; IsNext</p>
+<p>Input &#x3D; <code>[CLS] the man [MASK] to the store [SEP]penguin [MASK] are flight ##less birds[SEP]</code>﻿</p>
+<p>Label &#x3D; NotNext</p>
+<p>实际构建预训练任务时，是首选设计好 “下句预测” 任务，生成该任务的标注信息，在此基础上构建 “Masked LM” 任务，生成掩码语言模型的标注信息。考虑到预训练涉及两个句子，BERT 采用如下的输入信息表征方案：</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250109155143822.png" alt="image.png"></p>
+<p><strong>token embedding</strong> ：将各个词转换成固定维度的向量。在BERT中，每个词会被转换成<strong>768维</strong>的向量表示。在实际代码实现中，输入文本在送入token embeddings 层之前要先进行tokenization处理。此外，两个特殊的token会被插入到tokenization的结果的开头 ([CLS])和结尾 ([SEP])</p>
+<p><strong>segment embedding：</strong> 用于区分一个token属于句子对中的哪个句子。Segment Embeddings 层只有两种向量表示。前一个向量是把0赋给第一个句子中的各个token, 后一个向量是把1赋给第二个句子中的各个token。如果输入仅仅只有一个句子，那么它的segment embedding就是全0</p>
+<p><strong>position embedding</strong>：Transformers无法编码输入的序列的顺序性，所以要在各个位置上学习一个向量表示来将序列顺序的信息编码进来。加入position embeddings会让BERT理解下面下面这种情况，“ I think, therefore I am ”，第一个 “I” 和第二个 “I”应该有着不同的向量表示。</p>
+<p>这3种embedding都是768维的，最后要将其按元素相加，得到每一个token最终的768维的向量表示。</p>
+<h2 id="BERT-能干什么"><a href="#BERT-能干什么" class="headerlink" title="BERT 能干什么"></a>BERT 能干什么</h2><p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250109155153118.png" alt="image.png"></p>
+<p>首先我们可以看到BERT 具有两种输出，一个是pooler output，对应的[CLS]的输出，以及sequence output，对应的是序列中的所有字的最后一层hidden输出。所以BERT主要可以处理两种，一种任务是分类&#x2F;回归任务（使用的是pooler output），一种是序列任务（sequence output）。</p>
+<ul>
+<li><p>分类任务</p>
+<ul>
+<li>Single Sentence Classification tasks</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>例如：文本分类，我想听音乐，分到音乐这个domain</p>
+</blockquote>
+<ul>
+<li><p>Sentence Pair Classification tasks 例如：自然语言推断任务(NLI)，给定前提，推断假设是否成立</p>
+</li>
+<li><p>回归任务 回归任务其实是分类任务的一种特殊形式，最后的输出是一个数值而不是具体的某个类别的概率。</p>
+</li>
+<li><p>具体任务例如：文本相似度，可以判断两个句子是不是类似的，得到具体的分数。  </p>
+</li>
+<li><p>序列任务  </p>
+</li>
+<li><p>命名实体识别（NER）</p>
+</li>
+</ul>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250109155227065.png" alt="image.png"></p>
+<ul>
+<li><p>Cloze task（完形填空）其实这就是bert预训练的一种任务。</p>
+</li>
+<li><p>SQuAD(Standford Question Answering Dataset) task</p>
+</li>
+</ul>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250109155235236.png" alt="image.png"></p>
+<p>SQuAD任务传入的是D,Q，其实D是该篇文章,Q是问题，返回的结果是答案开始的位置s以及答案结束的位置e。例如上图第一个问题的答案是gravity, 它的位置是文章中第17个单词，即s&#x3D;17,e&#x3D;17</p>
+<p>具体做法是：我们学习两个向量，分别是Vs,Ve他们分别和document的sequence output做dot product，然后经过softmax，得到对应的s,e位置。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250109155245956.png" alt="image.png"></p>
+<h2 id="为什么BERT仅用编码器，而GPT仅用解码器？"><a href="#为什么BERT仅用编码器，而GPT仅用解码器？" class="headerlink" title="为什么BERT仅用编码器，而GPT仅用解码器？"></a>为什么BERT仅用编码器，而GPT仅用解码器？</h2><p>BERT 和 GPT 是两种经典的自然语言处理（NLP）模型，它们分别选择了编码器（Encoder）和解码器（Decoder）架构的不同部分进行专注，主要是因为它们的设计目标和任务类型不同。</p>
+<ul>
+<li><p><strong>任务需求</strong>：BERT专注于理解任务，需要对文本进行全局双向理解，因此使用了编码器。而GPT专注于生成任务，需要逐词预测文本，因此使用了解码器。</p>
+</li>
+<li><p><strong>架构特性</strong>：编码器擅长捕捉全局上下文信息，适合BERT的双向理解任务。解码器擅长逐步生成序列，适合GPT的文本生成任务。</p>
+</li>
+<li><p><strong>训练目标</strong>：BERT的预训练任务（如MLM）需要双向上下文理解，而GPT的语言模型任务需要单向文本生成。</p>
+</li>
+</ul>
+<h3 id="BERT：仅使用编码器"><a href="#BERT：仅使用编码器" class="headerlink" title="BERT：仅使用编码器"></a>BERT：仅使用编码器</h3><p><strong>BERT（Bidirectional Encoder Representations from Transformers）</strong> 选择了仅使用Transformer的编码器部分，这是因为BERT的设计目的是为了解决需要全面理解句子语义的任务，比如：</p>
+<ul>
+<li><p><strong>句子分类</strong>（例如情感分析）。</p>
+</li>
+<li><p><strong>问答系统</strong>（识别文本中的答案）。</p>
+</li>
+<li><p><strong>命名实体识别</strong>（标记文本中的特定信息，如人名、地点名等）。</p>
+</li>
+</ul>
+<h4 id="1-双向性理解"><a href="#1-双向性理解" class="headerlink" title="1. 双向性理解"></a>1. <strong>双向性理解</strong></h4><p>BERT 的核心特点是双向性（Bidirectional），即它在处理文本时，同时考虑了每个词左右两侧的上下文信息。为了实现这种双向性，BERT需要依赖编码器架构的自注意力机制（Self-Attention）来捕捉整个输入序列中所有词之间的关系。</p>
+<ul>
+<li>在BERT中，编码器不仅看一个词的前面的词（如在传统语言模型中那样），还看后面的词。这样，模型在每个位置上都能获得全局的上下文信息，从而更好地理解句子的语义。</li>
+</ul>
+<h4 id="2-预训练任务"><a href="#2-预训练任务" class="headerlink" title="2. 预训练任务"></a>2. <strong>预训练任务</strong></h4><p>BERT的预训练任务包括：</p>
+<ul>
+<li><p><strong>掩码语言模型（Masked Language Model, MLM）</strong>：BERT在预训练时，会随机地掩盖输入序列中的一些词，然后训练模型根据上下文预测这些被掩盖的词。由于BERT需要同时考虑词的前后信息，这一任务非常适合编码器架构。</p>
+</li>
+<li><p><strong>下一句预测（Next Sentence Prediction, NSP）</strong>：BERT还通过训练模型预测两个句子是否连续出现，以学习句子间的关系。这也是一种全局理解任务，需要编码器的支持。</p>
+</li>
+</ul>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>BERT 仅使用编码器，因为它的目标是生成丰富的、上下文感知的词向量表示，适合各种需要深度理解文本语义的NLP任务。</p>
+<h3 id="GPT：仅使用解码器"><a href="#GPT：仅使用解码器" class="headerlink" title="GPT：仅使用解码器"></a>GPT：仅使用解码器</h3><p><strong>GPT（Generative Pre-trained Transformer）</strong> 选择了仅使用Transformer的解码器部分，这是因为GPT的设计目的是生成文本或预测序列中的下一个词，例如：</p>
+<ul>
+<li><p><strong>文本生成</strong>（如文章写作、对话生成）。</p>
+</li>
+<li><p><strong>语言建模</strong>（预测下一个词）。</p>
+</li>
+<li><p><strong>自动补全</strong>（如智能回复）。</p>
+</li>
+</ul>
+<h4 id="1-自回归模型"><a href="#1-自回归模型" class="headerlink" title="1. 自回归模型"></a>1. <strong>自回归模型</strong></h4><p>GPT 是一种自回归模型（Autoregressive Model），这意味着它在生成每个词时，只依赖于之前生成的词，而不考虑后续词。解码器架构非常适合这种自回归的任务。</p>
+<ul>
+<li>在解码器中，使用了掩码自注意力机制（Masked Self-Attention），即在预测下一个词时，只允许模型看到当前词之前的词。这样，模型可以按照顺序生成文本。</li>
+</ul>
+<h4 id="2-单向性生成"><a href="#2-单向性生成" class="headerlink" title="2. 单向性生成"></a>2. <strong>单向性生成</strong></h4><p>GPT 的生成过程是单向的，即从左到右逐词生成。解码器的架构可以通过掩码注意力机制确保每个生成的词只基于其前面的词，而不是后面的词，这与语言建模的目标一致。</p>
+<ul>
+<li>每个生成的词都是基于之前所有词的条件下生成的，因此GPT非常适合需要连续生成文本的任务。</li>
+</ul>
+<h4 id="3-预训练任务"><a href="#3-预训练任务" class="headerlink" title="3. 预训练任务"></a>3. <strong>预训练任务</strong></h4><p>GPT 的预训练任务是典型的语言建模任务，即给定一个词序列，预测下一个词。这个任务直接利用了解码器架构的优势。</p>
+<h4 id="总结-1"><a href="#总结-1" class="headerlink" title="总结"></a>总结</h4><p>GPT 仅使用解码器，因为它的目标是生成连贯的、上下文相关的文本，适合各种文本生成任务。解码器架构的单向性和自回归特性非常适合这类任务。</p>
+<p>参考链接：</p>
+<p>﻿<a target="_blank" rel="noopener" href="https://fancyerii.github.io/2019/03/09/bert-theory/#bert%E7%AE%80%E4%BB%8B">https://fancyerii.github.io/2019/03/09/bert-theory/#bert%E7%AE%80%E4%BB%8B</a>﻿</p>
+<p>﻿<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/103226488">https://zhuanlan.zhihu.com/p/103226488</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" rel="tag"># 大模型</a>
+              <a href="/tags/%E8%AE%BA%E6%96%87%E7%B2%BE%E8%AF%BB/" rel="tag"># 论文精读</a>
+              <a href="/tags/nlp/" rel="tag"># nlp</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2024/12/23/Transformer/" rel="prev" title="Transformer">
+                  <i class="fa fa-angle-left"></i> Transformer
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2025/01/09/GPT%E7%B3%BB%E5%88%97/" rel="next" title="GPT系列">
+                  GPT系列 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Ronny Lu</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">75k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">1:08</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">
+    <!--由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动 -->
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+</body>
+</html>

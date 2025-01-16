@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha256-5eIC48iZUHmSlSUz9XtjRyK2mzQkHScZY1WdMaoz74E=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-minimal.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"luyiyun1021.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.21.1","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="归约问题该使用什么线程策略？变换（Transformation）问题和归约（Reduction）问题">
+<meta property="og:type" content="article">
+<meta property="og:title" content="05 Atomics, Reductions, and Warp Shuffle">
+<meta property="og:url" content="https://luyiyun1021.github.io/2025/01/16/05-Atomics-Reductions-and-Warp-Shuffle/index.html">
+<meta property="og:site_name" content="Ronny Lu&#39;s blog">
+<meta property="og:description" content="归约问题该使用什么线程策略？变换（Transformation）问题和归约（Reduction）问题">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163703880.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163711567.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163719716.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163726438.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163733534.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163741818.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163748963.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163758817.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163806867.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163812754.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163823849.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163829778.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163836837.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163844387.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163852373.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163858917.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163906176.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163914434.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163922813.png">
+<meta property="article:published_time" content="2025-01-16T08:46:15.000Z">
+<meta property="article:modified_time" content="2025-01-16T08:46:37.121Z">
+<meta property="article:author" content="Ronny Lu">
+<meta property="article:tag" content="cuda">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163703880.png">
+
+
+<link rel="canonical" href="https://luyiyun1021.github.io/2025/01/16/05-Atomics-Reductions-and-Warp-Shuffle/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://luyiyun1021.github.io/2025/01/16/05-Atomics-Reductions-and-Warp-Shuffle/","path":"2025/01/16/05-Atomics-Reductions-and-Warp-Shuffle/","title":"05 Atomics, Reductions, and Warp Shuffle"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>05 Atomics, Reductions, and Warp Shuffle | Ronny Lu's blog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<style>.darkmode--activated{--body-bg-color:#282828;--content-bg-color:#333;--card-bg-color:#555;--text-color:#ccc;--blockquote-color:#bbb;--link-color:#ccc;--link-hover-color:#eee;--brand-color:#ddd;--brand-hover-color:#ddd;--table-row-odd-bg-color:#282828;--table-row-hover-bg-color:#363636;--menu-item-bg-color:#555;--btn-default-bg:#222;--btn-default-color:#ccc;--btn-default-border-color:#555;--btn-default-hover-bg:#666;--btn-default-hover-color:#ccc;--btn-default-hover-border-color:#666;--highlight-background:#282b2e;--highlight-foreground:#a9b7c6;--highlight-gutter-background:#34393d;--highlight-gutter-foreground:#9ca9b6}.darkmode--activated img{opacity:.75}.darkmode--activated img:hover{opacity:.9}.darkmode--activated code{color:#69dbdc;background:0 0}button.darkmode-toggle{z-index:9999}.darkmode-ignore,img{display:flex!important}.beian img{display:inline-block!important}</style></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Ronny Lu's blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BD%92%E7%BA%A6%E9%97%AE%E9%A2%98%E8%AF%A5%E4%BD%BF%E7%94%A8%E4%BB%80%E4%B9%88%E7%BA%BF%E7%A8%8B%E7%AD%96%E7%95%A5%EF%BC%9F"><span class="nav-number">1.</span> <span class="nav-text">归约问题该使用什么线程策略？</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%98%E6%8D%A2%EF%BC%88Transformation%EF%BC%89%E9%97%AE%E9%A2%98%E5%92%8C%E5%BD%92%E7%BA%A6%EF%BC%88Reduction%EF%BC%89%E9%97%AE%E9%A2%98"><span class="nav-number">1.1.</span> <span class="nav-text">变换（Transformation）问题和归约（Reduction）问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9C%B4%E7%B4%A0%E7%AD%96%E7%95%A5%EF%BC%9A%E4%B8%BA%E6%AF%8F%E4%B8%AA%E8%BE%93%E5%85%A5%E7%82%B9%E5%88%86%E9%85%8D%E4%B8%80%E4%B8%AA%E7%BA%BF%E7%A8%8B"><span class="nav-number">1.2.</span> <span class="nav-text">朴素策略：为每个输入点分配一个线程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%95%EF%BC%9A%E4%BD%BF%E7%94%A8-built-in-%E7%9A%84%E5%8E%9F%E5%AD%90-read-modify-write-%E6%8C%87%E4%BB%A4%EF%BC%8C%E5%9C%A8%E8%BF%99%E9%87%8C%E6%98%AFatomicAdd"><span class="nav-number">1.3.</span> <span class="nav-text">解决方法：使用 built-in 的原子 read-modify-write 指令，在这里是atomicAdd</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B6%E4%BB%96%E5%8E%9F%E5%AD%90%E6%93%8D%E4%BD%9C"><span class="nav-number">1.4.</span> <span class="nav-text">其他原子操作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8E%9F%E5%AD%90%E6%93%8D%E4%BD%9C%E7%9A%84%E5%85%B6%E4%BB%96%E7%94%A8%E9%80%94"><span class="nav-number">1.5.</span> <span class="nav-text">原子操作的其他用途</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%AF%8F%E4%B8%AA%E7%BA%BF%E7%A8%8B%E8%8E%B7%E5%BE%97%E9%98%9F%E5%88%97%E4%B8%AD%E7%9A%84%E4%B8%8B%E4%B8%80%E9%A1%B9"><span class="nav-number">1.5.1.</span> <span class="nav-text">每个线程获得队列中的下一项</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%AF%8F%E4%B8%AA%E7%BA%BF%E7%A8%8B%E5%BE%80%E4%B8%80%E7%89%87%E5%85%B1%E4%BA%AB%E5%86%85%E5%AD%98%E4%B8%AD%E5%86%99%E5%85%A5%E4%B8%8D%E5%AE%9A%E9%95%BF%EF%BC%8C%E8%BF%9E%E7%BB%AD%E7%9A%84%E4%B8%80%E6%AE%B5%E6%95%B0%E6%8D%AE"><span class="nav-number">1.5.2.</span> <span class="nav-text">每个线程往一片共享内存中写入不定长，连续的一段数据</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Classical-Parallel-Reduction"><span class="nav-number">2.</span> <span class="nav-text">Classical Parallel Reduction</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9C%B4%E7%B4%A0%E7%AD%96%E7%95%A5%EF%BC%9A%E5%9F%BA%E4%BA%8E%E6%A0%91%E7%9A%84%E6%80%9D%E6%83%B3"><span class="nav-number">2.1.</span> <span class="nav-text">朴素策略：基于树的思想</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%95%EF%BC%9A%E5%85%A8%E5%B1%80%E5%90%8C%E6%AD%A5%E6%93%8D%E4%BD%9C"><span class="nav-number">2.2.</span> <span class="nav-text">解决方法：全局同步操作</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%96%B9%E6%A1%88%E4%B8%80%E7%9A%84%E7%A4%BA%E4%BE%8B%EF%BC%8C%E8%BF%99%E9%87%8C%E4%BD%BF%E7%94%A8%E4%B8%80%E4%B8%AAkernel%E6%9D%A5%E9%81%BF%E5%85%8D%E5%90%AF%E5%8A%A8%E5%86%85%E6%A0%B8%E7%9A%84%E5%BC%80%E9%94%80"><span class="nav-number">2.2.1.</span> <span class="nav-text">方案一的示例，这里使用一个kernel来避免启动内核的开销</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Grid-Stride-Loops"><span class="nav-number">2.2.2.</span> <span class="nav-text">Grid-Stride Loops</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%96%B9%E6%A1%88%E4%B8%80%E7%9A%84%E5%AE%8C%E6%95%B4%E5%AE%9E%E7%8E%B0"><span class="nav-number">2.2.3.</span> <span class="nav-text">方案一的完整实现</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Wrap-Shuffle"><span class="nav-number">3.</span> <span class="nav-text">Wrap Shuffle</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BF%AE%E6%94%B9%E4%B9%8B%E5%89%8D%E7%9A%84%E5%BD%92%E7%BA%A6%E4%BB%A3%E7%A0%81"><span class="nav-number">3.1.</span> <span class="nav-text">修改之前的归约代码</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">3.2.</span> <span class="nav-text">总结</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Loop-Unrolling"><span class="nav-number">4.</span> <span class="nav-text">Loop Unrolling</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Ronny Lu"
+      src="/images/avatar.jpeg">
+  <p class="site-author-name" itemprop="name">Ronny Lu</p>
+  <div class="site-description" itemprop="description">Tech notes on LLM, LLM Infra, C++</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">29</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/01/16/05-Atomics-Reductions-and-Warp-Shuffle/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpeg">
+      <meta itemprop="name" content="Ronny Lu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ronny Lu's blog">
+      <meta itemprop="description" content="Tech notes on LLM, LLM Infra, C++">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="05 Atomics, Reductions, and Warp Shuffle | Ronny Lu's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          05 Atomics, Reductions, and Warp Shuffle
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-01-16 16:46:15 / 修改时间：16:46:37" itemprop="dateCreated datePublished" datetime="2025-01-16T16:46:15+08:00">2025-01-16</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/cuda/" itemprop="url" rel="index"><span itemprop="name">cuda</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>1.9k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>2 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h2 id="归约问题该使用什么线程策略？"><a href="#归约问题该使用什么线程策略？" class="headerlink" title="归约问题该使用什么线程策略？"></a><strong>归约问题该使用什么线程策略？</strong></h2><h3 id="变换（Transformation）问题和归约（Reduction）问题"><a href="#变换（Transformation）问题和归约（Reduction）问题" class="headerlink" title="变换（Transformation）问题和归约（Reduction）问题"></a>变换（Transformation）问题和归约（Reduction）问题</h3><p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163703880.png" alt="image.png"></p>
+<span id="more"></span>
+
+
+<h3 id="朴素策略：为每个输入点分配一个线程"><a href="#朴素策略：为每个输入点分配一个线程" class="headerlink" title="朴素策略：为每个输入点分配一个线程"></a>朴素策略：为每个输入点分配一个线程</h3><p><strong>问题：cuda 不保证线程执行顺序，会出现 data race</strong></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163711567.png" alt="image.png"></p>
+<h3 id="解决方法：使用-built-in-的原子-read-modify-write-指令，在这里是atomicAdd"><a href="#解决方法：使用-built-in-的原子-read-modify-write-指令，在这里是atomicAdd" class="headerlink" title="解决方法：使用 built-in 的原子 read-modify-write 指令，在这里是atomicAdd"></a>解决方法：使用 built-in 的原子 read-modify-write 指令，在这里是<code>atomicAdd</code></h3><ul>
+<li><p>当线程发起原子指令时，L2 缓存中存在一个协调执行机制，可以将其视为一种协调者，它会逐一处理所有这些原子操作。</p>
+</li>
+<li><p>通过GPU内置的原子硬件，以性能换取可预测性和正确性</p>
+</li>
+</ul>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163719716.png" alt="image.png"></p>
+<h3 id="其他原子操作"><a href="#其他原子操作" class="headerlink" title="其他原子操作"></a>其他原子操作</h3><p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163726438.png" alt="image.png"></p>
+<h3 id="原子操作的其他用途"><a href="#原子操作的其他用途" class="headerlink" title="原子操作的其他用途"></a>原子操作的其他用途</h3><h4 id="每个线程获得队列中的下一项"><a href="#每个线程获得队列中的下一项" class="headerlink" title="每个线程获得队列中的下一项"></a>每个线程获得队列中的下一项</h4><p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163733534.png" alt="image.png"></p>
+<h4 id="每个线程往一片共享内存中写入不定长，连续的一段数据"><a href="#每个线程往一片共享内存中写入不定长，连续的一段数据" class="headerlink" title="每个线程往一片共享内存中写入不定长，连续的一段数据"></a>每个线程往一片共享内存中写入不定长，连续的一段数据</h4><p>可以用atomic加操作预定一个在共享内存中长为 dsize 的片段，atomicAdd操作返回的旧值即为在共享内存中预留空间的起始位置。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163741818.png" alt="image.png"></p>
+<h2 id="Classical-Parallel-Reduction"><a href="#Classical-Parallel-Reduction" class="headerlink" title="Classical Parallel Reduction"></a>Classical Parallel Reduction</h2><p>我们需要一个策略能够让我们利用大量的线程，尤其是在输入数据集大小能够支持的情况下，以规避原子操作的限制</p>
+<h3 id="朴素策略：基于树的思想"><a href="#朴素策略：基于树的思想" class="headerlink" title="朴素策略：基于树的思想"></a>朴素策略：基于树的思想</h3><p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163748963.png" alt="image.png"></p>
+<p>上图方法的问题：例如11需要等待4和7的结果算出来才能计算，因此需要做同步操作</p>
+<h3 id="解决方法：全局同步操作"><a href="#解决方法：全局同步操作" class="headerlink" title="解决方法：全局同步操作"></a>解决方法：全局同步操作</h3><p>我们需要在整个网格中，跨越所有线程块实现这一功能。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163758817.png" alt="image.png"></p>
+<ul>
+<li>方案一：分解为多个kernel</li>
+</ul>
+<p>一种可能的解决方案是将树分解，可以理解为将其分解为一系列kernel，每个树级对应一个kernel启动。对于gpu来说，kernel的执行顺序是确定的，即如果你按顺序执行两个kernel，那第二个kernel不会在第一个kernel执行完之前执行。这样，内核启动的边界为我们提供了全局同步。</p>
+<p>问题：</p>
+<ul>
+<li><ul>
+<li><p>内核存在启动开销</p>
+<ul>
+<li>树的底部所对应的 grid 太小了</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>方案二：线程块耗尽方法</p>
+</li>
+</ul>
+<p>另一种解决方案是使用原子操作，原子操作能确定最后一个修改的线程，一旦我们确定了最后一个完成的线程块，我们就可以将额外的工作分配给该线程块，因为我们知道其他所有线程块均已完成。</p>
+<ul>
+<li>方案三：协同组（cooperative groups）</li>
+</ul>
+<p>协同组是CUDA编程模型中较新的特性，它解决CUDA在提供线程协作和线程块分解方面的构造和原语不够丰富的问题，协同组提供了一套新的内置函数和基本组件，使我们能够构建规模更为灵活的线程组，这些线程组能够协同工作，共同执行任务。</p>
+<h4 id="方案一的示例，这里使用一个kernel来避免启动内核的开销"><a href="#方案一的示例，这里使用一个kernel来避免启动内核的开销" class="headerlink" title="方案一的示例，这里使用一个kernel来避免启动内核的开销"></a>方案一的示例，这里使用一个kernel来避免启动内核的开销</h4><p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163806867.png" alt="image.png"></p>
+<h4 id="Grid-Stride-Loops"><a href="#Grid-Stride-Loops" class="headerlink" title="Grid-Stride Loops"></a>Grid-Stride Loops</h4><p>这里的构想和目标在于我们希望创建的 kernel 函数能够实现一种解耦，即 kernel 函数的规模(换言之，网格的大小，即执行操作的线程数量)与数据集大小之间的解耦。即我们希望能够编写并启动一个具有特定线程配置的 kernel，使其能够正确执行操作，无论输入数据集是小于、等于还是大于所使用的线程数量。</p>
+<p>我们的想法是拥有固定数量的线程，数量等于 grid 的宽度，这些线程最初将处理输入数据集中与网格宽度相对应的大小，处理完毕后，它们将跨步前进，将一个索引值</p>
+<p>加入操作中，然后利用下一块数据重复该操作。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163812754.png" alt="image.png"></p>
+<h4 id="方案一的完整实现"><a href="#方案一的完整实现" class="headerlink" title="方案一的完整实现"></a>方案一的完整实现</h4><p>优化：每个 block 仅最后执行一次原子操作，从而避免了启动第二个 kernel 对 out 里每个 block 产出的归约结果进行二次归约</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163823849.png" alt="image.png"></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163829778.png" alt="image.png"></p>
+<h2 id="Wrap-Shuffle"><a href="#Wrap-Shuffle" class="headerlink" title="Wrap Shuffle"></a>Wrap Shuffle</h2><p>共享内存是实现线程间数据通信的途径。为了以这种方式使用共享内存，需要进行两个操作。一个线程需向共享内存写入数据，另一个线程需要从共享内存中的该位置读取数据。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163836837.png" alt="image.png"></p>
+<p>如果有一种方法可以直接在不同线程间传递数据，而不使用共享内存，那岂不是很好？</p>
+<p><strong>Warp Shuffle背后的理念是，它允许 warp 内部实现这种直接的线程间通信。</strong></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163844387.png" alt="image.png"></p>
+<p>例如<code>__shfl_down_sync()</code>这个函数是将被 mask 指定的线程A，再会往后偏移 delta，这样得出来的线程B，线程A会拿到线程B的var，其他如果偏移过头的线程会返回0。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163852373.png" alt="image.png"></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163858917.png" alt="image.png"></p>
+<h3 id="修改之前的归约代码"><a href="#修改之前的归约代码" class="headerlink" title="修改之前的归约代码"></a>修改之前的归约代码</h3><ul>
+<li><p>现在每个线程不再将运行总和保存在共享内存中，而是将其作为名为val的局部变量保存。</p>
+</li>
+<li><p>mask 表示我们的洗牌操作需要利用整个 warp 中的所有32个线程</p>
+</li>
+<li><p>Lane 指的是在 warp 中处于哪个线程，WarpID 指的是处于哪个 wrap</p>
+</li>
+<li><p>1^st warp-shuffle reduction：初始 offset 设为 warpSize 的一半（即16）。在第一轮循环中，这意味着对于线程零，它将取其自身的 val 值，并将其与来自线程束大小的一半（即16）的 val值相加。最后每个 warp 算出的归约结果将存在 sdata 中。一个 block 中最多有1024个线程，因此最多有32个 wrap。</p>
+</li>
+<li><p>我们必须确保每个 warp 都完成了该操作然后才能允许任何进程继续进行，因此使用<code>__Syncthreads()</code>同步。</p>
+</li>
+<li><p>2^st warp-shuffle reduction：接下来执行另一次 warp 洗牌操作，但仅需使用第0个 warp, 因为现在共享内存中最多只有32个项</p>
+</li>
+</ul>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163906176.png" alt="image.png"></p>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163914434.png" alt="image.png"></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163922813.png" alt="image.png"></p>
+<h2 id="Loop-Unrolling"><a href="#Loop-Unrolling" class="headerlink" title="Loop Unrolling"></a>Loop Unrolling</h2><p>循环展开的原理是，对于一个已知范围的循环，例如 for 循环，编译器能够确定其范围，通常会自动为你展开这个循环。这意味着将循环的每一次迭代按顺序展开，因此，你正在摒弃循环，而是将循环的每次迭代按顺序编入代码中。</p>
+<p>这仅仅是优化的第一步，编译器希望这样做的原因之一是，优化过程的下一步通常涉及指令重排。编译器会在保持代码正确性的同时，积极地重新排序操作，以提供最佳性能。我们希望实现的是尽可能立即启动所有内存操作，以便它们能迅速进入队列，从而使内存子系统尽早工作起来。越早将内存子系统加载请求，数据返回得就越快，计算结果的速度也会随之提升。</p>
+<p>如果我在循环中每次迭代都从全局内存加载数据，那么在第10次循环迭代时，如果仅遵循循环语义，我将加载第10次循环所需要的数据。但是经常发生的情况是加载操作是独立的，那么就没有理由不能立即进行加载，立即启动该加载操作，然后按照可完成顺序执行我能进行的操作。</p>
+<p>通常情况下，了解循环的总次数，即遍历范围，是很有必要的。若能编写具有可识别循环次数的循环，编译器更可能对其进行积极展开。</p>
+<p>05_Atomics_Reductions_Warp_Shuffle.pdf</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/cuda/" rel="tag"># cuda</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/01/16/04-Fundamental-CUDA-Optimization-Part-2/" rel="prev" title="04 Fundamental CUDA Optimization (Part 2)">
+                  <i class="fa fa-angle-left"></i> 04 Fundamental CUDA Optimization (Part 2)
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Ronny Lu</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">75k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">1:08</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">
+    <!--由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动 -->
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+</body>
+</html>

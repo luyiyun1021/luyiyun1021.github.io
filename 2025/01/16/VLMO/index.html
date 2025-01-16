@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha256-5eIC48iZUHmSlSUz9XtjRyK2mzQkHScZY1WdMaoz74E=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-minimal.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"luyiyun1021.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.21.1","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="🔗 原文链接：https:&#x2F;&#x2F;blog.csdn.net&#x2F;lansebingxuan&#x2F;article&#x2F;details&#x2F;13174...﻿  论文地址：VLMO: Unified Vision-Language Pre-Training with Mixture-of-Modality-Experts﻿ 论文代码：VLMO﻿ VLMo提出了一种统一的视觉语言预训练模型（VLMO），该模型既可以用">
+<meta property="og:type" content="article">
+<meta property="og:title" content="VLMO">
+<meta property="og:url" content="https://luyiyun1021.github.io/2025/01/16/VLMO/index.html">
+<meta property="og:site_name" content="Ronny Lu&#39;s blog">
+<meta property="og:description" content="🔗 原文链接：https:&#x2F;&#x2F;blog.csdn.net&#x2F;lansebingxuan&#x2F;article&#x2F;details&#x2F;13174...﻿  论文地址：VLMO: Unified Vision-Language Pre-Training with Mixture-of-Modality-Experts﻿ 论文代码：VLMO﻿ VLMo提出了一种统一的视觉语言预训练模型（VLMO），该模型既可以用">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116161108321.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116161118723.png">
+<meta property="article:published_time" content="2025-01-16T08:12:59.000Z">
+<meta property="article:modified_time" content="2025-01-16T08:42:42.757Z">
+<meta property="article:author" content="Ronny Lu">
+<meta property="article:tag" content="大模型">
+<meta property="article:tag" content="论文精读">
+<meta property="article:tag" content="多模态">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116161108321.png">
+
+
+<link rel="canonical" href="https://luyiyun1021.github.io/2025/01/16/VLMO/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://luyiyun1021.github.io/2025/01/16/VLMO/","path":"2025/01/16/VLMO/","title":"VLMO"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>VLMO | Ronny Lu's blog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<style>.darkmode--activated{--body-bg-color:#282828;--content-bg-color:#333;--card-bg-color:#555;--text-color:#ccc;--blockquote-color:#bbb;--link-color:#ccc;--link-hover-color:#eee;--brand-color:#ddd;--brand-hover-color:#ddd;--table-row-odd-bg-color:#282828;--table-row-hover-bg-color:#363636;--menu-item-bg-color:#555;--btn-default-bg:#222;--btn-default-color:#ccc;--btn-default-border-color:#555;--btn-default-hover-bg:#666;--btn-default-hover-color:#ccc;--btn-default-hover-border-color:#666;--highlight-background:#282b2e;--highlight-foreground:#a9b7c6;--highlight-gutter-background:#34393d;--highlight-gutter-foreground:#9ca9b6}.darkmode--activated img{opacity:.75}.darkmode--activated img:hover{opacity:.9}.darkmode--activated code{color:#69dbdc;background:0 0}button.darkmode-toggle{z-index:9999}.darkmode-ignore,img{display:flex!important}.beian img{display:inline-block!important}</style></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Ronny Lu's blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%A0%94%E7%A9%B6%E5%8A%A8%E6%9C%BA"><span class="nav-number">1.</span> <span class="nav-text">研究动机</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%AC%E6%96%87%E8%B4%A1%E7%8C%AE1%EF%BC%9AMOME%E6%A8%A1%E5%9E%8B"><span class="nav-number">2.</span> <span class="nav-text">本文贡献1：MOME模型</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A8%A1%E5%9E%8B%E7%BB%93%E6%9E%84"><span class="nav-number">2.1.</span> <span class="nav-text">模型结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8D%9F%E5%A4%B1%E5%87%BD%E6%95%B0"><span class="nav-number">2.2.</span> <span class="nav-text">损失函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%93%E6%9E%84%E4%BC%98%E7%82%B9"><span class="nav-number">2.3.</span> <span class="nav-text">结构优点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%93%E6%9E%84%E7%BC%BA%E7%82%B9"><span class="nav-number">2.4.</span> <span class="nav-text">结构缺点</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%AC%E6%96%87%E8%B4%A1%E7%8C%AE2%EF%BC%9A%E5%88%86%E9%98%B6%E6%AE%B5%E7%9A%84%E8%AE%AD%E7%BB%83%E7%AD%96%E7%95%A5"><span class="nav-number">3.</span> <span class="nav-text">本文贡献2：分阶段的训练策略</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Ronny Lu"
+      src="/images/avatar.jpeg">
+  <p class="site-author-name" itemprop="name">Ronny Lu</p>
+  <div class="site-description" itemprop="description">Tech notes on LLM, LLM Infra, C++</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">29</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/01/16/VLMO/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpeg">
+      <meta itemprop="name" content="Ronny Lu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ronny Lu's blog">
+      <meta itemprop="description" content="Tech notes on LLM, LLM Infra, C++">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="VLMO | Ronny Lu's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          VLMO
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-01-16 16:12:59 / 修改时间：16:42:42" itemprop="dateCreated datePublished" datetime="2025-01-16T16:12:59+08:00">2025-01-16</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">大模型</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E8%AE%BA%E6%96%87%E7%B2%BE%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">论文精读</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E8%AE%BA%E6%96%87%E7%B2%BE%E8%AF%BB/%E5%A4%9A%E6%A8%A1%E6%80%81/" itemprop="url" rel="index"><span itemprop="name">多模态</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>1.9k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>2 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><blockquote>
+<p>🔗 原文链接：<a target="_blank" rel="noopener" href="https://blog.csdn.net/lansebingxuan/article/details/131749829">https://blog.csdn.net/lansebingxuan/article/details/13174...</a>﻿</p>
+</blockquote>
+<p>论文地址：<a target="_blank" rel="noopener" href="https://arxiv.org/pdf/2111.02358.pdf">VLMO: Unified Vision-Language Pre-Training with Mixture-of-Modality-Experts</a>﻿</p>
+<p>论文代码：<a target="_blank" rel="noopener" href="https://github.com/microsoft/unilm/tree/master/vlmo">VLMO</a>﻿</p>
+<p>VLMo提出了一种统一的视觉语言预训练模型（VLMO），该模型既可以用作双编码器，对检索任务的图像和文本进行单独编码，也可以用作融合编码器，对分类任务的图像-文本对的深度交互进行建模。</p>
+<span id="more"></span>
+<h2 id="研究动机"><a href="#研究动机" class="headerlink" title="研究动机"></a>研究动机</h2><p>现在多模态学习领域有两个主流的模型结构：</p>
+<ol>
+<li><p>双塔结构：图像有一个模型，文本有一个模型，双塔完全分开，互不干扰，模态之间的交互用非常简单的Cosine Similarity来完成，比如CLIP Align这种dual-encoder。<br> 结构优点：对检索任务极其有效，因为它可以提前把特征都抽好，接下来直接算Similarity矩阵乘法就可以，极其适合大规模的图像文本的检索，非常具有商业价值。<br> 结构的缺点：只计算Cosine Similarity无法做多模态之间深度融合，难一些的任务性能差。</p>
+</li>
+<li><p>单塔结构，Fusion Encoder的方式，先把图像和文本分开处理一下，但是当做模态交互的时候，用一个Transformer Encoder做模态之间的交互。<br> 结构优点：这个结构弥补双塔模式的缺陷，在VR、VE、VQA任务上效果特别好。<br> 结构缺点：当做检索任务的时候，因为只有一个模型，所以必须同时做推理，当图像文本对特别多，数据集特别大的时候，需要将所有all possible图像文本对全都要同时编码，然后计算Similarity Score，才能做检索，所以推理时间就会非常慢。</p>
+</li>
+</ol>
+<p>本文的研究动机是：</p>
+<ol start="3">
+<li><p>结合上面两种结构的优点，设计模型网络，在Feed Forward FC层，每个模态就会对应自己不同的Expert，就是视觉有视觉的Vision Expert，Language有Language的Expert，Multi-model有Multi-model对应的Expert，这样在训练的时候输入哪个模态的数据，就训练哪个模态的Expert。推理的时候能根据现在输入的数据决定使用什么模型结构。</p>
+</li>
+<li><p>多模态的训练数据集不够多，但是在单模态里，就是视觉或者NLP里，可用的数据很多，基于这个研究动机，VLMo的作者提出了stagewise pre-training strategy，就是分阶段去训练，先把vision expert在视觉数据集这边训好，再把language expert在language的数据集上训好，这个时候模型本身的参数非常好的被初始化了，再到多模态的数据上做pre-training，效果就会好很多。</p>
+</li>
+</ol>
+<h2 id="本文贡献1：MOME模型"><a href="#本文贡献1：MOME模型" class="headerlink" title="本文贡献1：MOME模型"></a>本文贡献1：MOME模型</h2><p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116161108321.png" alt="image.png"></p>
+<h3 id="模型结构"><a href="#模型结构" class="headerlink" title="模型结构"></a>模型结构</h3><p>VLMo论文的模型核心是一个transformer encoder的结构，但是它在每个transformer block里面做了一些改动，也就是他们提出的MoME transformer(mixture-of-modality-expert)。</p>
+<p>标准的transformer block结构：一个标准的transformer block里先有一个Layer Norm，接下来是一个MSA multi-head self-attention，然后是Layer Norm，然后是一个FFN feed-forward network，最后有一个residual。</p>
+<p>本文的transformer block结构：本文结构中layer norm、MSA、layer norm、residual connection这些都是一样的，唯一一个不一样的就是<strong>feed-forward network</strong>，它不是一个feed-forward network，而是针对不同的输入、不同的modality，有vision FFN、language FFN和vision language FFN，也就是switching modality expert，从而构建出MoME transformer block，也就是VLMo整个的模型结构。</p>
+<p>注意：虽然的FFN层没有share weights，各自modality有各自的FFN层，但之前的self-attention层是share weights，也就是不论图像、文本还是图像文本信号，输入任何的token sequence，self-attention的model weights都是一样的，这个也是transformer架构的优势，或者说多模态学习接下来的趋势，目前有很多工作证明，同样的self-attention weights可以用来做不同的图像文本音频视频任务，不需要重新去训练自注意力参数。</p>
+<h3 id="损失函数"><a href="#损失函数" class="headerlink" title="损失函数"></a>损失函数</h3><ol>
+<li><p>Image Text Contrastive <strong>ITC</strong></p>
+</li>
+<li><p>Image Text Matching <strong>ITM</strong>：一个二分类任务</p>
+</li>
+<li><p>Mask Language Modeling <strong>MLM</strong>：预测这些被mask掉的单词</p>
+</li>
+</ol>
+<p>本文从ALBEF里借鉴用这三个loss训练模型以及hard negative mining的思想。例如当计算ITC contrastive loss的时候，VLMo类似CLIP模型，图像端只有图像，输入ViT，FFN都用的Vision FFN，如果用Vision Transformer Base，就是12层的一个transformer，文本端就是文本的token单独输入language model，后面用的是language expert是一个12层的BERT base，当计算ITM或者mask language modeling 的时候，模型变成fusion encoder的形式，图像和文本的一起输入multi-head self-attention（<strong>这里的self-attention与之前的self-attention和后面的self-attention都是share weights，都是一样的，不论哪个modality，自注意力的参数都不变，都是共享的</strong>）。</p>
+<p>在前面的L-F的transformer block里，模型对视觉和language信号分别做训练，也就是分别用Vision Expert（VE）和Language Expert(LE)，只有在最后的F层，才用Vision Language Expert训练。例如，如果用的是transformer base模型，前十层做VE和LE，后面F就是2，也就是后面只有两层transformer block做模态之间的融合。</p>
+<h3 id="结构优点"><a href="#结构优点" class="headerlink" title="结构优点"></a>结构优点</h3><p>VLMo的优点是灵活，训练的时候可以通过各种modality选择训练哪个modality expert；推理的时候可以选择使用哪些模型参数。<strong>如果做检索任务，就像CLIP一样就用视觉和文本两个模型就可以，如果做Vision Language分类任务VR、VE、VQA，就用下面的Fusion Encoder模式。</strong></p>
+<h3 id="结构缺点"><a href="#结构缺点" class="headerlink" title="结构缺点"></a>结构缺点</h3><p>代价是VLMo里至少做了两次甚至三次的前向过程，VLMo的base模型在4 million的setting下训练，用64张V100的卡需要训练两天，训练量与ViLT同级别，比ALBEF慢。</p>
+<h2 id="本文贡献2：分阶段的训练策略"><a href="#本文贡献2：分阶段的训练策略" class="headerlink" title="本文贡献2：分阶段的训练策略"></a>本文贡献2：分阶段的训练策略</h2><p>因为作者希望利用Unimodality里大量的图片文本去做预训练进而得到更好的模型初始化，所以先做Vision Pre-training，然后做Language Pre-training，最后做Vision Language Pre-training。</p>
+<p>具体地，做Vision Pre-training的时候，是Unsupervised，用了他们自己的BEIT中的Mask Image Modeling，做Language Modeling的时候，使用Mask Language Modeling，Vision Language Pre-training用的上面三个目标函数。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116161118723.png" alt="image.png"></p>
+<p>图中蓝色的虚线代表是Frozen FFN，橘黄色的虚线代表Frozen Self-attention。</p>
+<ol>
+<li><p>第一阶段做Vision Pre-training的时候，因为刚训练完，不需要freeze，所有参数随机初始化，所以12层的Transformer Block，包括前面自注意力和后面的Vision Expert都打开训练。</p>
+</li>
+<li><p>第二阶段做文本预训练的时候，Vision Expert被冻住，因为训练文本数据不需要训练Vision Expert，所以Vision Expert的FFN层参数就固定下来了，该阶段去训练Language Expert，并且Self-Attention也冻住了，因此<strong>在视觉数据上训练好一个模型，在视觉Token Sequence上训练好一个自注意力模型，可以直接拿来对文本数据进行建模，不需要fine-tune</strong>。但这个过程反过来不行，就是先在Language上去训练然后再在Vision上冻住去做结果不太好，但是先用Vision训练然后再在Text上直接去用Self-Attention，很多工作都证明是有效的。</p>
+</li>
+<li><p>第三阶段做多模态，所有训练参数都打开训练，包括Self-Attention，后面三个Expert都打开做fine-tune。</p>
+</li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" rel="tag"># 大模型</a>
+              <a href="/tags/%E8%AE%BA%E6%96%87%E7%B2%BE%E8%AF%BB/" rel="tag"># 论文精读</a>
+              <a href="/tags/%E5%A4%9A%E6%A8%A1%E6%80%81/" rel="tag"># 多模态</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/01/16/ALBEF/" rel="prev" title="ALBEF">
+                  <i class="fa fa-angle-left"></i> ALBEF
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2025/01/16/BLIP/" rel="next" title="BLIP">
+                  BLIP <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Ronny Lu</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">75k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">1:08</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">
+    <!--由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动 -->
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+</body>
+</html>
