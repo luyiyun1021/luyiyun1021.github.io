@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-minimal.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"luyiyun1021.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.22.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="DEFINITION OF A CUDA GRAPH  图是一种由依赖关系连接的一系列操作, 它独立于其执行过程。 它能够一次性生成，随后多次执行, 得益于其定义与执行的分离。这种重复执行正是关键所在。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="07 CUDA Graphs">
+<meta property="og:url" content="https://luyiyun1021.github.io/2025/01/24/07-CUDA-Graphs/index.html">
+<meta property="og:site_name" content="Ronny Lu&#39;s blog">
+<meta property="og:description" content="DEFINITION OF A CUDA GRAPH  图是一种由依赖关系连接的一系列操作, 它独立于其执行过程。 它能够一次性生成，随后多次执行, 得益于其定义与执行的分离。这种重复执行正是关键所在。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250121205355699.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250121205627607.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250121210029596.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250121210325113.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250121211747011.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250124111748043.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250124112841901.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250124112821774.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250124113108339.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250124113355615.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250124113509997.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250124113737069.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250124113954383.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250124114303819.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250124114358603.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250124114646676.png">
+<meta property="article:published_time" content="2025-01-24T09:32:29.000Z">
+<meta property="article:modified_time" content="2025-01-24T09:33:55.240Z">
+<meta property="article:author" content="Ronny Lu">
+<meta property="article:tag" content="cuda">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250121205355699.png">
+
+
+<link rel="canonical" href="https://luyiyun1021.github.io/2025/01/24/07-CUDA-Graphs/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://luyiyun1021.github.io/2025/01/24/07-CUDA-Graphs/","path":"2025/01/24/07-CUDA-Graphs/","title":"07 CUDA Graphs"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>07 CUDA Graphs | Ronny Lu's blog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<style>.darkmode--activated{--body-bg-color:#282828;--content-bg-color:#333;--card-bg-color:#555;--text-color:#ccc;--blockquote-color:#bbb;--link-color:#ccc;--link-hover-color:#eee;--brand-color:#ddd;--brand-hover-color:#ddd;--table-row-odd-bg-color:#282828;--table-row-hover-bg-color:#363636;--menu-item-bg-color:#555;--btn-default-bg:#222;--btn-default-color:#ccc;--btn-default-border-color:#555;--btn-default-hover-bg:#666;--btn-default-hover-color:#ccc;--btn-default-hover-border-color:#666;--highlight-background:#282b2e;--highlight-foreground:#a9b7c6;--highlight-gutter-background:#34393d;--highlight-gutter-foreground:#9ca9b6}.darkmode--activated img{opacity:.75}.darkmode--activated img:hover{opacity:.9}.darkmode--activated code{color:#69dbdc;background:0 0}button.darkmode-toggle{z-index:9999}.darkmode-ignore,img{display:flex!important}.beian img{display:inline-block!important}</style></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Ronny Lu's blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#definition-of-a-cuda-graph"><span class="nav-number">1.</span> <span class="nav-text"> DEFINITION OF A CUDA GRAPH</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#free-up-cpu-resources"><span class="nav-number">2.</span> <span class="nav-text"> FREE UP CPU RESOURCES</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#launch-overhead-reduction"><span class="nav-number">3.</span> <span class="nav-text"> LAUNCH OVERHEAD REDUCTION</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#three-stage-execution-model"><span class="nav-number">4.</span> <span class="nav-text"> THREE-STAGE EXECUTION MODEL</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#modifying-graphs-in-place"><span class="nav-number">5.</span> <span class="nav-text"> MODIFYING GRAPHS IN-PLACE</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#programming-model"><span class="nav-number">6.</span> <span class="nav-text"> PROGRAMMING MODEL</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#stream-capture"><span class="nav-number">6.1.</span> <span class="nav-text"> Stream Capture</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BE%8B%E5%AD%901-%E4%BB%8E%E5%B8%B8%E8%A7%81-cuda-stream-%E5%88%9B%E5%BB%BA-cuda-graph-%E6%96%B9%E5%BC%8F"><span class="nav-number">6.1.1.</span> <span class="nav-text"> 例子1 : 从常见 Cuda Stream 创建 Cuda Graph 方式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BE%8B%E5%AD%902-%E9%80%9A%E8%BF%87-stream-capture-%E6%9D%A5%E8%AE%B0%E5%BD%95%E5%BA%93%E8%B0%83%E7%94%A8"><span class="nav-number">6.1.2.</span> <span class="nav-text"> 例子2: 通过 Stream Capture 来记录库调用</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#create-graphs-directly"><span class="nav-number">6.2.</span> <span class="nav-text"> CREATE GRAPHS DIRECTLY</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#combining-graph-stream-work"><span class="nav-number">6.3.</span> <span class="nav-text"> COMBINING GRAPH &amp; STREAM WORK</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#graph-execution-semantics"><span class="nav-number">6.4.</span> <span class="nav-text"> GRAPH EXECUTION SEMANTICS</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#graphs-ignore-stream-serialization-rules"><span class="nav-number">6.5.</span> <span class="nav-text"> GRAPHS IGNORE STREAM SERIALIZATION RULES</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#cuda-%E5%9B%BE%E7%9A%84%E9%99%90%E5%88%B6"><span class="nav-number">7.</span> <span class="nav-text"> CUDA 图的限制</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#no-automatic-placement"><span class="nav-number">7.1.</span> <span class="nav-text"> NO AUTOMATIC PLACEMENT</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#cuda-%E5%9B%BE%E7%9A%84%E4%BC%98%E5%8A%BF"><span class="nav-number">8.</span> <span class="nav-text"> CUDA 图的优势</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#rapid-re-issue-of-work"><span class="nav-number">8.1.</span> <span class="nav-text"> RAPID RE-ISSUE OF WORK</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#heterogeneous-node-types"><span class="nav-number">8.2.</span> <span class="nav-text"> HETEROGENEOUS NODE TYPES</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#cross-device-dependencies"><span class="nav-number">8.3.</span> <span class="nav-text"> CROSS-DEVICE DEPENDENCIES</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Ronny Lu"
+      src="https://avatars.githubusercontent.com/u/55233584?v=4">
+  <p class="site-author-name" itemprop="name">Ronny Lu</p>
+  <div class="site-description" itemprop="description">Tech notes on LLM, LLM Infra, C++</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">50</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">14</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">14</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/01/24/07-CUDA-Graphs/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
+      <meta itemprop="name" content="Ronny Lu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ronny Lu's blog">
+      <meta itemprop="description" content="Tech notes on LLM, LLM Infra, C++">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="07 CUDA Graphs | Ronny Lu's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          07 CUDA Graphs
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-01-24 17:32:29 / 修改时间：17:33:55" itemprop="dateCreated datePublished" datetime="2025-01-24T17:32:29+08:00">2025-01-24</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/cuda/" itemprop="url" rel="index"><span itemprop="name">cuda</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>991</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>4 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h1 id="definition-of-a-cuda-graph"><a class="markdownIt-Anchor" href="#definition-of-a-cuda-graph"></a> DEFINITION OF A CUDA GRAPH</h1>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250121205355699.png" alt="image.png" /></p>
+<p>图是一种由依赖关系连接的一系列操作, 它独立于其执行过程。</p>
+<p>它能够一次性生成，随后多次执行, 得益于其定义与执行的分离。这种重复执行正是关键所在。</p>
+<span id="more"></span>
+<p>构成CUDA图的节点是任意<strong>异步</strong>CUDA操作。他们不必是Kernel, 可以是:</p>
+<ul>
+<li><strong>Kernel Launch</strong>: CUDA kernel running on GPU</li>
+<li><strong>CPU Function Call</strong>: Callback function on CPU</li>
+<li><strong>Memcopy/Memset</strong>: GPU data management</li>
+<li><strong>Memory Alloc/Free</strong>: Inline memory allocation</li>
+<li><strong>Sub-Graph</strong>: Graphs are hierarchical</li>
+</ul>
+<h1 id="free-up-cpu-resources"><a class="markdownIt-Anchor" href="#free-up-cpu-resources"></a> FREE UP CPU RESOURCES</h1>
+<p><strong>释放 CPU 时间以降低功耗或运行其他工作</strong></p>
+<p>当启动一个包含单个操作的图时，会隐式触发我们在创建过程中生成的多项操作，同时保持CPU可用于其他任务。</p>
+<p>与之形成对比的是上述流示例，其中CUDA内核启动更为零散，而CPU实际上可能非常忙碌地执行 launch。<br />
+<img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250121205627607.png" alt="image.png" /></p>
+<h1 id="launch-overhead-reduction"><a class="markdownIt-Anchor" href="#launch-overhead-reduction"></a> LAUNCH OVERHEAD REDUCTION</h1>
+<p>假如 kernel 非常小，小于启动开销, 总执行时间主要受CPU启动开销影响</p>
+<p><strong>Graph Launch 一次性提交所有工作，降低 CPU 开销</strong><br />
+<img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250121210029596.png" alt="image.png" /></p>
+<h1 id="three-stage-execution-model"><a class="markdownIt-Anchor" href="#three-stage-execution-model"></a> THREE-STAGE EXECUTION MODEL</h1>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250121210325113.png" alt="image.png" /></p>
+<ol>
+<li><strong>定义阶段</strong>: 定义 CUDA 图的结构, 内容. 告诉 CUDA 节点、参数、依赖关系，目标GPU是哪个, 要启动到哪个流等等。</li>
+<li><strong>实例化阶段:</strong> 当我们实例化图时, 其性能开销与直接在 CUDA 流中启动内核相似, 但这一成本仅需支付一次. 随后，我们可以多次执行这个图, 从而有效地隐藏掉初始的设置成本。</li>
+<li><strong>执行阶段:</strong> 在 CUDA 流中执行图</li>
+</ol>
+<h1 id="modifying-graphs-in-place"><a class="markdownIt-Anchor" href="#modifying-graphs-in-place"></a> MODIFYING GRAPHS IN-PLACE</h1>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250121211747011.png" alt="image.png" /></p>
+<h1 id="programming-model"><a class="markdownIt-Anchor" href="#programming-model"></a> PROGRAMMING MODEL</h1>
+<p>定义 CUDA 图有两种方式, 第一种方式是流捕获 (Stream Capture), 第二种方式是直接创建图</p>
+<h2 id="stream-capture"><a class="markdownIt-Anchor" href="#stream-capture"></a> Stream Capture</h2>
+<ul>
+<li><strong>记录了流中的操作，但并未实际向 GPU 发起任何工作任务。</strong> 之后，当完成捕获该图对象时；它便可以被实例化，所有节点及其依赖关系均由 CUDA 定义完毕。</li>
+<li>调用库函数时；流捕获同样非常实用, 例如对cuBLAS的通用矩阵乘法调用，或者对cuFFT的任何调用。因为作为用户，我们通常并不清楚在库提供的抽象层级背后具体有哪些工作被启动，以及使用哪些参数等细节来达成结果。流捕获在此非常有助于处理这些细节；</li>
+<li>需要注意的是，<strong>如果库函数调用了CUDA流同步<code>cudaStreamSynchronize()</code>，它可能会带来问题</strong>，因为捕获操作实际上并未启动任何任务, 若尝试使用CUDA流进行捕获, 将会遇到运行时错误。</li>
+</ul>
+<h3 id="例子1-从常见-cuda-stream-创建-cuda-graph-方式"><a class="markdownIt-Anchor" href="#例子1-从常见-cuda-stream-创建-cuda-graph-方式"></a> 例子1 : 从常见 Cuda Stream 创建 Cuda Graph 方式</h3>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250124111748043.png" alt="image.png" /></p>
+<p>尽管我们仅捕获了Stream 1，但CUDA仍能识别事件记录以等待事件依赖及后续节点。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250124112841901.png" alt="image.png" /></p>
+<h3 id="例子2-通过-stream-capture-来记录库调用"><a class="markdownIt-Anchor" href="#例子2-通过-stream-capture-来记录库调用"></a> 例子2: 通过 Stream Capture 来记录库调用</h3>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250124112821774.png" alt="image.png" /></p>
+<h2 id="create-graphs-directly"><a class="markdownIt-Anchor" href="#create-graphs-directly"></a> CREATE GRAPHS DIRECTLY</h2>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250124113108339.png" alt="image.png" /></p>
+<h2 id="combining-graph-stream-work"><a class="markdownIt-Anchor" href="#combining-graph-stream-work"></a> COMBINING GRAPH &amp; STREAM WORK</h2>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250124113355615.png" alt="image.png" /></p>
+<h2 id="graph-execution-semantics"><a class="markdownIt-Anchor" href="#graph-execution-semantics"></a> GRAPH EXECUTION SEMANTICS</h2>
+<p>工作在流操作之间是有序的，正如在常规CUDA中一样。如果将图表启动到流中，就是另一种可<br />
+启动的工作类型。<br />
+<img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250124113509997.png" alt="image.png" /></p>
+<h2 id="graphs-ignore-stream-serialization-rules"><a class="markdownIt-Anchor" href="#graphs-ignore-stream-serialization-rules"></a> GRAPHS IGNORE STREAM SERIALIZATION RULES</h2>
+<p>Graph 忽略了流序列化规则，启动流仅用于工作前后顺序的排定。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250124113737069.png" alt="image.png" /></p>
+<h1 id="cuda-图的限制"><a class="markdownIt-Anchor" href="#cuda-图的限制"></a> CUDA 图的限制</h1>
+<h2 id="no-automatic-placement"><a class="markdownIt-Anchor" href="#no-automatic-placement"></a> NO AUTOMATIC PLACEMENT</h2>
+<p>在创建图和节点时，需要由程序员决定操作将在何处运行<br />
+<img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250124113954383.png" alt="image.png" /></p>
+<h1 id="cuda-图的优势"><a class="markdownIt-Anchor" href="#cuda-图的优势"></a> CUDA 图的优势</h1>
+<h2 id="rapid-re-issue-of-work"><a class="markdownIt-Anchor" href="#rapid-re-issue-of-work"></a> RAPID RE-ISSUE OF WORK</h2>
+<p>图的使用能够优化向GPU派发任务时的开销成本</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250124114303819.png" alt="image.png" /></p>
+<h2 id="heterogeneous-node-types"><a class="markdownIt-Anchor" href="#heterogeneous-node-types"></a> HETEROGENEOUS NODE TYPES</h2>
+<p><strong>CUDA 图是一种异构类型。因此，可以在图中包含 GPU工作、CPU 工作以及数据移动。</strong> 将操作定义为一个统一的工作组的好处之一是，CUDA能够应用一些微妙的优化，而这些优化在仅将每个内核视为独立事件时是无法实现的</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250124114358603.png" alt="image.png" /></p>
+<h2 id="cross-device-dependencies"><a class="markdownIt-Anchor" href="#cross-device-dependencies"></a> CROSS-DEVICE DEPENDENCIES</h2>
+<p><strong>CUDA 可以同步多 GPU</strong></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250124114646676.png" alt="image.png" /></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/cuda/" rel="tag"># cuda</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/01/17/06-Concurrency-Cuda-Stream/" rel="prev" title="06 Concurrency (Cuda Stream)">
+                  <i class="fa fa-angle-left"></i> 06 Concurrency (Cuda Stream)
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2025/01/24/%E4%B8%BA%E4%BB%80%E4%B9%88LLM%E5%80%BE%E5%90%91%E4%BA%8EDecoder-only%E6%9E%B6%E6%9E%84/" rel="next" title="为什么LLM倾向于Decoder-only架构">
+                  为什么LLM倾向于Decoder-only架构 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Ronny Lu</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">197k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">11:56</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">false</script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" integrity="sha256-UF1fgpAiu3tPJN/uCqEUHNe7pnr+QR0SQDNfgglgtcM=" crossorigin="anonymous">
+  <script class="next-config" data-name="katex" type="application/json">{"copy_tex_js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/copy-tex.min.js","integrity":"sha256-Us54+rSGDSTvIhKKUs4kygE2ipA0RXpWWh0/zLqw3bs="}}</script>
+  <script src="/js/third-party/math/katex.js"></script>
+
+
+
+</body>
+</html>

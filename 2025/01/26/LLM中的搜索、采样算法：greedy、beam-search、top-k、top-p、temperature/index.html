@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-minimal.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"luyiyun1021.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.22.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="随着chatGPT，chatGLM、Llama等LLM模型的火爆，生成式模型逐渐被大家所熟知和认可。 LLM看似很神奇，但究其本质还是一个概率相关的问题：神经网络根据输入的文本，执行多轮decoder。 每次decoder时候从预训练的模型里面生成一堆候选词（及其概率&#x2F;分数），按照指定的解码算法或者说后处理算法，选择出候选词，知道满足结束🔚条件为止。 同样的LLM模型，如果采用的后处理算法、算">
+<meta property="og:type" content="article">
+<meta property="og:title" content="LLM中的搜索、采样算法：greedy、beam_search、top_k、top_p、temperature">
+<meta property="og:url" content="https://luyiyun1021.github.io/2025/01/26/LLM%E4%B8%AD%E7%9A%84%E6%90%9C%E7%B4%A2%E3%80%81%E9%87%87%E6%A0%B7%E7%AE%97%E6%B3%95%EF%BC%9Agreedy%E3%80%81beam-search%E3%80%81top-k%E3%80%81top-p%E3%80%81temperature/index.html">
+<meta property="og:site_name" content="Ronny Lu&#39;s blog">
+<meta property="og:description" content="随着chatGPT，chatGLM、Llama等LLM模型的火爆，生成式模型逐渐被大家所熟知和认可。 LLM看似很神奇，但究其本质还是一个概率相关的问题：神经网络根据输入的文本，执行多轮decoder。 每次decoder时候从预训练的模型里面生成一堆候选词（及其概率&#x2F;分数），按照指定的解码算法或者说后处理算法，选择出候选词，知道满足结束🔚条件为止。 同样的LLM模型，如果采用的后处理算法、算">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126164404188.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126164417747.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126165035897.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126165013919.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126165204926.png">
+<meta property="article:published_time" content="2025-01-26T09:26:13.000Z">
+<meta property="article:modified_time" content="2025-01-26T09:26:48.720Z">
+<meta property="article:author" content="Ronny Lu">
+<meta property="article:tag" content="大模型">
+<meta property="article:tag" content="大模型推理">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126164404188.png">
+
+
+<link rel="canonical" href="https://luyiyun1021.github.io/2025/01/26/LLM%E4%B8%AD%E7%9A%84%E6%90%9C%E7%B4%A2%E3%80%81%E9%87%87%E6%A0%B7%E7%AE%97%E6%B3%95%EF%BC%9Agreedy%E3%80%81beam-search%E3%80%81top-k%E3%80%81top-p%E3%80%81temperature/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://luyiyun1021.github.io/2025/01/26/LLM%E4%B8%AD%E7%9A%84%E6%90%9C%E7%B4%A2%E3%80%81%E9%87%87%E6%A0%B7%E7%AE%97%E6%B3%95%EF%BC%9Agreedy%E3%80%81beam-search%E3%80%81top-k%E3%80%81top-p%E3%80%81temperature/","path":"2025/01/26/LLM中的搜索、采样算法：greedy、beam-search、top-k、top-p、temperature/","title":"LLM中的搜索、采样算法：greedy、beam_search、top_k、top_p、temperature"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>LLM中的搜索、采样算法：greedy、beam_search、top_k、top_p、temperature | Ronny Lu's blog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<style>.darkmode--activated{--body-bg-color:#282828;--content-bg-color:#333;--card-bg-color:#555;--text-color:#ccc;--blockquote-color:#bbb;--link-color:#ccc;--link-hover-color:#eee;--brand-color:#ddd;--brand-hover-color:#ddd;--table-row-odd-bg-color:#282828;--table-row-hover-bg-color:#363636;--menu-item-bg-color:#555;--btn-default-bg:#222;--btn-default-color:#ccc;--btn-default-border-color:#555;--btn-default-hover-bg:#666;--btn-default-hover-color:#ccc;--btn-default-hover-border-color:#666;--highlight-background:#282b2e;--highlight-foreground:#a9b7c6;--highlight-gutter-background:#34393d;--highlight-gutter-foreground:#9ca9b6}.darkmode--activated img{opacity:.75}.darkmode--activated img:hover{opacity:.9}.darkmode--activated code{color:#69dbdc;background:0 0}button.darkmode-toggle{z-index:9999}.darkmode-ignore,img{display:flex!important}.beian img{display:inline-block!important}</style></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Ronny Lu's blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-%E6%90%9C%E7%B4%A2%E9%87%87%E6%A0%B7%E7%AE%97%E6%B3%95"><span class="nav-number">1.</span> <span class="nav-text"> 1 搜索&#x2F;采样算法</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#11-greedy"><span class="nav-number">1.1.</span> <span class="nav-text"> 1.1、greedy</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#12-beam-search"><span class="nav-number">1.2.</span> <span class="nav-text"> 1.2、beam search</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#13-top_k"><span class="nav-number">1.3.</span> <span class="nav-text"> 1.3、top_k</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#14-top_p"><span class="nav-number">1.4.</span> <span class="nav-text"> 1.4、top_p</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#15-temperature"><span class="nav-number">1.5.</span> <span class="nav-text"> 1.5、 Temperature</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-%E6%83%A9%E7%BD%9A%E6%9C%BA%E5%88%B6"><span class="nav-number">2.</span> <span class="nav-text"> 2、惩罚机制</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#21-n-grams"><span class="nav-number">2.1.</span> <span class="nav-text"> 2.1 n-grams</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#22-repetition-penalty"><span class="nav-number">2.2.</span> <span class="nav-text"> 2.2 repetition penalty</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-huggingface%E4%B8%AD%E7%9A%84%E7%94%9F%E6%88%90%E7%AD%96%E7%95%A5"><span class="nav-number">3.</span> <span class="nav-text"> 3、huggingFace中的生成策略</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5"><span class="nav-number">4.</span> <span class="nav-text"> 参考链接</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Ronny Lu"
+      src="https://avatars.githubusercontent.com/u/55233584?v=4">
+  <p class="site-author-name" itemprop="name">Ronny Lu</p>
+  <div class="site-description" itemprop="description">Tech notes on LLM, LLM Infra, C++</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">50</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">14</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">14</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/01/26/LLM%E4%B8%AD%E7%9A%84%E6%90%9C%E7%B4%A2%E3%80%81%E9%87%87%E6%A0%B7%E7%AE%97%E6%B3%95%EF%BC%9Agreedy%E3%80%81beam-search%E3%80%81top-k%E3%80%81top-p%E3%80%81temperature/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
+      <meta itemprop="name" content="Ronny Lu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ronny Lu's blog">
+      <meta itemprop="description" content="Tech notes on LLM, LLM Infra, C++">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="LLM中的搜索、采样算法：greedy、beam_search、top_k、top_p、temperature | Ronny Lu's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          LLM中的搜索、采样算法：greedy、beam_search、top_k、top_p、temperature
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-01-26 17:26:13 / 修改时间：17:26:48" itemprop="dateCreated datePublished" datetime="2025-01-26T17:26:13+08:00">2025-01-26</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">大模型</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E6%8E%A8%E7%90%86%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index"><span itemprop="name">推理技术</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>11k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>40 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><blockquote>
+<p>随着chatGPT，chatGLM、Llama等LLM模型的火爆，生成式模型逐渐被大家所熟知和认可。</p>
+<p>LLM看似很神奇，但究其本质还是一个概率相关的问题：神经网络根据输入的文本，执行多轮decoder。 每次decoder时候从预训练的模型里面生成一堆候选词（及其概率/分数），按照指定的解码算法或者说后处理算法，选择出候选词，知道满足结束🔚条件为止。</p>
+<p>同样的LLM模型，如果采用的后处理算法、算法的参数设置不同，生成的结果很可能也会不同。</p>
+<p>目前LLM模型中常见的后处理算法有：greedy、beam_search、topp、topk等。</p>
+</blockquote>
+<span id="more"></span>
+<h3 id="1-搜索采样算法"><a class="markdownIt-Anchor" href="#1-搜索采样算法"></a> 1 搜索/采样算法</h3>
+<h4 id="11-greedy"><a class="markdownIt-Anchor" href="#11-greedy"></a> 1.1、greedy</h4>
+<p>Greedy search 是指在每一次选择下一个词时，根据此次decoder生成的概率表logits（shape == [batch_size, vocab_size] )，选择概率最高的那一个词（token）。<br />
+<img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126164404188.png" alt="image.png" /></p>
+<p>以上图为例：</p>
+<p>从单词“The”开始，每次算法在选择下一个词时，都概率最高的那一个词，进而，最终的生成词序列为（“The”,“nice”,“woman”）。</p>
+<p>这就是 “贪心策略”，永远选择分数或概率最大的token。Greedy Search存在的一个最大的问题在于，只考虑了当前的高概率词，忽略了在当前低概率词后面的高概率词。 如图1所示：词“has”在词“dog”后面，条件概率高达0.9，但词“dog”的条件概率只排第二，所以greedy search错过了词序列“The”、“dog”、“has”。</p>
+<h4 id="12-beam-search"><a class="markdownIt-Anchor" href="#12-beam-search"></a> 1.2、beam search</h4>
+<p>为了避免错过隐藏的高概率词，Beam Search通过参数num_beams的配置，可以在每个时刻，记录概率最高的_<strong>前num_beams</strong>_（beam_size）个路径，在下一个时刻可以有多个基础路径同时搜索。</p>
+<p>以num_beams=2为例，过程图：</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126164417747.png" alt="image.png" /></p>
+<p>可以看到：</p>
+<p>在step=1时，概率是前num_beams的路径是（“The”、“nice”）、（“The”、“dog”）。</p>
+<p>在step=2时，概率是前num_beams的路径是（“The”、“dog”、“has”），<em>p = 0.36</em>；路径（“The”、“nice”、“women”）， <em>p = 0.2 。</em></p>
+<p>因此，两条路径中，找到了概率最高的路径，得到了更为合理的答案。</p>
+<p>beam search生成的词序列比 greedy search生成的词序列的综合概率更高，但是也不能保证是整体概率最高的词序列：因为beam_search并没有遍历所有可能的词序列的组合。</p>
+<ul>
+<li>
+<p>当num_beams = 1时， beam_search等同于 greedy search;</p>
+</li>
+<li>
+<p>当num_beams = vocab_size时， beam_search会遍历所有可能的词序列组合，但计算量会呈指数级上升。</p>
+</li>
+</ul>
+<p>beam search在做像是语音识别、翻译和摘要这类可以大致预测生成长度的场景中表现还可以；</p>
+<p>但是在像是对话和故事生成这类开放生成领域效果就差得多了。</p>
+<p>其次，我们已经看到beam search比较容易生成重复内容； 最后，高水平的人类语言不会按照下一个词条件概率最高的方式排列，在应用于生成式模型的时候，我们同样希望生成的内容具有多样性。 所以就需要在此基础上优化采样方式。</p>
+<hr />
+<h4 id="13-top_k"><a class="markdownIt-Anchor" href="#13-top_k"></a> 1.3、top_k</h4>
+<p>Top-k采样是对前面“贪心策略”的优化，它从概率排名前K的token之中进行抽样，使得除了分数最高的token之外，其他分数或概率较高的token也有机会被选中，以达到有一定机率不选最大概率的词，其核心思想在于：从前K个概率最大的词中按它们的概率进行采样。</p>
+<p>如下图示例中，假如K=3， 我们首先筛选概率值前3的token，然后使用 <em><strong>softmax</strong></em> 或者最大似然估计等方法重新计算采样概率，通过调整k的大小，即可控制采样列表的大小。 <em>当K=1时， topK等同于greedy search。</em></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126165035897.png" alt="image.png" /></p>
+<p>🤗 HuggingFace中的topK采样：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">r&#x27;&#x27;&#x27; 🔗： https://github.com/huggingface/transformers/blob/d7bd325b5a44054341acc536339adab9ef8e8bb2/src/transformers/generation/logits_process.py#L415C38-L415C38 &#x27;&#x27;&#x27;</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">TopKLogitsWarper</span>(<span class="title class_ inherited__">LogitsWarper</span>):</span><br><span class="line">    <span class="string">r&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    [`LogitsWarper`] that performs top-k, i.e. restricting to the k highest probability elements.</span></span><br><span class="line"><span class="string">    Args:</span></span><br><span class="line"><span class="string">        top_k (`int`):</span></span><br><span class="line"><span class="string">            The number of highest probability vocabulary tokens to keep for top-k-filtering.</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, top_k: <span class="built_in">int</span>, filter_value: <span class="built_in">float</span> = -<span class="built_in">float</span>(<span class="params"><span class="string">&quot;Inf&quot;</span></span>), min_tokens_to_keep: <span class="built_in">int</span> = <span class="number">1</span></span>):</span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> <span class="built_in">isinstance</span>(top_k, <span class="built_in">int</span>) <span class="keyword">or</span> top_k &lt;= <span class="number">0</span>:</span><br><span class="line">            <span class="keyword">raise</span> ValueError(<span class="string">f&quot;`top_k` has to be a strictly positive integer, but is <span class="subst">&#123;top_k&#125;</span>&quot;</span>)</span><br><span class="line"></span><br><span class="line">        <span class="variable language_">self</span>.top_k = <span class="built_in">max</span>(top_k, min_tokens_to_keep)</span><br><span class="line">        <span class="variable language_">self</span>.filter_value = filter_value</span><br><span class="line"></span><br><span class="line"><span class="meta">    @add_start_docstrings(<span class="params">LOGITS_PROCESSOR_INPUTS_DOCSTRING</span>)</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__call__</span>(<span class="params">self, input_ids: torch.LongTensor, scores: torch.FloatTensor</span>) -&gt; torch.FloatTensor:</span><br><span class="line">        top_k = <span class="built_in">min</span>(<span class="variable language_">self</span>.top_k, scores.size(-<span class="number">1</span>))  <span class="comment"># Safety check</span></span><br><span class="line">        <span class="comment"># Remove all tokens with a probability less than the last token of the top-k</span></span><br><span class="line">        indices_to_remove = scores &lt; torch.topk(scores, top_k)[<span class="number">0</span>][..., -<span class="number">1</span>, <span class="literal">None</span>]</span><br><span class="line">        scores = scores.masked_fill(indices_to_remove, <span class="variable language_">self</span>.filter_value)</span><br><span class="line">        <span class="comment"># scores.softmax(1)</span></span><br><span class="line">        <span class="keyword">return</span> scores</span><br></pre></td></tr></table></figure>
+<p><strong>topK特点</strong>：设置越大，生成的内容的随机性越大；</p>
+<p>设置越小，生成的内容越固定； 设置为1时，和 <code>greedy</code> 效果一样。</p>
+<p>但Top-k采样有个很大的问题，Top-K sampling不会根据下一个词的概率分布 ，动态调整候选池的大小。</p>
+<p>比如某些情况下，模型的生成结果中出现1个概率非常大的token，比如说概率最高的 token 的概率是 <em>0.95</em>，而相比之下剩下的 token 概率都很低了。</p>
+<p>topK由于需要采样K个词，这种情况下单纯使用topK会出现 <strong>采样到过低概率token的</strong>情况。</p>
+<p>因此我们需要<strong>对顶部 token 的累计概率进行限制</strong>，这就是下面的<strong>TopP 采样</strong>。</p>
+<h4 id="14-top_p"><a class="markdownIt-Anchor" href="#14-top_p"></a> 1.4、top_p</h4>
+<p>为了避免单纯使用topK可能出现的采样到概率过低的token，提出了topp。 topp的主要做法是设置一个_<strong>概率界限值p</strong>_，然后从概率大的词中由大到小依次取K个，若还未取够K个词，所有取到的词的概率和就大于等于界限值p，则提前停止取词，这样取出的K个词中就不会出现概率特别低的词。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126165013919.png" alt="image.png" /></p>
+<p>假如将 top-p P值设定为 0.75，即选择前 75% 概率的 tokens 作为候选。如图4所示：“老虎” 和 “苹果” 的概率加起来为 80% &gt; 75%，所以候选词就是这俩。</p>
+<p>然后把这两个词再进行一次softmax之后，概率更新为 59.8%和40.2%，之后再使用如 torch.multinomial 等随机采样函数依据更新后的概率在 “老虎” 和 &quot;苹果&quot;进行选取。</p>
+<p>🤗 HuggingFace中 TopP 的代码：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">TopPLogitsWarper</span>(<span class="title class_ inherited__">LogitsWarper</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    [`LogitsWarper`] that performs top-p, i.e. restricting to top tokens summing to prob_cut_off &lt;= prob_cut_off.</span></span><br><span class="line"><span class="string">    Args:</span></span><br><span class="line"><span class="string">        top_p (`float`):</span></span><br><span class="line"><span class="string">            If set to &lt; 1, only the smallest set of most probable tokens with probabilities that add up to `top_p` or</span></span><br><span class="line"><span class="string">            higher are kept for generation.</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, top_p: <span class="built_in">float</span>, filter_value: <span class="built_in">float</span> = -<span class="built_in">float</span>(<span class="params"><span class="string">&quot;Inf&quot;</span></span>), min_tokens_to_keep: <span class="built_in">int</span> = <span class="number">1</span></span>):</span><br><span class="line">        top_p = <span class="built_in">float</span>(top_p)</span><br><span class="line">        <span class="keyword">if</span> top_p &lt; <span class="number">0</span> <span class="keyword">or</span> top_p &gt; <span class="number">1.0</span>:</span><br><span class="line">            <span class="keyword">raise</span> ValueError(<span class="string">f&quot;`top_p` has to be a float &gt; 0 and &lt; 1, but is <span class="subst">&#123;top_p&#125;</span>&quot;</span>)</span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> <span class="built_in">isinstance</span>(min_tokens_to_keep, <span class="built_in">int</span>) <span class="keyword">or</span> (min_tokens_to_keep &lt; <span class="number">1</span>):</span><br><span class="line">            <span class="keyword">raise</span> ValueError(<span class="string">f&quot;`min_tokens_to_keep` has to be a positive integer, but is <span class="subst">&#123;min_tokens_to_keep&#125;</span>&quot;</span>)</span><br><span class="line"></span><br><span class="line">        <span class="variable language_">self</span>.top_p = top_p</span><br><span class="line">        <span class="variable language_">self</span>.filter_value = filter_value</span><br><span class="line">        <span class="variable language_">self</span>.min_tokens_to_keep = min_tokens_to_keep</span><br><span class="line"></span><br><span class="line"><span class="meta">    @add_start_docstrings(<span class="params">LOGITS_PROCESSOR_INPUTS_DOCSTRING</span>)</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__call__</span>(<span class="params">self, input_ids: torch.LongTensor, scores: torch.FloatTensor</span>) -&gt; torch.FloatTensor:</span><br><span class="line">        sorted_logits, sorted_indices = torch.sort(scores, descending=<span class="literal">False</span>)</span><br><span class="line">        cumulative_probs = sorted_logits.softmax(dim=-<span class="number">1</span>).cumsum(dim=-<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">        <span class="comment"># Remove tokens with cumulative top_p above the threshold (token with 0 are kept)</span></span><br><span class="line">        sorted_indices_to_remove = cumulative_probs &lt;= (<span class="number">1</span> - <span class="variable language_">self</span>.top_p)</span><br><span class="line">        <span class="comment"># Keep at least min_tokens_to_keep</span></span><br><span class="line">        sorted_indices_to_remove[..., -<span class="variable language_">self</span>.min_tokens_to_keep :] = <span class="number">0</span></span><br><span class="line"></span><br><span class="line">        <span class="comment"># scatter sorted tensors to original indexing</span></span><br><span class="line">        indices_to_remove = sorted_indices_to_remove.scatter(<span class="number">1</span>, sorted_indices, sorted_indices_to_remove)</span><br><span class="line">        scores = scores.masked_fill(indices_to_remove, <span class="variable language_">self</span>.filter_value)</span><br><span class="line">        <span class="keyword">return</span> scores</span><br></pre></td></tr></table></figure>
+<p>TopP特点：</p>
+<ul>
+<li>
+<p>采用概率阈值，相比于纯topK,可以避免采样到概率过低的tokens</p>
+</li>
+<li>
+<p>P值越大，采样结果的多样性越高，但可能会采样到概率过低的token</p>
+</li>
+<li>
+<p>P值越小，采样结果越单一。</p>
+</li>
+</ul>
+<p>很多模型会把topK和topK结合使用。<em><strong>TopK-Top</strong></em> 采样法就是将TopK采样法和TopP采样法相结合。</p>
+<h4 id="15-temperature"><a class="markdownIt-Anchor" href="#15-temperature"></a> 1.5、 Temperature</h4>
+<p>上面所说的topk, top_p都是在动态选择不同词的范围，但并没有更改实际词出现的概率。那么，是否可以在出现上概率上也进行调节呢？例如，将高频和低频之间的_<strong>概率拉大或者减少</strong>_，也能够对多样性提供一些思路。</p>
+<p>因此，Temperatue温度采样方式被提出：</p>
+<p><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mstyle mathsize="2.074em"><msub><mi>P</mi><mi>i</mi></msub><mo>=</mo><mfrac><msup><mi>e</mi><mrow><mi>i</mi><mi mathvariant="normal">/</mi><mi>T</mi></mrow></msup><mrow><mstyle scriptlevel="0" displaystyle="false"><msubsup><mo>∑</mo><mrow><mi>j</mi><mo>=</mo><mn>0</mn></mrow><mi>n</mi></msubsup></mstyle><msup><mi>e</mi><mrow><mi>j</mi><mi mathvariant="normal">/</mi><mi>T</mi></mrow></msup></mrow></mfrac></mstyle></mrow><annotation encoding="application/x-tex">{\huge P_{i} = \frac{e^{i/T} }{ {\textstyle \sum_{j=0}^{n}} {e^{j/T} }} }</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:4.335996739999999em;vertical-align:-2.0961207399999995em;"></span><span class="mord"><span class="mord sizing reset-size6 size10"><span class="mord mathnormal" style="margin-right:0.13889em;">P</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30791166827386696em;"><span style="top:-3.29em;margin-left:-0.13889em;margin-right:0.02410800385728062em;"><span class="pstrut" style="height:3.44em;"></span><span class="sizing reset-size10 size8 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">i</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel sizing reset-size6 size10">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mord sizing reset-size6 size10"><span class="mopen nulldelimiter sizing reset-size10 size6"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.0799787849566056em;"><span style="top:-3.4830615236258438em;"><span class="pstrut" style="height:4.074em;"></span><span class="sizing reset-size10 size8 mtight"><span class="mord mtight"><span class="mord mtight"><span class="mop sizing reset-size8 size10"><span class="mop op-symbol small-op" style="position:relative;top:-0.0000050000000000050004em;">∑</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.7809384763741563em;"><span style="top:-3.1552744744455157em;margin-left:0em;margin-right:0.02410800385728062em;"><span class="pstrut" style="height:3.44em;"></span><span class="sizing reset-size10 size8 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.05724em;">j</span><span class="mrel mtight">=</span><span class="mord mtight">0</span></span></span></span><span style="top:-3.9219961427193826em;margin-right:0.02410800385728062em;"><span class="pstrut" style="height:3.44em;"></span><span class="sizing reset-size10 size8 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">n</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.4197272613307618em;"><span></span></span></span></span></span></span></span><span class="mord mtight"><span class="mord mtight"><span class="mord mathnormal mtight">e</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.9410833333333334em;"><span style="top:-3.5160833333333334em;margin-right:0.034722222222222224em;"><span class="pstrut" style="height:3.2em;"></span><span class="sizing reset-size8 size7 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.05724em;">j</span><span class="mord mtight">/</span><span class="mord mathnormal mtight" style="margin-right:0.13889em;">T</span></span></span></span></span></span></span></span></span></span></span></span></span><span style="top:-4.304em;"><span class="pstrut" style="height:4.074em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-4.468em;"><span class="pstrut" style="height:4.074em;"></span><span class="sizing reset-size10 size8 mtight"><span class="mord mtight"><span class="mord mtight"><span class="mord mathnormal mtight">e</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.988em;"><span style="top:-3.563em;margin-right:0.034722222222222224em;"><span class="pstrut" style="height:3.2em;"></span><span class="sizing reset-size8 size7 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">i</span><span class="mord mtight">/</span><span class="mord mathnormal mtight" style="margin-right:0.13889em;">T</span></span></span></span></span></span></span></span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:1.010665737704918em;"><span></span></span></span></span></span><span class="mclose nulldelimiter sizing reset-size10 size6"></span></span></span></span></span></span></p>
+<p>Temperature 采样中的温度与玻尔兹曼分布有关，由上面的公式可知，temperature采样本质上就是在 _<strong>Softmax 函数上添加了温度（T）</strong>_这个参数。</p>
+<p>通过将logits除以温度来实现温度采样，然后将其输入Softmax并获得采样概率。</p>
+<p>越低的温度(&lt; 1.0)使模型会对高概率的选择更为偏向，而高于1.0的温度，则会缩小高概率词和低概率词之间的差距。<br />
+<img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126165204926.png" alt="image.png" /></p>
+<p>Temperature 采样最终的宏观效果是，<strong>在较低的温度下，我们的模型更具确定性，而在较高的温度下，则不那么确定</strong>。</p>
+<p>目前在huggingface transformers中，temperature、topK、TopP的处理默认是串联的，先进行temperature，然后topk，最后topp。 当然，如果用户自己定义了分数过滤器，用户的过滤器优先。</p>
+<h3 id="2-惩罚机制"><a class="markdownIt-Anchor" href="#2-惩罚机制"></a> 2、惩罚机制</h3>
+<h4 id="21-n-grams"><a class="markdownIt-Anchor" href="#21-n-grams"></a> 2.1 n-grams</h4>
+<p>生成成模型在实际的运行过程中，总会出现一些重复的例子，这是高频词选择的结果。为了解决重复问题，一个简单的方法是用n-grams惩罚，来自论文Paulus et al. (2017)和Klein et al. (2017)。</p>
+<p>其基本思想在于：通常的n-grams惩罚通过配置下一个词重复出现n-gram的概率为0，来保证没有n-gram出现两次。</p>
+<h4 id="22-repetition-penalty"><a class="markdownIt-Anchor" href="#22-repetition-penalty"></a> 2.2 repetition penalty</h4>
+<p>还可以通过<strong>惩罚因子将出现过词的概率变小或者强制不使用重复词来解决。</strong></p>
+<p>其核心思想在于：**对于之前出现过的词语，在后续预测的过程中，通过引入惩罚因子降低其出现的概率。**惩罚因子penalty == 1.0时，表示没有惩罚。</p>
+<p>惩罚因子来自于同样广为流传的【 CTRL: A Conditional Transformer Language Model for Controllable Generation 】:📰：<a target="_blank" rel="noopener" href="https://arxiv.org/pdf/1909.05858.pdf">https://arxiv.org/pdf/1909.05858.pdf</a> 。</p>
+<p>🤗HuggingFace中的实现：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># from  transformers/src/transformers/generation/logits_process.py</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">RepetitionPenaltyLogitsProcessor</span>(<span class="title class_ inherited__">LogitsProcessor</span>):</span><br><span class="line">    <span class="string">r&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    [`LogitsProcessor`] that prevents the repetition of previous tokens through an exponential penalty. This technique</span></span><br><span class="line"><span class="string">    shares some similarities with coverage mechanisms and other aimed at reducing repetition. During the text</span></span><br><span class="line"><span class="string">    generation process, the probability distribution for the next token is determined using a formula that incorporates</span></span><br><span class="line"><span class="string">    token scores based on their occurrence in the generated sequence. Tokens with higher scores are more likely to be</span></span><br><span class="line"><span class="string">    selected. The formula can be seen in the original [paper](https://arxiv.org/pdf/1909.05858.pdf). According to the</span></span><br><span class="line"><span class="string">    paper a penalty of around 1.2 yields a good balance between truthful generation and lack of repetition.</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, penalty: <span class="built_in">float</span></span>):</span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> <span class="built_in">isinstance</span>(penalty, <span class="built_in">float</span>) <span class="keyword">or</span> <span class="keyword">not</span> (penalty &gt; <span class="number">0</span>):</span><br><span class="line">            <span class="keyword">raise</span> ValueError(<span class="string">f&quot;`penalty` has to be a strictly positive float, but is <span class="subst">&#123;penalty&#125;</span>&quot;</span>)</span><br><span class="line"></span><br><span class="line">        <span class="variable language_">self</span>.penalty = penalty</span><br><span class="line"></span><br><span class="line"><span class="meta">    @add_start_docstrings(<span class="params">LOGITS_PROCESSOR_INPUTS_DOCSTRING</span>)</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__call__</span>(<span class="params">self, input_ids: torch.LongTensor, scores: torch.FloatTensor</span>) -&gt; torch.FloatTensor:</span><br><span class="line">        score = torch.gather(scores, <span class="number">1</span>, input_ids)</span><br><span class="line">        <span class="comment"># if score &lt; 0 then repetition penalty has to be multiplied to reduce the previous token probability</span></span><br><span class="line">        score = torch.where(score &lt; <span class="number">0</span>, score * <span class="variable language_">self</span>.penalty, score / <span class="variable language_">self</span>.penalty)</span><br><span class="line"></span><br><span class="line">        scores.scatter_(<span class="number">1</span>, input_ids, score)</span><br><span class="line">        <span class="keyword">return</span> scores</span><br></pre></td></tr></table></figure>
+<h3 id="3-huggingface中的生成策略"><a class="markdownIt-Anchor" href="#3-huggingface中的生成策略"></a> 3、huggingFace中的生成策略</h3>
+<p>huggingFace为了保证多样性生成，有很多其他参数控制策略，包括长度、badwords等，下面总结了其中的22个参数及其释义。</p>
+<p>🗂: <a target="_blank" rel="noopener" href="https://github.com/huggingface/transformers/blob/main/src/transformers/generation/logits_process.py">https://github.com/huggingface/transformers/blob/main/src/transformers/generation/logits_process.py</a></p>
+<p><strong>1、temperature (float, optional, defaults to 1.0)： 用于调节下一个标记概率的值。</strong></p>
+<p><strong>2、top_k (int, optional, defaults to 50)： 用于top-k过滤的最高概率词汇标记的数量。</strong></p>
+<p><strong>3、top_p (float, optional, defaults to 1.0) ： 如果设置为float &lt; 1，则只保留概率加起来达到top_p或更高的最小的最有可能的词汇集合进行生成。</strong></p>
+<p>4、typical_p (float, optional, defaults to 1.0)： 局部典型性衡量在已经生成的部分文本的情况下，预测下一个目标标记的条件概率与预测下一个随机标记的预期条件概率的相似程度。如果设置为float &lt; 1，则保留最小的、概率相加为typical_p或更高的局部典型标记的集合，用于生成。</p>
+<p>5、epsilon_cutoff (float, optional, defaults to 0.0)：如果设置为严格介于0和1之间的float，只有条件概率大于epsilon_cutoff的标记会被采样。在论文中，建议的值在3e-4到9e-4之间，取决于模型的大小。</p>
+<p>6、eta_cutoff (float, optional, defaults to 0.0)： Eta采样是局部典型采样和ε采样的混合体。如果设置为严格介于0和1之间的浮点数，只有当一个标记大于eta_cutoff或sqrt(eta_cutoff) * exp(-entropy(softmax(next_token_logits)))时，才会考虑它。后者是预期的下一个令牌概率，以 sqrt（eta_cutoff）为尺度。在论文中，建议值从3e-4到2e-3不等，取决于模型的大小。更多细节见截断抽样作为语言模型去平滑。</p>
+<p><strong>7、diversity_penalty (float, optional, defaults to 0.0)： 如果一个beam路径得分在某一特定时间产生了与其他组的任何beam路径相同的标记，这个值将从beam的分数中减去。请注意，多样性惩罚只有在分组beam搜索被启用时才有效。</strong></p>
+<p><strong>8、repetition_penalty (float, optional, defaults to 1.0) ：重复性惩罚的参数。1.0意味着没有惩罚。</strong></p>
+<p>9、encoder_repetition_penalty (float, optional, defaults to 1.0)：对不在原始输入中的序列进行指数式惩罚。1.0意味着没有惩罚。</p>
+<p><strong>10、length_penalty (float, optional, defaults to 1.0)：对长度的指数惩罚，用于beam search。它作为指数被应用于序列的长度，反过来又被用来划分序列的分数。由于分数是序列的对数可能性（即负数），length_penalty &gt; 0.0会促进更长的序列，而length_penalty &lt; 0.0会鼓励更短的序列。</strong></p>
+<p><strong>11、no_repeat_ngram_size (int, optional, defaults to 0)：如果设置为int &gt; 0，所有该大小的ngrams只能出现一次。</strong></p>
+<p><strong>12、bad_words_ids(List[List[int]], optional)： 不允许生成的token id的列表。为了获得不应该出现在生成的文本中的词的标记ID，使用tokenizer(bad_words, add_prefix_space=True, add_special_tokens=False).input_ids，这个能用于敏感词过滤。</strong></p>
+<p>13、force_words_ids(List[List[int]] or List[List[List[int]]], optional)：必须生成的标记ID的列表。如果给定的是List[List[int]]，这将被视为一个必须包含的简单单词列表，与bad_words_ids相反。如果给定的是List[List[List[int]]]，这将触发一个disjunctive约束，即可以允许每个词的不同形式。</p>
+<p>14、renormalize_logits (bool, optional, defaults to False) ：在应用所有的logits处理器或warpers（包括自定义的）之后，是否要重新规范化logits。强烈建议将此标志设置为 “True”，因为搜索算法假定分数对数是正常化的，但一些对数处理器或翘曲器会破坏正常化。</p>
+<p>15、constraints (List[Constraint], optional)： 可以添加到生成中的自定义约束，以确保输出将包含使用Constraint对象所定义的某些令牌，并尽可能以最合理的方式进行。</p>
+<p><strong>16、forced_bos_token_id (int, optional, defaults to model.config.forced_bos_token_id)：强制作为解码器_start_token_id之后第一个生成的令牌的id。对于像mBART这样的多语言模型非常有用，在这种情况下，第一个生成的标记需要是目标语言的标记。</strong></p>
+<p>17、forced_eos_token_id (Union[int, List[int]], optional, defaults to model.config.forced_eos_token_id) ：当达到max_length时，强制作为最后生成的令牌的id。可以选择使用一个列表来设置多个序列结束的标记。</p>
+<p><strong>18、remove_invalid_values (bool, optional, defaults to model.config.remove_invalid_values) - 是否删除模型的可能nan和inf输出，以防止生成方法崩溃。注意，使用remove_invalid_values会减慢生成速度。</strong></p>
+<p>19、exponential_decay_length_penalty (tuple(int, float), optional)： 这个Tuple在生成一定数量的标记后，增加一个指数级增长的长度惩罚。该元组应包括： (start_index, decay_factor），其中start_index表示惩罚开始的位置，decay_factor表示指数衰减的系数。</p>
+<p>20、suppress_tokens (List[int], optional) ：一个在生成时将被抑制的标记的列表。SupressTokens的logit处理器将把它们的log probs设置为-inf，这样它们就不会被采样了。</p>
+<p>21、begin_suppress_tokens (List[int], optional)： 一个将在生成之初被抑制的标记的列表。SupressBeginTokens日志处理器将把它们的日志probs设置为-inf，这样它们就不会被采样了。</p>
+<p>22、forced_decoder_ids (List[List[int]], optional) ：一对整数的列表，表示从生成索引到标记索引的映射，在采样前将被强制。例如，[[1, 123]]意味着第二个生成的标记将总是一个索引为123的标记。</p>
+<h3 id="参考链接"><a class="markdownIt-Anchor" href="#参考链接"></a> 参考链接</h3>
+<ol>
+<li><a target="_blank" rel="noopener" href="https://finisky.github.io/nucleussampling/">https://finisky.github.io/nucleussampling/</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/jarodyv/article/details/128994176">https://blog.csdn.net/jarodyv/article/details/128994176</a></li>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/430961578?utm_id=0">https://zhuanlan.zhihu.com/p/430961578?utm_id=0_</a></li>
+<li><a target="_blank" rel="noopener" href="https://huggingface.co/blog/how-to-generate">https://huggingface.co/blog/how-to-generate</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.ctfiot.com/110138.html">https://www.ctfiot.com/110138.html</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/huggingface/transformers/blob/main/src/transformers/generation/logits_process.py#L415C38-L415C38">https://github.com/huggingface/transformers/blob/main/src/transformers/generation/logits_process.py</a></li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" rel="tag"># 大模型</a>
+              <a href="/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%8E%A8%E7%90%86/" rel="tag"># 大模型推理</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/01/26/llama-cpp/" rel="prev" title="llama.cpp">
+                  <i class="fa fa-angle-left"></i> llama.cpp
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2025/01/26/Mooncake%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0%EF%BC%9A%E6%B7%B1%E5%85%A5%E5%AD%A6%E4%B9%A0%E4%BB%A5Cache%E4%B8%BA%E4%B8%AD%E5%BF%83%E7%9A%84%E8%B0%83%E5%BA%A6%E6%80%9D%E6%83%B3%EF%BC%8C%E8%B0%B1%E5%86%99LLM%E6%9C%8D%E5%8A%A1%E9%99%8D%E6%9C%AC%E5%A2%9E%E6%95%88%E6%96%B0%E7%AF%87%E7%AB%A0/" rel="next" title="Mooncake阅读笔记：深入学习以Cache为中心的调度思想，谱写LLM服务降本增效新篇章">
+                  Mooncake阅读笔记：深入学习以Cache为中心的调度思想，谱写LLM服务降本增效新篇章 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Ronny Lu</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">197k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">11:56</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">false</script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" integrity="sha256-UF1fgpAiu3tPJN/uCqEUHNe7pnr+QR0SQDNfgglgtcM=" crossorigin="anonymous">
+  <script class="next-config" data-name="katex" type="application/json">{"copy_tex_js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/copy-tex.min.js","integrity":"sha256-Us54+rSGDSTvIhKKUs4kygE2ipA0RXpWWh0/zLqw3bs="}}</script>
+  <script src="/js/third-party/math/katex.js"></script>
+
+
+
+</body>
+</html>

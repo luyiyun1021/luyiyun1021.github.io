@@ -15,12 +15,12 @@
 
 
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha256-5eIC48iZUHmSlSUz9XtjRyK2mzQkHScZY1WdMaoz74E=" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-minimal.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
 
-<script class="next-config" data-name="main" type="application/json">{"hostname":"luyiyun1021.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.21.1","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+<script class="next-config" data-name="main" type="application/json">{"hostname":"luyiyun1021.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.22.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
 
     <meta property="og:type" content="article">
 <meta property="og:title" content="LLaMA系列">
@@ -176,14 +176,14 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%89%8D%E7%BD%AE%E7%9F%A5%E8%AF%86"><span class="nav-number">1.</span> <span class="nav-text">前置知识</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%BB%E9%A2%98"><span class="nav-number">2.</span> <span class="nav-text">主题</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Transformer-vs-LLaMA"><span class="nav-number">3.</span> <span class="nav-text">Transformer vs LLaMA</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#LLaMA1-LLaMA2%E6%A8%A1%E5%9E%8B%E5%8F%82%E6%95%B0%E9%87%8F"><span class="nav-number">4.</span> <span class="nav-text">LLaMA1, LLaMA2模型参数量</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%A8%A1%E5%9E%8B%E7%BB%93%E6%9E%84"><span class="nav-number">5.</span> <span class="nav-text">模型结构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Embedding"><span class="nav-number">5.0.1.</span> <span class="nav-text">Embedding</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Normalization"><span class="nav-number">5.0.2.</span> <span class="nav-text">Normalization</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%9B%9E%E9%A1%BE%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E7%9A%84%E6%95%B0%E5%AD%A6%E6%A6%82%E5%BF%B5"><span class="nav-number">5.0.2.1.</span> <span class="nav-text">回顾神经网络的数学概念</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%9B%9E%E9%A1%BETransformer%E4%B8%AD%E7%9A%84Layer-Normalization"><span class="nav-number">5.0.2.2.</span> <span class="nav-text">回顾Transformer中的Layer Normalization</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#LLaMA%E4%BD%BF%E7%94%A8%E7%9A%84normalization-Root-Mean-Square-Normalization"><span class="nav-number">5.0.2.3.</span> <span class="nav-text">LLaMA使用的normalization: Root Mean Square Normalization</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Positional-Encoding"><span class="nav-number">5.0.3.</span> <span class="nav-text">Positional Encoding</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%9B%9E%E9%A1%BETransformer%E4%B8%AD%E7%9A%84Positional-Encoding"><span class="nav-number">5.0.3.1.</span> <span class="nav-text">回顾Transformer中的Positional Encoding</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Absolute-Positional-Encodings-v-s-Relative-Positional-Encodings"><span class="nav-number">5.0.3.2.</span> <span class="nav-text">Absolute Positional Encodings v.s. Relative Positional Encodings</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Rotary-Position-Embeddings"><span class="nav-number">5.0.3.3.</span> <span class="nav-text">Rotary Position Embeddings</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Self-Attention"><span class="nav-number">5.0.4.</span> <span class="nav-text">Self-Attention</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#KV-cache"><span class="nav-number">5.0.5.</span> <span class="nav-text">KV cache</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Next-Token-Prediction-Task"><span class="nav-number">5.0.5.1.</span> <span class="nav-text">Next Token Prediction Task</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Motivation-behind-KV-cache"><span class="nav-number">5.0.5.2.</span> <span class="nav-text">Motivation behind KV cache</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#KV-cache-1"><span class="nav-number">5.0.5.3.</span> <span class="nav-text">KV cache</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Grouped-Multi-Query-Attention"><span class="nav-number">5.0.6.</span> <span class="nav-text">Grouped Multi-Query Attention</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#Multi-Query-Attention%EF%BC%88MQA%EF%BC%89"><span class="nav-number">5.0.6.0.1.</span> <span class="nav-text">Multi Query Attention（MQA）</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Grouped-Multi-Query-Attention-GMQA"><span class="nav-number">5.0.6.0.2.</span> <span class="nav-text">Grouped Multi-Query Attention(GMQA)</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#SwiGLU-Function"><span class="nav-number">5.0.7.</span> <span class="nav-text">SwiGLU Function</span></a></li></ol></li></ol></li></ol></div>
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%89%8D%E7%BD%AE%E7%9F%A5%E8%AF%86"><span class="nav-number">1.</span> <span class="nav-text"> 前置知识</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%BB%E9%A2%98"><span class="nav-number">2.</span> <span class="nav-text"> 主题</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#transformer-vs-llama"><span class="nav-number">3.</span> <span class="nav-text"> Transformer vs LLaMA</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#llama1-llama2%E6%A8%A1%E5%9E%8B%E5%8F%82%E6%95%B0%E9%87%8F"><span class="nav-number">4.</span> <span class="nav-text"> LLaMA1, LLaMA2模型参数量</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%A8%A1%E5%9E%8B%E7%BB%93%E6%9E%84"><span class="nav-number">5.</span> <span class="nav-text"> 模型结构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#embedding"><span class="nav-number">5.0.1.</span> <span class="nav-text"> Embedding</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#normalization"><span class="nav-number">5.0.2.</span> <span class="nav-text"> Normalization</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%9B%9E%E9%A1%BE%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E7%9A%84%E6%95%B0%E5%AD%A6%E6%A6%82%E5%BF%B5"><span class="nav-number">5.0.2.1.</span> <span class="nav-text"> 回顾神经网络的数学概念</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%9B%9E%E9%A1%BEtransformer%E4%B8%AD%E7%9A%84layer-normalization"><span class="nav-number">5.0.2.2.</span> <span class="nav-text"> 回顾Transformer中的Layer Normalization</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#llama%E4%BD%BF%E7%94%A8%E7%9A%84normalization-root-mean-square-normalization"><span class="nav-number">5.0.2.3.</span> <span class="nav-text"> LLaMA使用的normalization: Root Mean Square Normalization</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#positional-encoding"><span class="nav-number">5.0.3.</span> <span class="nav-text"> Positional Encoding</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%9B%9E%E9%A1%BEtransformer%E4%B8%AD%E7%9A%84positional-encoding"><span class="nav-number">5.0.3.1.</span> <span class="nav-text"> 回顾Transformer中的Positional Encoding</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#absolute-positional-encodings-vs-relative-positional-encodings"><span class="nav-number">5.0.3.2.</span> <span class="nav-text"> Absolute Positional Encodings v.s. Relative Positional Encodings</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#rotary-position-embeddings"><span class="nav-number">5.0.3.3.</span> <span class="nav-text"> Rotary Position Embeddings</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#self-attention"><span class="nav-number">5.0.4.</span> <span class="nav-text"> Self-Attention</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#kv-cache"><span class="nav-number">5.0.5.</span> <span class="nav-text"> KV cache</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#next-token-prediction-task"><span class="nav-number">5.0.5.1.</span> <span class="nav-text"> Next Token Prediction Task</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#motivation-behind-kv-cache"><span class="nav-number">5.0.5.2.</span> <span class="nav-text"> Motivation behind KV cache</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#kv-cache-2"><span class="nav-number">5.0.5.3.</span> <span class="nav-text"> KV cache</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#grouped-multi-query-attention"><span class="nav-number">5.0.6.</span> <span class="nav-text"> Grouped Multi-Query Attention</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#multi-query-attentionmqa"><span class="nav-number">5.0.6.0.1.</span> <span class="nav-text"> Multi Query Attention（MQA）</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#grouped-multi-query-attentiongmqa"><span class="nav-number">5.0.6.0.2.</span> <span class="nav-text"> Grouped Multi-Query Attention(GMQA)</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#swiglu-function"><span class="nav-number">5.0.7.</span> <span class="nav-text"> SwiGLU Function</span></a></li></ol></li></ol></li></ol></div>
         </div>
         <!--/noindex-->
 
         <div class="site-overview-wrap sidebar-panel">
           <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
     <img class="site-author-image" itemprop="image" alt="Ronny Lu"
-      src="/images/avatar.jpeg">
+      src="https://avatars.githubusercontent.com/u/55233584?v=4">
   <p class="site-author-name" itemprop="name">Ronny Lu</p>
   <div class="site-description" itemprop="description">Tech notes on LLM, LLM Infra, C++</div>
 </div>
@@ -191,18 +191,18 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">29</span>
+          <span class="site-state-item-count">50</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
           <a href="/categories/">
-        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-count">14</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-count">14</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -232,7 +232,7 @@
     <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/01/10/LLaMA%E7%B3%BB%E5%88%97/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpeg">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
       <meta itemprop="name" content="Ronny Lu">
     </span>
 
@@ -306,7 +306,7 @@
         <i class="far fa-clock"></i>
       </span>
       <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>4 分钟</span>
+      <span>15 分钟</span>
     </span>
 </div>
 
@@ -316,237 +316,324 @@
     
     
     
-    <div class="post-body" itemprop="articleBody"><p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110165618253.png" alt="image.png"></p>
+    <div class="post-body" itemprop="articleBody"><p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110165618253.png" alt="image.png" /></p>
 <span id="more"></span>
-
-<h1 id="前置知识"><a href="#前置知识" class="headerlink" title="前置知识"></a>前置知识</h1><ul>
-<li><p><strong>Transformer模型的结构以及注意力机制的工作原理</strong>。</p>
-</li>
-<li><p><strong>Transformer模型是如何训练和推理的</strong>。</p>
-</li>
-<li><p><strong>线性代数</strong>：矩阵乘法，点积。</p>
-</li>
-<li><p><strong>复数</strong>：欧拉公式（非必需，了解更好）。</p>
-</li>
-</ul>
-<h1 id="主题"><a href="#主题" class="headerlink" title="主题"></a>主题</h1><ul>
-<li><p><strong>原始Transformer与LLaMA的架构差异</strong>。</p>
-</li>
-<li><p><strong>RMS Normalization</strong></p>
-</li>
-<li><p><strong>Rotary Positional Embeddings</strong></p>
-</li>
-<li><p><strong>KV-Cache</strong></p>
-</li>
-<li><p><strong>Multi-Query Attention</strong></p>
-</li>
-<li><p><strong>Grouped Multi-Query Attention</strong></p>
-</li>
-<li><p><strong>SwiGLU Activation Function</strong></p>
-</li>
-</ul>
-<h1 id="Transformer-vs-LLaMA"><a href="#Transformer-vs-LLaMA" class="headerlink" title="Transformer vs LLaMA"></a>Transformer vs LLaMA</h1><p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110165628374.png" alt="image.png"></p>
+<h1 id="前置知识"><a class="markdownIt-Anchor" href="#前置知识"></a> 前置知识</h1>
 <ul>
-<li><p><strong>llama只有encoder</strong>, 因为它基于next prediction token task训练, 只需要自注意力机制来预测下一个 token</p>
+<li>
+<p><strong>Transformer模型的结构以及注意力机制的工作原理</strong>。</p>
 </li>
-<li><p>**所有的归一化被移到了block之前(**Attention, Feed Forward)</p>
+<li>
+<p><strong>Transformer模型是如何训练和推理的</strong>。</p>
 </li>
-<li><p>llama不再使用Transformer的Postional Encoding, 而是<strong>使用Rotary Positional Embeddings, 并且只应用在Query, Key上</strong></p>
+<li>
+<p><strong>线性代数</strong>：矩阵乘法，点积。</p>
 </li>
-<li><p><strong>Attention层增加了KV cache, Grouped Multi-Query Attention</strong></p>
-</li>
-<li><p><strong>Feed Forward block中的激活函数从ReLU变为SwiGLU</strong></p>
+<li>
+<p><strong>复数</strong>：欧拉公式（非必需，了解更好）。</p>
 </li>
 </ul>
-<h1 id="LLaMA1-LLaMA2模型参数量"><a href="#LLaMA1-LLaMA2模型参数量" class="headerlink" title="LLaMA1, LLaMA2模型参数量"></a>LLaMA1, LLaMA2模型参数量</h1><p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110165639343.png" alt="image.png"></p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110165646305.png" alt="image.png"></p>
-<h1 id="模型结构"><a href="#模型结构" class="headerlink" title="模型结构"></a>模型结构</h1><h3 id="Embedding"><a href="#Embedding" class="headerlink" title="Embedding"></a>Embedding</h3><p>句子通过分词器(Tokenizer)变成token(字典中的位置), token通过embedding层被映射到一个向量中(Transformer为512维, 而llama为4096维), 用来表示这个token的特征, 这些embedding是可学习的,是模型参数的一部分</p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110165655594.png" alt="image.png"></p>
-<h3 id="Normalization"><a href="#Normalization" class="headerlink" title="Normalization"></a>Normalization</h3><h4 id="回顾神经网络的数学概念"><a href="#回顾神经网络的数学概念" class="headerlink" title="回顾神经网络的数学概念"></a><strong>回顾神经网络的数学概念</strong></h4><p>假设我们有一个线性层 nn.Linear(in_features&#x3D;3, out_features&#x3D;5, bias&#x3D;True), 输入为(10, 3). 这意味着我们有10个item, 每个item有3个feature.</p>
+<h1 id="主题"><a class="markdownIt-Anchor" href="#主题"></a> 主题</h1>
+<ul>
+<li>
+<p><strong>原始Transformer与LLaMA的架构差异</strong>。</p>
+</li>
+<li>
+<p><strong>RMS Normalization</strong></p>
+</li>
+<li>
+<p><strong>Rotary Positional Embeddings</strong></p>
+</li>
+<li>
+<p><strong>KV-Cache</strong></p>
+</li>
+<li>
+<p><strong>Multi-Query Attention</strong></p>
+</li>
+<li>
+<p><strong>Grouped Multi-Query Attention</strong></p>
+</li>
+<li>
+<p><strong>SwiGLU Activation Function</strong></p>
+</li>
+</ul>
+<h1 id="transformer-vs-llama"><a class="markdownIt-Anchor" href="#transformer-vs-llama"></a> Transformer vs LLaMA</h1>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110165628374.png" alt="image.png" /></p>
+<ul>
+<li>
+<p><strong>llama只有encoder</strong>, 因为它基于next prediction token task训练, 只需要自注意力机制来预测下一个 token</p>
+</li>
+<li>
+<p>**所有的归一化被移到了block之前(**Attention, Feed Forward)</p>
+</li>
+<li>
+<p>llama不再使用Transformer的Postional Encoding, 而是<strong>使用Rotary Positional Embeddings, 并且只应用在Query, Key上</strong></p>
+</li>
+<li>
+<p><strong>Attention层增加了KV cache, Grouped Multi-Query Attention</strong></p>
+</li>
+<li>
+<p><strong>Feed Forward block中的激活函数从ReLU变为SwiGLU</strong></p>
+</li>
+</ul>
+<h1 id="llama1-llama2模型参数量"><a class="markdownIt-Anchor" href="#llama1-llama2模型参数量"></a> LLaMA1, LLaMA2模型参数量</h1>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110165639343.png" alt="image.png" /></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110165646305.png" alt="image.png" /></p>
+<h1 id="模型结构"><a class="markdownIt-Anchor" href="#模型结构"></a> 模型结构</h1>
+<h3 id="embedding"><a class="markdownIt-Anchor" href="#embedding"></a> Embedding</h3>
+<p>句子通过分词器(Tokenizer)变成token(字典中的位置), token通过embedding层被映射到一个向量中(Transformer为512维, 而llama为4096维), 用来表示这个token的特征, 这些embedding是可学习的,是模型参数的一部分</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110165655594.png" alt="image.png" /></p>
+<h3 id="normalization"><a class="markdownIt-Anchor" href="#normalization"></a> Normalization</h3>
+<h4 id="回顾神经网络的数学概念"><a class="markdownIt-Anchor" href="#回顾神经网络的数学概念"></a> <strong>回顾神经网络的数学概念</strong></h4>
+<p>假设我们有一个线性层 nn.Linear(in_features=3, out_features=5, bias=True), 输入为(10, 3). 这意味着我们有10个item, 每个item有3个feature.</p>
 <p>对于这个带有bias的线性层, 我们有两个权重矩阵, 一个是大小为(5, 3)的W, 一个是大小为(1, 5)的b</p>
-<p>如下图所示, item1的第一个输出feature的计算方法为$a_1 * w_1 + a_2 * w_2 + a_3 * w_3 + b_1$﻿</p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110165721292.png"></p>
+<p>如下图所示, item1的第一个输出feature的计算方法为<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>a</mi><mn>1</mn></msub><mo>∗</mo><msub><mi>w</mi><mn>1</mn></msub><mo>+</mo><msub><mi>a</mi><mn>2</mn></msub><mo>∗</mo><msub><mi>w</mi><mn>2</mn></msub><mo>+</mo><msub><mi>a</mi><mn>3</mn></msub><mo>∗</mo><msub><mi>w</mi><mn>3</mn></msub><mo>+</mo><msub><mi>b</mi><mn>1</mn></msub></mrow><annotation encoding="application/x-tex">a_1 * w_1 + a_2 * w_2 + a_3 * w_3 + b_1</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.61528em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal">a</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">∗</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.73333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.02691em;">w</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.02691em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.61528em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal">a</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">∗</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.73333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.02691em;">w</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.02691em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.61528em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal">a</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">3</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">∗</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.73333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.02691em;">w</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.02691em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">3</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.84444em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal">b</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110165721292.png" alt="" /></p>
 <p>我们有以下结论:</p>
 <ul>
-<li><p>神经元对数据项的输出取决于输入数据项的特征（以及神经元的参数）。</p>
+<li>
+<p>神经元对数据项的输出取决于输入数据项的特征（以及神经元的参数）。</p>
 </li>
-<li><p>我们可以将一个神经元的输入视为前一个线性层的输出。</p>
+<li>
+<p>我们可以将一个神经元的输入视为前一个线性层的输出。</p>
 </li>
-<li><p><strong>如果前一层在经过梯度下降更新权重后，其输出发生了剧烈变化，那么下一层的输入也会发生剧烈变化，因此在下一步梯度下降时，下一层的权重也会被迫进行大幅调整。</strong></p>
+<li>
+<p><strong>如果前一层在经过梯度下降更新权重后，其输出发生了剧烈变化，那么下一层的输入也会发生剧烈变化，因此在下一步梯度下降时，下一层的权重也会被迫进行大幅调整。</strong></p>
 </li>
-<li><p><strong>这种神经网络内部节点（神经元）的分布发生变化的现象称为Internal Covariate Shift(内部协变量偏移)。我们希望避免这种情况，因为它会使网络训练变得更慢，迫使神经元因为前一层输出的剧烈变化而大幅调整其权重。</strong></p>
-</li>
-</ul>
-<h4 id="回顾Transformer中的Layer-Normalization"><a href="#回顾Transformer中的Layer-Normalization" class="headerlink" title="回顾Transformer中的Layer Normalization"></a><strong>回顾Transformer中的Layer Normalization</strong></h4><ul>
-<li><p>对于每个item,我们独立统计两个统计量,均值和方差</p>
-</li>
-<li><p>每个item都会用其归一化后的值进行更新，使其变成均值为0、方差为1的正态分布。</p>
-</li>
-<li><p>参数 gamma 和 beta 是可学习的参数，它们允许模型根据损失函数的需求“放大”每个特征的尺度或对特征进行平移。</p>
-</li>
-<li><p>和传统的batch norm相比, layer norm按行(即item)进行计算统计, 而batch norm按列(即feature)计算统计, 好处是可以更好的处理语言模型中,每次input的sequence length不同的情况</p>
+<li>
+<p><strong>这种神经网络内部节点（神经元）的分布发生变化的现象称为Internal Covariate Shift(内部协变量偏移)。我们希望避免这种情况，因为它会使网络训练变得更慢，迫使神经元因为前一层输出的剧烈变化而大幅调整其权重。</strong></p>
 </li>
 </ul>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110165751368.png" alt="image.png"></p>
-<h4 id="LLaMA使用的normalization-Root-Mean-Square-Normalization"><a href="#LLaMA使用的normalization-Root-Mean-Square-Normalization" class="headerlink" title="LLaMA使用的normalization: Root Mean Square Normalization"></a><strong>LLaMA使用的normalization: Root Mean Square Normalization</strong></h4><ul>
-<li><p>RMS的作者认为, <strong>导致Layer norm起作用的更多的是由于re-scaling(除以方差), 而不是re-centering(减去均值)</strong>. 因此他们想要找到一个不依赖均值的统计量.</p>
+<h4 id="回顾transformer中的layer-normalization"><a class="markdownIt-Anchor" href="#回顾transformer中的layer-normalization"></a> <strong>回顾Transformer中的Layer Normalization</strong></h4>
+<ul>
+<li>
+<p>对于每个item,我们独立统计两个统计量,均值和方差</p>
 </li>
-<li><p><strong>RMS提出使用均方根归一化, 即每个item除以均方根,在乘以一个可学习的参数gamma, 如下图所示</strong></p>
+<li>
+<p>每个item都会用其归一化后的值进行更新，使其变成均值为0、方差为1的正态分布。</p>
+</li>
+<li>
+<p>参数 gamma 和 beta 是可学习的参数，它们允许模型根据损失函数的需求“放大”每个特征的尺度或对特征进行平移。</p>
+</li>
+<li>
+<p>和传统的batch norm相比, layer norm按行(即item)进行计算统计, 而batch norm按列(即feature)计算统计, 好处是可以更好的处理语言模型中,每次input的sequence length不同的情况</p>
 </li>
 </ul>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116164739603.png" alt="image.png"></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110165751368.png" alt="image.png" /></p>
+<h4 id="llama使用的normalization-root-mean-square-normalization"><a class="markdownIt-Anchor" href="#llama使用的normalization-root-mean-square-normalization"></a> <strong>LLaMA使用的normalization: Root Mean Square Normalization</strong></h4>
+<ul>
+<li>
+<p>RMS的作者认为, <strong>导致Layer norm起作用的更多的是由于re-scaling(除以方差), 而不是re-centering(减去均值)</strong>. 因此他们想要找到一个不依赖均值的统计量.</p>
+</li>
+<li>
+<p><strong>RMS提出使用均方根归一化, 即每个item除以均方根,在乘以一个可学习的参数gamma, 如下图所示</strong></p>
+</li>
+</ul>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116164739603.png" alt="image.png" /></p>
 <ul>
 <li><strong>RMS只需要计算一个统计量, 因此计算量更少, 同时在实践中表现很好</strong></li>
 </ul>
-<h3 id="Positional-Encoding"><a href="#Positional-Encoding" class="headerlink" title="Positional Encoding"></a>Positional Encoding</h3><p>﻿<a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1xR1RY9ECm">位置编码有什么用？简单讲解位置编码原理 + 源码解读（绝对 &#x2F; 相对 &#x2F; RoPE）_哔哩哔哩_bilibili</a>﻿</p>
-<h4 id="回顾Transformer中的Positional-Encoding"><a href="#回顾Transformer中的Positional-Encoding" class="headerlink" title="回顾Transformer中的Positional Encoding"></a><strong>回顾Transformer中的Positional Encoding</strong></h4><ul>
-<li><p><strong>我们希望每个词都能携带一些关于其在句子中位置的信息。</strong></p>
+<h3 id="positional-encoding"><a class="markdownIt-Anchor" href="#positional-encoding"></a> Positional Encoding</h3>
+<p><a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1xR1RY9ECm">位置编码有什么用？简单讲解位置编码原理 + 源码解读（绝对 / 相对 / RoPE）_哔哩哔哩_bilibili</a></p>
+<h4 id="回顾transformer中的positional-encoding"><a class="markdownIt-Anchor" href="#回顾transformer中的positional-encoding"></a> <strong>回顾Transformer中的Positional Encoding</strong></h4>
+<ul>
+<li>
+<p><strong>我们希望每个词都能携带一些关于其在句子中位置的信息。</strong></p>
 </li>
-<li><p>我们希望模型将出现在彼此相邻的词视为“接近”，而将距离较远的词视为“远离”。</p>
+<li>
+<p>我们希望模型将出现在彼此相邻的词视为“接近”，而将距离较远的词视为“远离”。</p>
 </li>
-<li><p>通过下图的公式, 计算出句子中每个词, 每一维embedding所对应的Positional Encoding,</p>
+<li>
+<p>通过下图的公式, 计算出句子中每个词, 每一维embedding所对应的Positional Encoding,</p>
 </li>
-<li><p><strong>我们只需要计算一次位置编码，然后在训练或推理过程中都可以重复使用它</strong></p>
+<li>
+<p><strong>我们只需要计算一次位置编码，然后在训练或推理过程中都可以重复使用它</strong></p>
 </li>
 </ul>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110165800937.png" alt="image.png"></p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110165809840.png" alt="image.png"></p>
-<h4 id="Absolute-Positional-Encodings-v-s-Relative-Positional-Encodings"><a href="#Absolute-Positional-Encodings-v-s-Relative-Positional-Encodings" class="headerlink" title="Absolute Positional Encodings v.s. Relative Positional Encodings"></a>Absolute Positional Encodings v.s. Relative Positional Encodings</h4><ul>
-<li><p><strong>绝对位置编码</strong>是固定的向量，它们被添加到一个token的embedding中，用来表示其在句子中的绝对位置。因此，它<strong>一次只处理一个token</strong>。你可以将其类比为地图上的（纬度，经度）对：地球上的每个点都有一个唯一的坐标对。绝对位置编码的优势在于它不依赖于序列中的其他元素，可以独立地表示每个位置的信息。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110165800937.png" alt="image.png" /></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110165809840.png" alt="image.png" /></p>
+<h4 id="absolute-positional-encodings-vs-relative-positional-encodings"><a class="markdownIt-Anchor" href="#absolute-positional-encodings-vs-relative-positional-encodings"></a> Absolute Positional Encodings v.s. Relative Positional Encodings</h4>
+<ul>
+<li>
+<p><strong>绝对位置编码</strong>是固定的向量，它们被添加到一个token的embedding中，用来表示其在句子中的绝对位置。因此，它<strong>一次只处理一个token</strong>。你可以将其类比为地图上的（纬度，经度）对：地球上的每个点都有一个唯一的坐标对。绝对位置编码的优势在于它不依赖于序列中的其他元素，可以独立地表示每个位置的信息。</p>
 </li>
-<li><p><strong>相对位置编码</strong>则一次处理两个token，并在我们计算注意力时起作用。因为注意力机制捕捉的是两个词之间相关性的“强度”，相对位置编码则告诉注意力机制这两个词之间的距离。因此，<strong>给定两个token，我们创建一个向量来表示它们之间的距离。</strong>相对于绝对位置编码，相对位置编码更关注序列中位置之间的相对顺序和距离，它可以更好地处理长序列中的位置信息, 也具有更好的外推性。</p>
+<li>
+<p><strong>相对位置编码</strong>则一次处理两个token，并在我们计算注意力时起作用。因为注意力机制捕捉的是两个词之间相关性的“强度”，相对位置编码则告诉注意力机制这两个词之间的距离。因此，**给定两个token，我们创建一个向量来表示它们之间的距离。**相对于绝对位置编码，相对位置编码更关注序列中位置之间的相对顺序和距离，它可以更好地处理长序列中的位置信息, 也具有更好的外推性。</p>
 </li>
 </ul>
 <blockquote>
 <p><strong>备注：什么是大模型外推性？（Length Extrapolation）</strong></p>
-<p><strong>外推性是指大模型在训练时和预测时的输入长度不一致，导致模型的泛化能力下降的问题。</strong>例如，如果一个模型在训练时只使用了512个 token 的文本，那么在预测时如果输入超过512个 token，模型可能无法正确处理。这就限制了大模型在处理长文本或多轮对话等任务时的效果。</p>
+<p>**外推性是指大模型在训练时和预测时的输入长度不一致，导致模型的泛化能力下降的问题。**例如，如果一个模型在训练时只使用了512个 token 的文本，那么在预测时如果输入超过512个 token，模型可能无法正确处理。这就限制了大模型在处理长文本或多轮对话等任务时的效果。</p>
 </blockquote>
 <ul>
 <li>如下图所示, 相对位置编码没有完整建模整个序列的位置信息，而是在算当前位置的Attention的时候，考虑了当前位置和被Attention位置之间的相对距离（这一操作可以体现<strong>在计算Attention过程中，在计算中引入一个相对位置向量进行学习</strong>)</li>
 </ul>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110165820235.png" alt="image.png"></p>
-<h4 id="Rotary-Position-Embeddings"><a href="#Rotary-Position-Embeddings" class="headerlink" title="Rotary Position Embeddings"></a>Rotary Position Embeddings</h4><p><strong>旋转位置编码的出发点: 把绝对位置编码和相对位置编码相结合. 具体来说, 我们希望给每个位置分配一个绝对位置编码, 然后不同位置的qk内积又直接包含位置差的信息(注意是“直接”，显式地包含).</strong></p>
-<p><strong>也就是我们需要找到满足这个公式</strong>$\langle f_q(x_m, m), f_k(x_n, n) \rangle &#x3D; g(x_m, x_n, m - n)$<strong>的函数f, 同时希望编码本身有一些其他的性质(如如远程衰减、易于外推等)</strong></p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110165828163.png" alt="image.png"></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110165820235.png" alt="image.png" /></p>
+<h4 id="rotary-position-embeddings"><a class="markdownIt-Anchor" href="#rotary-position-embeddings"></a> Rotary Position Embeddings</h4>
+<p><strong>旋转位置编码的出发点: 把绝对位置编码和相对位置编码相结合. 具体来说, 我们希望给每个位置分配一个绝对位置编码, 然后不同位置的qk内积又直接包含位置差的信息(注意是“直接”，显式地包含).</strong></p>
+<p><strong>也就是我们需要找到满足这个公式</strong><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false">⟨</mo><msub><mi>f</mi><mi>q</mi></msub><mo stretchy="false">(</mo><msub><mi>x</mi><mi>m</mi></msub><mo separator="true">,</mo><mi>m</mi><mo stretchy="false">)</mo><mo separator="true">,</mo><msub><mi>f</mi><mi>k</mi></msub><mo stretchy="false">(</mo><msub><mi>x</mi><mi>n</mi></msub><mo separator="true">,</mo><mi>n</mi><mo stretchy="false">)</mo><mo stretchy="false">⟩</mo><mo>=</mo><mi>g</mi><mo stretchy="false">(</mo><msub><mi>x</mi><mi>m</mi></msub><mo separator="true">,</mo><msub><mi>x</mi><mi>n</mi></msub><mo separator="true">,</mo><mi>m</mi><mo>−</mo><mi>n</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">\langle f_q(x_m, m), f_k(x_n, n) \rangle = g(x_m, x_n, m - n)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.036108em;vertical-align:-0.286108em;"></span><span class="mopen">⟨</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.10764em;">f</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.15139200000000003em;"><span style="top:-2.5500000000000003em;margin-left:-0.10764em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.03588em;">q</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.286108em;"><span></span></span></span></span></span></span><span class="mopen">(</span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.151392em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">m</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathnormal">m</span><span class="mclose">)</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.10764em;">f</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.33610799999999996em;"><span style="top:-2.5500000000000003em;margin-left:-0.10764em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.03148em;">k</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mopen">(</span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.151392em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">n</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathnormal">n</span><span class="mclose">)</span><span class="mclose">⟩</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.03588em;">g</span><span class="mopen">(</span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.151392em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">m</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.151392em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">n</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathnormal">m</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">n</span><span class="mclose">)</span></span></span></span><strong>的函数f, 同时希望编码本身有一些其他的性质(如如远程衰减、易于外推等)</strong></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110165828163.png" alt="image.png" /></p>
 <p><strong>回顾transformer用到的三角式位置编码, 虽然是绝对位置编码, 但是旋转矩阵的引入也让它包含了一定的相对位置信息</strong></p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110165836993.png" alt="image.png"></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110165836993.png" alt="image.png" /></p>
 <p><strong>先研究2D情况</strong></p>
 <p>利用三角函数运算, 可以将m-n的旋转矩阵分解为m和n的矩阵乘积, 也就实现了相对位置到绝对位置的转变</p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110165851458.png" alt="image.png"></p>
-<p>如果左右乘上相应位置的q, k, 就得到了最终的内积形式, 这正是我们追求的目标形式$\langle f_q(x_m, m), f_k(x_n, n) \rangle &#x3D; g(x_m, x_n, m - n)$﻿</p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110165901170.png" alt="image.png"></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110165851458.png" alt="image.png" /></p>
+<p>如果左右乘上相应位置的q, k, 就得到了最终的内积形式, 这正是我们追求的目标形式<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false">⟨</mo><msub><mi>f</mi><mi>q</mi></msub><mo stretchy="false">(</mo><msub><mi>x</mi><mi>m</mi></msub><mo separator="true">,</mo><mi>m</mi><mo stretchy="false">)</mo><mo separator="true">,</mo><msub><mi>f</mi><mi>k</mi></msub><mo stretchy="false">(</mo><msub><mi>x</mi><mi>n</mi></msub><mo separator="true">,</mo><mi>n</mi><mo stretchy="false">)</mo><mo stretchy="false">⟩</mo><mo>=</mo><mi>g</mi><mo stretchy="false">(</mo><msub><mi>x</mi><mi>m</mi></msub><mo separator="true">,</mo><msub><mi>x</mi><mi>n</mi></msub><mo separator="true">,</mo><mi>m</mi><mo>−</mo><mi>n</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">\langle f_q(x_m, m), f_k(x_n, n) \rangle = g(x_m, x_n, m - n)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.036108em;vertical-align:-0.286108em;"></span><span class="mopen">⟨</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.10764em;">f</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.15139200000000003em;"><span style="top:-2.5500000000000003em;margin-left:-0.10764em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.03588em;">q</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.286108em;"><span></span></span></span></span></span></span><span class="mopen">(</span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.151392em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">m</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathnormal">m</span><span class="mclose">)</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.10764em;">f</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.33610799999999996em;"><span style="top:-2.5500000000000003em;margin-left:-0.10764em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.03148em;">k</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mopen">(</span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.151392em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">n</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathnormal">n</span><span class="mclose">)</span><span class="mclose">⟩</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.03588em;">g</span><span class="mopen">(</span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.151392em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">m</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.151392em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">n</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathnormal">m</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">n</span><span class="mclose">)</span></span></span></span></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110165901170.png" alt="image.png" /></p>
 <p><strong>扩展到全维度</strong></p>
 <p>总结起来就是给词向量左乘一个旋转矩阵</p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110165910905.png" alt="image.png"></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110165910905.png" alt="image.png" /></p>
 <p><strong>优化</strong></p>
-<p>由于$R_m$比较稀疏, 直接用矩阵乘法实现效率较低, 论文中提供了一种高效的实现方法, 用矩阵元素相乘替代矩阵乘法, 最后奇偶维度错位相加.</p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110165918431.png" alt="image.png"></p>
+<p>由于<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>R</mi><mi>m</mi></msub></mrow><annotation encoding="application/x-tex">R_m</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.00773em;">R</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.151392em;"><span style="top:-2.5500000000000003em;margin-left:-0.00773em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">m</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span>比较稀疏, 直接用矩阵乘法实现效率较低, 论文中提供了一种高效的实现方法, 用矩阵元素相乘替代矩阵乘法, 最后奇偶维度错位相加.</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110165918431.png" alt="image.png" /></p>
 <p><strong>总结</strong></p>
 <ul>
-<li><p>RoPE就像绝对位置编码一样，我们计算一次，然后可以对我们将要训练模型的所有句子重复使用。</p>
+<li>
+<p>RoPE就像绝对位置编码一样，我们计算一次，然后可以对我们将要训练模型的所有句子重复使用。</p>
 </li>
-<li><p>使用RoPE编码的两个token之间的关系“强度”会随着它们之间距离的增加而在数值上变小, 称为long-term decay</p>
+<li>
+<p>使用RoPE编码的两个token之间的关系“强度”会随着它们之间距离的增加而在数值上变小, 称为long-term decay</p>
 </li>
-<li><p>RoPE只应用在Q, K上</p>
+<li>
+<p>RoPE只应用在Q, K上</p>
 </li>
 </ul>
 <blockquote>
 <p>在自注意力机制中，<strong>Query</strong> 和 <strong>Key</strong> 的内积决定了不同位置的词元之间的相关性（或称为“注意力权重”）。注意力机制的目标是根据这些权重，确定每个词元在多大程度上应该关注序列中的其他词元。因此，位置编码需要引入到 Query 和 Key 中，以影响注意力计算时如何考虑不同词元之间的相对位置。</p>
 <p><strong>Value</strong> 并不直接参与注意力权重的计算，它只是在计算出注意力权重之后，根据这些权重聚合输入内容。因此，Value 中不需要加入位置编码。在自注意力机制中，Attention 输出是通过加权求和值得出的，而 Value 是被这些权重加权的部分。因为位置编码的目的是为了告诉模型不同位置之间的关系，而不是影响如何组合内容，所以没有必要将位置编码应用于 Value 上。</p>
 </blockquote>
-<h3 id="Self-Attention"><a href="#Self-Attention" class="headerlink" title="Self-Attention"></a>Self-Attention</h3><p><strong>自注意力机制允许模型将词与其他词关联起来。</strong></p>
+<h3 id="self-attention"><a class="markdownIt-Anchor" href="#self-attention"></a> Self-Attention</h3>
+<p><strong>自注意力机制允许模型将词与其他词关联起来。</strong></p>
 <p>假设我们考虑一个序列长度为6, embedding维度为512的输入, 由于是自注意力, QKV都是相同的</p>
-<p>﻿$softmax(\frac{QK^T}{\sqrt{d_k}})$捕捉了两个token之间的相关性</p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110165928491.png" alt="image.png"></p>
+<p><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>s</mi><mi>o</mi><mi>f</mi><mi>t</mi><mi>m</mi><mi>a</mi><mi>x</mi><mo stretchy="false">(</mo><mfrac><mrow><mi>Q</mi><msup><mi>K</mi><mi>T</mi></msup></mrow><msqrt><msub><mi>d</mi><mi>k</mi></msub></msqrt></mfrac><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">softmax(\frac{QK^T}{\sqrt{d_k}})</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.627473em;vertical-align:-0.538em;"></span><span class="mord mathnormal">s</span><span class="mord mathnormal">o</span><span class="mord mathnormal" style="margin-right:0.10764em;">f</span><span class="mord mathnormal">t</span><span class="mord mathnormal">m</span><span class="mord mathnormal">a</span><span class="mord mathnormal">x</span><span class="mopen">(</span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.089473em;"><span style="top:-2.5864385em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord sqrt mtight"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8622307142857143em;"><span class="svg-align" style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord mtight" style="padding-left:0.833em;"><span class="mord mtight"><span class="mord mathnormal mtight">d</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3448em;"><span style="top:-2.3487714285714287em;margin-left:0em;margin-right:0.07142857142857144em;"><span class="pstrut" style="height:2.5em;"></span><span class="sizing reset-size3 size1 mtight"><span class="mord mathnormal mtight" style="margin-right:0.03148em;">k</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15122857142857138em;"><span></span></span></span></span></span></span></span></span><span style="top:-2.8222307142857144em;"><span class="pstrut" style="height:3em;"></span><span class="hide-tail mtight" style="min-width:0.853em;height:1.08em;"><svg width='400em' height='1.08em' viewBox='0 0 400000 1080' preserveAspectRatio='xMinYMin slice'><path d='M95,702
+c-2.7,0,-7.17,-2.7,-13.5,-8c-5.8,-5.3,-9.5,-10,-9.5,-14
+c0,-2,0.3,-3.3,1,-4c1.3,-2.7,23.83,-20.7,67.5,-54
+c44.2,-33.3,65.8,-50.3,66.5,-51c1.3,-1.3,3,-2,5,-2c4.7,0,8.7,3.3,12,10
+s173,378,173,378c0.7,0,35.3,-71,104,-213c68.7,-142,137.5,-285,206.5,-429
+c69,-144,104.5,-217.7,106.5,-221
+l0 -0
+c5.3,-9.3,12,-14,20,-14
+H400000v40H845.2724
+s-225.272,467,-225.272,467s-235,486,-235,486c-2.7,4.7,-9,7,-19,7
+c-6,0,-10,-1,-12,-3s-194,-422,-194,-422s-65,47,-65,47z
+M834 80h400000v40h-400000z'/></svg></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.17776928571428574em;"><span></span></span></span></span></span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.446108em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">Q</span><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.07153em;">K</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.9190928571428572em;"><span style="top:-2.931em;margin-right:0.07142857142857144em;"><span class="pstrut" style="height:2.5em;"></span><span class="sizing reset-size3 size1 mtight"><span class="mord mathnormal mtight" style="margin-right:0.13889em;">T</span></span></span></span></span></span></span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.538em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mclose">)</span></span></span></span>捕捉了两个token之间的相关性</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110165928491.png" alt="image.png" /></p>
 <p>上一步的结果再和V做矩阵乘, 得到与输入维度相同的输出矩阵, <strong>每行(即经过计算后的的新的embedding)不仅捕捉了词语的含义（由嵌入表示）或在句子中的位置（由位置编码表示），还捕捉了每个词与其他词的相互作用</strong>。</p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110165937525.png" alt="image.png"></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110165937525.png" alt="image.png" /></p>
 <p>给出一张非常直观的图</p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110165943584.png" alt="image.png"></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110165943584.png" alt="image.png" /></p>
 <p><strong>Multi-Head Attention</strong></p>
 <p>沿着d模型维度将QKV分割成较小的矩阵，并在这些较小的矩阵之间计算注意力. 所以每个头都在观察完整的句子，但是是每个embedding的不同方面。这样做的原因是<strong>我们希望每个头观察同一个词的不同方面</strong>。</p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110165951462.png" alt="image.png"></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110165951462.png" alt="image.png" /></p>
 <p>再给出一张非常直观的图</p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110170001367.png" alt="image.png"></p>
-<h3 id="KV-cache"><a href="#KV-cache" class="headerlink" title="KV cache"></a>KV cache</h3><h4 id="Next-Token-Prediction-Task"><a href="#Next-Token-Prediction-Task" class="headerlink" title="Next Token Prediction Task"></a>Next Token Prediction Task</h4><p>首先来了解一下LLama的训练（下词预测任务）：seq2seq的生成，但迭代T次，seq_len逐渐增加。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110170001367.png" alt="image.png" /></p>
+<h3 id="kv-cache"><a class="markdownIt-Anchor" href="#kv-cache"></a> KV cache</h3>
+<h4 id="next-token-prediction-task"><a class="markdownIt-Anchor" href="#next-token-prediction-task"></a> Next Token Prediction Task</h4>
+<p>首先来了解一下LLama的训练（下词预测任务）：seq2seq的生成，但迭代T次，seq_len逐渐增加。</p>
 <p>即输入序列的第一个token将映射到输出序列的第一个token, [SOS] -&gt; Love, 第二次迭代中将用[SOS] Love预测that, 以此类推</p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110170012232.png" alt="image.png"></p>
-<h4 id="Motivation-behind-KV-cache"><a href="#Motivation-behind-KV-cache" class="headerlink" title="Motivation behind KV cache"></a>Motivation behind KV cache</h4><p>在推理的每一步，我们只关心模型输出的最后一个词元，因为我们已经有了之前的词元。然而，模型需要访问所有之前的词元来决定输出哪个词元，因为它们构成了模型的上下文（或称为“提示”）。<br>有没有办法让模型在推理时对已经看到的词元进行更少的计算呢？</p>
-<h4 id="KV-cache-1"><a href="#KV-cache-1" class="headerlink" title="KV cache"></a>KV cache</h4><p>下句预测时的Self-Attention：</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110170012232.png" alt="image.png" /></p>
+<h4 id="motivation-behind-kv-cache"><a class="markdownIt-Anchor" href="#motivation-behind-kv-cache"></a> Motivation behind KV cache</h4>
+<p>在推理的每一步，我们只关心模型输出的最后一个词元，因为我们已经有了之前的词元。然而，模型需要访问所有之前的词元来决定输出哪个词元，因为它们构成了模型的上下文（或称为“提示”）。<br />
+有没有办法让模型在推理时对已经看到的词元进行更少的计算呢？</p>
+<h4 id="kv-cache-2"><a class="markdownIt-Anchor" href="#kv-cache-2"></a> KV cache</h4>
+<p>下句预测时的Self-Attention：</p>
 <ul>
-<li>timpstep&#x3D;1时seq_len&#x3D;1，给[SOS]时，预测Love；</li>
+<li>timpstep=1时seq_len=1，给[SOS]时，预测Love；</li>
 </ul>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110170018823.png" alt="image.png"></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110170018823.png" alt="image.png" /></p>
 <ul>
-<li>timpstep&#x3D;2时<code>seq_len=2</code>，给[SOS] 和 Love时，预测that</li>
+<li>timpstep=2时<code>seq_len=2</code>，给[SOS] 和 Love时，预测that</li>
 </ul>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110170024662.png" alt="image.png"></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110170024662.png" alt="image.png" /></p>
 <ul>
-<li>timpstep&#x3D;4时<code>seq_len=4</code>，给[SOS] 和 Love 和 can 和 quickly时，预测seize…</li>
+<li>timpstep=4时<code>seq_len=4</code>，给[SOS] 和 Love 和 can 和 quickly时，预测seize…</li>
 </ul>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110170032874.png" alt="image.png"></p>
-<p>再来分析一下，<strong>每次个timestep的self-attention中我们到底需要哪些</strong>：因为我们只关注<strong>最后一个token的</strong><code>**attention_output**</code>，如下图timestep&#x3D;4，我们只需要attention_output的第4个token。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110170032874.png" alt="image.png" /></p>
+<p>再来分析一下，<strong>每次个timestep的self-attention中我们到底需要哪些</strong>：因为我们只关注<strong>最后一个token的</strong><code>**attention_output**</code>，如下图timestep=4，我们只需要attention_output的第4个token。</p>
 <p>因此我们只需要<strong>Q的最后一个token</strong>和<strong>K的所有token</strong>相乘，得到最后一个token的<code>attention_score</code>，然后用<strong>V的所有token</strong>再与<code>attention_score</code>点积(相乘求和)，得到最后一个token的<code>attention_output</code>：</p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110170040017.png" alt="image.png"></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110170040017.png" alt="image.png" /></p>
 <p>由上分析可知，<strong>每个timestep，我们的Q只需要新增的那个token即可，而K和V要缓存之前timestep的token，保证token是全的</strong>。<strong>每次计算出来的attention_output就是那个新增的token的attention。</strong> 这样就可以节省大量计算开销。</p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110170046580.png" alt="image.png"></p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110170053043.png" alt="image.png"></p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110170058416.png" alt="image.png"></p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110170105884.png" alt="image.png"></p>
-<p><strong>参数量的计算方法:</strong> <a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/624740065"><strong>分析transformer模型的参数量、计算量、中间激活、KV cache</strong></a>﻿</p>
-<h3 id="Grouped-Multi-Query-Attention"><a href="#Grouped-Multi-Query-Attention" class="headerlink" title="Grouped Multi-Query Attention"></a>Grouped Multi-Query Attention</h3><p>回顾原始的<strong>多头注意力Multi-Head Attention</strong>：时间开销的瓶颈在于<strong>矩阵的运算</strong><code>**matrix computation**</code>。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110170046580.png" alt="image.png" /></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110170053043.png" alt="image.png" /></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110170058416.png" alt="image.png" /></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110170105884.png" alt="image.png" /></p>
+<p><strong>参数量的计算方法:</strong> <a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/624740065"><strong>分析transformer模型的参数量、计算量、中间激活、KV cache</strong></a></p>
+<h3 id="grouped-multi-query-attention"><a class="markdownIt-Anchor" href="#grouped-multi-query-attention"></a> Grouped Multi-Query Attention</h3>
+<p>回顾原始的<strong>多头注意力Multi-Head Attention</strong>：时间开销的瓶颈在于<strong>矩阵的运算</strong><code>**matrix computation**</code>。</p>
 <ul>
-<li><p>多头注意力机制如同在原始论文《Attention is all you need》中所展示的。</p>
+<li>
+<p>多头注意力机制如同在原始论文《Attention is all you need》中所展示的。</p>
 </li>
-<li><p>通过设定 $m &#x3D; n$（查询的序列长度 &#x3D; 键和值的序列长度）。</p>
+<li>
+<p>通过设定 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>m</mi><mo>=</mo><mi>n</mi></mrow><annotation encoding="application/x-tex">m = n</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.43056em;vertical-align:0em;"></span><span class="mord mathnormal">m</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.43056em;vertical-align:0em;"></span><span class="mord mathnormal">n</span></span></span></span>（查询的序列长度 = 键和值的序列长度）。</p>
 </li>
-<li><p>执行的算术运算数量为 $O(bnd^2)$。</p>
+<li>
+<p>执行的算术运算数量为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>O</mi><mo stretchy="false">(</mo><mi>b</mi><mi>n</mi><msup><mi>d</mi><mn>2</mn></msup><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">O(bnd^2)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.064108em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.02778em;">O</span><span class="mopen">(</span><span class="mord mathnormal">b</span><span class="mord mathnormal">n</span><span class="mord"><span class="mord mathnormal">d</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141079999999999em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mclose">)</span></span></span></span>。</p>
 </li>
-<li><p>所涉及的总内存量，由计算中涉及的所有张量（包括派生张量）之和给出，为 $O(bnd + bhn^2 + d^2)$。</p>
+<li>
+<p>所涉及的总内存量，由计算中涉及的所有张量（包括派生张量）之和给出，为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>O</mi><mo stretchy="false">(</mo><mi>b</mi><mi>n</mi><mi>d</mi><mo>+</mo><mi>b</mi><mi>h</mi><msup><mi>n</mi><mn>2</mn></msup><mo>+</mo><msup><mi>d</mi><mn>2</mn></msup><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">O(bnd + bhn^2 + d^2)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.02778em;">O</span><span class="mopen">(</span><span class="mord mathnormal">b</span><span class="mord mathnormal">n</span><span class="mord mathnormal">d</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.897438em;vertical-align:-0.08333em;"></span><span class="mord mathnormal">b</span><span class="mord mathnormal">h</span><span class="mord"><span class="mord mathnormal">n</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141079999999999em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1.064108em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathnormal">d</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141079999999999em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mclose">)</span></span></span></span>。</p>
 </li>
-<li><p>总内存与算术运算数量之间的比率为 $O\left( \frac{1}{k} + \frac{1}{bn} \right)$。</p>
+<li>
+<p>总内存与算术运算数量之间的比率为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>O</mi><mrow><mo fence="true">(</mo><mfrac><mn>1</mn><mi>k</mi></mfrac><mo>+</mo><mfrac><mn>1</mn><mrow><mi>b</mi><mi>n</mi></mrow></mfrac><mo fence="true">)</mo></mrow></mrow><annotation encoding="application/x-tex">O\left( \frac{1}{k} + \frac{1}{bn} \right)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.20001em;vertical-align:-0.35001em;"></span><span class="mord mathnormal" style="margin-right:0.02778em;">O</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="minner"><span class="mopen delimcenter" style="top:0em;"><span class="delimsizing size1">(</span></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.845108em;"><span style="top:-2.6550000000000002em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.03148em;">k</span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.394em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">1</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.345em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.845108em;"><span style="top:-2.6550000000000002em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">b</span><span class="mord mathnormal mtight">n</span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.394em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">1</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.345em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mclose delimcenter" style="top:0em;"><span class="delimsizing size1">)</span></span></span></span></span></span>。</p>
 </li>
-<li><p>在这种情况下，该比率远小于 1，这意味着我们进行的内存访问量远少于算术运算的数量，因此内存访问<strong>不是</strong>这里的瓶颈。</p>
+<li>
+<p>在这种情况下，该比率远小于 1，这意味着我们进行的内存访问量远少于算术运算的数量，因此内存访问<strong>不是</strong>这里的瓶颈。</p>
 </li>
 </ul>
 <p>当我们<strong>使用KV-Cache</strong>后：时间开销的瓶颈在于<strong>内存的访问</strong><code>**memory access**</code>。</p>
 <ul>
-<li><p>使用 KV 缓存来减少执行的操作次数。</p>
+<li>
+<p>使用 KV 缓存来减少执行的操作次数。</p>
 </li>
-<li><p>通过设定 $m &#x3D; n$（查询的序列长度 &#x3D; 键和值的序列长度）。</p>
+<li>
+<p>通过设定 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>m</mi><mo>=</mo><mi>n</mi></mrow><annotation encoding="application/x-tex">m = n</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.43056em;vertical-align:0em;"></span><span class="mord mathnormal">m</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.43056em;vertical-align:0em;"></span><span class="mord mathnormal">n</span></span></span></span>（查询的序列长度 = 键和值的序列长度）。</p>
 </li>
-<li><p>执行的算术运算次数为 $O(bnd^2)$。</p>
+<li>
+<p>执行的算术运算次数为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>O</mi><mo stretchy="false">(</mo><mi>b</mi><mi>n</mi><msup><mi>d</mi><mn>2</mn></msup><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">O(bnd^2)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.064108em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.02778em;">O</span><span class="mopen">(</span><span class="mord mathnormal">b</span><span class="mord mathnormal">n</span><span class="mord"><span class="mord mathnormal">d</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141079999999999em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mclose">)</span></span></span></span>。</p>
 </li>
-<li><p>所涉及的总内存量，由计算中涉及的所有张量之和（包括派生张量）给出，为 $O(bn^2d + nd^2)$。</p>
+<li>
+<p>所涉及的总内存量，由计算中涉及的所有张量之和（包括派生张量）给出，为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>O</mi><mo stretchy="false">(</mo><mi>b</mi><msup><mi>n</mi><mn>2</mn></msup><mi>d</mi><mo>+</mo><mi>n</mi><msup><mi>d</mi><mn>2</mn></msup><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">O(bn^2d + nd^2)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.064108em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.02778em;">O</span><span class="mopen">(</span><span class="mord mathnormal">b</span><span class="mord"><span class="mord mathnormal">n</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141079999999999em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mord mathnormal">d</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1.064108em;vertical-align:-0.25em;"></span><span class="mord mathnormal">n</span><span class="mord"><span class="mord mathnormal">d</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141079999999999em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mclose">)</span></span></span></span>。</p>
 </li>
-<li><p>总内存量与算术运算次数之间的比率为 $O(n&#x2F;d + 1&#x2F;b)$。</p>
+<li>
+<p>总内存量与算术运算次数之间的比率为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>O</mi><mo stretchy="false">(</mo><mi>n</mi><mi mathvariant="normal">/</mi><mi>d</mi><mo>+</mo><mn>1</mn><mi mathvariant="normal">/</mi><mi>b</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">O(n/d + 1/b)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.02778em;">O</span><span class="mopen">(</span><span class="mord mathnormal">n</span><span class="mord">/</span><span class="mord mathnormal">d</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">1</span><span class="mord">/</span><span class="mord mathnormal">b</span><span class="mclose">)</span></span></span></span>。</p>
 </li>
-<li><p>当 n ≈ d（序列长度接近嵌入向量的维度大小）或 b ≈ 1（批次大小为 1）时，比率变为 1，此时内存访问成为算法的瓶颈。对于批次大小通常没有问题，因为它通常远大于 1，而对于 n&#x2F;d 项，我们需要减少序列长度。但还有更好的方法……</p>
+<li>
+<p>当 n ≈ d（序列长度接近嵌入向量的维度大小）或 b ≈ 1（批次大小为 1）时，比率变为 1，此时内存访问成为算法的瓶颈。对于批次大小通常没有问题，因为它通常远大于 1，而对于 n/d 项，我们需要减少序列长度。但还有更好的方法……</p>
 </li>
 </ul>
-<h5 id="Multi-Query-Attention（MQA）"><a href="#Multi-Query-Attention（MQA）" class="headerlink" title="Multi Query Attention（MQA）"></a>Multi Query Attention（MQA）</h5><p>为了提升attention计算效率，<strong>多查询注意力（</strong><code>**Multi Query Attention，MQA**</code><strong>）</strong> 是多头注意力的一种变体。其主要区别在于，在<strong>多查询注意力中</strong><code>**多个不同的注意力head**</code><strong>共享</strong><code>**一个**</code><strong>k和v的集合，每个head只单独保留了一份q参数。</strong> 具体操作上，<code>**去除 K和V 的head维度，只为Q保留head维度**</code>。因此这就是被叫做Multi Query Attention的原因。</p>
+<h5 id="multi-query-attentionmqa"><a class="markdownIt-Anchor" href="#multi-query-attentionmqa"></a> Multi Query Attention（MQA）</h5>
+<p>为了提升attention计算效率，<strong>多查询注意力（</strong><code>**Multi Query Attention，MQA**</code><strong>）</strong> 是多头注意力的一种变体。其主要区别在于，在<strong>多查询注意力中</strong><code>**多个不同的注意力head**</code><strong>共享</strong><code>**一个**</code><strong>k和v的集合，每个head只单独保留了一份q参数。</strong> 具体操作上，<code>**去除 K和V 的head维度，只为Q保留head维度**</code>。因此这就是被叫做Multi Query Attention的原因。</p>
 <ul>
-<li><p>我们从 K 和 V 中移除了 h 维度，同时保留了 Q 的 h 维度。这意味着所有不同的查询头将共享相同的键和值。</p>
+<li>
+<p>我们从 K 和 V 中移除了 h 维度，同时保留了 Q 的 h 维度。这意味着所有不同的查询头将共享相同的键和值。</p>
 </li>
-<li><p>执行的算术运算次数为 $O(bnd^2)$。</p>
+<li>
+<p>执行的算术运算次数为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>O</mi><mo stretchy="false">(</mo><mi>b</mi><mi>n</mi><msup><mi>d</mi><mn>2</mn></msup><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">O(bnd^2)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.064108em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.02778em;">O</span><span class="mopen">(</span><span class="mord mathnormal">b</span><span class="mord mathnormal">n</span><span class="mord"><span class="mord mathnormal">d</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141079999999999em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mclose">)</span></span></span></span>。</p>
 </li>
-<li><p>所涉及的总内存量，由计算中涉及的所有张量之和（包括派生张量）给出，为 $O(bnd + bn^2k + nd^2)$。</p>
+<li>
+<p>所涉及的总内存量，由计算中涉及的所有张量之和（包括派生张量）给出，为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>O</mi><mo stretchy="false">(</mo><mi>b</mi><mi>n</mi><mi>d</mi><mo>+</mo><mi>b</mi><msup><mi>n</mi><mn>2</mn></msup><mi>k</mi><mo>+</mo><mi>n</mi><msup><mi>d</mi><mn>2</mn></msup><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">O(bnd + bn^2k + nd^2)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.02778em;">O</span><span class="mopen">(</span><span class="mord mathnormal">b</span><span class="mord mathnormal">n</span><span class="mord mathnormal">d</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.897438em;vertical-align:-0.08333em;"></span><span class="mord mathnormal">b</span><span class="mord"><span class="mord mathnormal">n</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141079999999999em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mord mathnormal" style="margin-right:0.03148em;">k</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1.064108em;vertical-align:-0.25em;"></span><span class="mord mathnormal">n</span><span class="mord"><span class="mord mathnormal">d</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141079999999999em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mclose">)</span></span></span></span>。</p>
 </li>
-<li><p>总内存量与算术运算次数之间的比率为 $O(1&#x2F;d + n&#x2F;dh + 1&#x2F;b)$。</p>
+<li>
+<p>总内存量与算术运算次数之间的比率为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>O</mi><mo stretchy="false">(</mo><mn>1</mn><mi mathvariant="normal">/</mi><mi>d</mi><mo>+</mo><mi>n</mi><mi mathvariant="normal">/</mi><mi>d</mi><mi>h</mi><mo>+</mo><mn>1</mn><mi mathvariant="normal">/</mi><mi>b</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">O(1/d + n/dh + 1/b)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.02778em;">O</span><span class="mopen">(</span><span class="mord">1</span><span class="mord">/</span><span class="mord mathnormal">d</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">n</span><span class="mord">/</span><span class="mord mathnormal">d</span><span class="mord mathnormal">h</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">1</span><span class="mord">/</span><span class="mord mathnormal">b</span><span class="mclose">)</span></span></span></span>。</p>
 </li>
-<li><p>与之前的方法相比，我们通过一个 $h$ 因子减少了昂贵的 $n&#x2F;d$ 项。</p>
+<li>
+<p>与之前的方法相比，我们通过一个 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>h</mi></mrow><annotation encoding="application/x-tex">h</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.69444em;vertical-align:0em;"></span><span class="mord mathnormal">h</span></span></span></span> 因子减少了昂贵的 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>n</mi><mi mathvariant="normal">/</mi><mi>d</mi></mrow><annotation encoding="application/x-tex">n/d</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">n</span><span class="mord">/</span><span class="mord mathnormal">d</span></span></span></span> 项。</p>
 </li>
-<li><p>性能提升显著，而模型的质量只出现了少许下降。</p>
+<li>
+<p>性能提升显著，而模型的质量只出现了少许下降。</p>
 </li>
 </ul>
 <p>因此<code>K和V的矩阵的数量仅为1个</code>（不分head），大幅度减少了显存占用，使其更高效。<strong>由于多查询注意力改变了注意力机制的结构，因此模型通常需要从训练开始就支持多查询注意力。</strong></p>
 <p>研究结果表明，可以通过对已经训练好的模型进行微调来添加多查询注意力支持，仅需要约 5% 的原始训练数据量就可以达到不错的效果。包括Falcon、SantaCoder、StarCoder等在内很多模型都采用了多查询注意力机制。</p>
-<h5 id="Grouped-Multi-Query-Attention-GMQA"><a href="#Grouped-Multi-Query-Attention-GMQA" class="headerlink" title="Grouped Multi-Query Attention(GMQA)"></a>Grouped Multi-Query Attention(GMQA)</h5><p>就是在 Multi-Query Attention的基础上，对input进行分组，<strong>如下图2个head分为1组，每组都有自己的K，V，每个组包含2个Q。</strong> （与MQA的区别在于：<strong>MQA的KV只有1份；GQA的KV有</strong><code>**group**</code><strong>份(LLama-70B中是</strong><code>**kv_heads**</code>**&#x3D;8，即每个kv对应8个q)**）</p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110170116630.png" alt="image.png"></p>
-<p><strong>参数量的计算方法:</strong> <a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/624740065"><strong>分析transformer模型的参数量、计算量、中间激活、KV cache</strong></a>﻿</p>
-<h3 id="SwiGLU-Function"><a href="#SwiGLU-Function" class="headerlink" title="SwiGLU Function"></a>SwiGLU Function</h3><p>SwiGLU 激活函数是Shazeer 在文献中提出，并在PaLM等模中进行了广泛应用，并且取得了不错的效果，<strong>相较于ReLU 函数在大部分评测中都有不少提升</strong>。在LLaMA 中全连接层使用带有SwiGLU 激活函数的FFN（Position-wise Feed-Forward Network）的计算公式如下：</p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116164815049.png" alt="image.png"></p>
-<p>其中，<strong>σ(x) 是Sigmoid 函数</strong>。下图给出了Swish 激活函数在参数β 不同取值下的形状。可以看到当β 趋近于0 时，Swish 函数趋近于线性函数y &#x3D; x，当β 趋近于无穷大时，Swish 函数趋近于ReLU 函数，β 取值为1 时，Swish 函数是光滑且非单调。</p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110170126831.png" alt="image.png"></p>
+<h5 id="grouped-multi-query-attentiongmqa"><a class="markdownIt-Anchor" href="#grouped-multi-query-attentiongmqa"></a> Grouped Multi-Query Attention(GMQA)</h5>
+<p>就是在 Multi-Query Attention的基础上，对input进行分组，<strong>如下图2个head分为1组，每组都有自己的K，V，每个组包含2个Q。</strong> （与MQA的区别在于：<strong>MQA的KV只有1份；GQA的KV有</strong><code>**group**</code><strong>份(LLama-70B中是</strong><code>**kv_heads**</code><strong>=8，即每个kv对应8个q)</strong>）</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110170116630.png" alt="image.png" /></p>
+<p><strong>参数量的计算方法:</strong> <a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/624740065"><strong>分析transformer模型的参数量、计算量、中间激活、KV cache</strong></a></p>
+<h3 id="swiglu-function"><a class="markdownIt-Anchor" href="#swiglu-function"></a> SwiGLU Function</h3>
+<p>SwiGLU 激活函数是Shazeer 在文献中提出，并在PaLM等模中进行了广泛应用，并且取得了不错的效果，<strong>相较于ReLU 函数在大部分评测中都有不少提升</strong>。在LLaMA 中全连接层使用带有SwiGLU 激活函数的FFN（Position-wise Feed-Forward Network）的计算公式如下：</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116164815049.png" alt="image.png" /></p>
+<p>其中，<strong>σ(x) 是Sigmoid 函数</strong>。下图给出了Swish 激活函数在参数β 不同取值下的形状。可以看到当β 趋近于0 时，Swish 函数趋近于线性函数y = x，当β 趋近于无穷大时，Swish 函数趋近于ReLU 函数，β 取值为1 时，Swish 函数是光滑且非单调。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110170126831.png" alt="image.png" /></p>
 
     </div>
 
@@ -604,14 +691,14 @@
       <i class="fa fa-chart-line"></i>
     </span>
       <span>站点总字数：</span>
-    <span title="站点总字数">75k</span>
+    <span title="站点总字数">197k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span>站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">1:08</span>
+    <span title="站点阅读时长">11:56</span>
   </span>
 </div>
 <div class="busuanzi-count">
@@ -632,8 +719,7 @@
       </span>
     </span>
 </div>
-  <div class="powered-by">
-    <!--由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动 -->
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
   </div>
 
     </div>
@@ -674,6 +760,13 @@
   <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 
 
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">false</script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" integrity="sha256-UF1fgpAiu3tPJN/uCqEUHNe7pnr+QR0SQDNfgglgtcM=" crossorigin="anonymous">
+  <script class="next-config" data-name="katex" type="application/json">{"copy_tex_js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/copy-tex.min.js","integrity":"sha256-Us54+rSGDSTvIhKKUs4kygE2ipA0RXpWWh0/zLqw3bs="}}</script>
+  <script src="/js/third-party/math/katex.js"></script>
 
 
 

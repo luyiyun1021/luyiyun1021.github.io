@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-minimal.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"luyiyun1021.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.22.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="技术报告链接 计算资源：Llama 3.1-405B 在16,000 个 H100 GPU 上训练，每个 GPU 的运行功率为 700W TDP，配备 80GB HBM3。每台服务器配备8个 GPU 和2个 CPU。在服务器内部，8个 GPU 通过 NVLink 连接。预训练总共用了54天。 Llama 3.1-405B 采用了 4D 混合并行：TP (张量并行）+ CP (序列并行）+ PP (">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Llama 3.1-405B 训练">
+<meta property="og:url" content="https://luyiyun1021.github.io/2025/01/26/Llama-3-1-405B-%E8%AE%AD%E7%BB%83/index.html">
+<meta property="og:site_name" content="Ronny Lu&#39;s blog">
+<meta property="og:description" content="技术报告链接 计算资源：Llama 3.1-405B 在16,000 个 H100 GPU 上训练，每个 GPU 的运行功率为 700W TDP，配备 80GB HBM3。每台服务器配备8个 GPU 和2个 CPU。在服务器内部，8个 GPU 通过 NVLink 连接。预训练总共用了54天。 Llama 3.1-405B 采用了 4D 混合并行：TP (张量并行）+ CP (序列并行）+ PP (">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126134936971.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126134945872.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126134953133.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126135005929.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126135013648.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126135021185.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126135028031.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126135035221.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126135046659.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126135059955.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126135109436.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126135116119.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126135122474.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126135130127.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126135153448.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126135211167.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126135222385.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126135230125.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126135236325.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126135243392.png">
+<meta property="article:published_time" content="2025-01-26T06:14:34.000Z">
+<meta property="article:modified_time" content="2025-01-26T06:17:58.283Z">
+<meta property="article:author" content="Ronny Lu">
+<meta property="article:tag" content="大模型">
+<meta property="article:tag" content="大模型训练">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126134936971.png">
+
+
+<link rel="canonical" href="https://luyiyun1021.github.io/2025/01/26/Llama-3-1-405B-%E8%AE%AD%E7%BB%83/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://luyiyun1021.github.io/2025/01/26/Llama-3-1-405B-%E8%AE%AD%E7%BB%83/","path":"2025/01/26/Llama-3-1-405B-训练/","title":"Llama 3.1-405B 训练"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Llama 3.1-405B 训练 | Ronny Lu's blog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<style>.darkmode--activated{--body-bg-color:#282828;--content-bg-color:#333;--card-bg-color:#555;--text-color:#ccc;--blockquote-color:#bbb;--link-color:#ccc;--link-hover-color:#eee;--brand-color:#ddd;--brand-hover-color:#ddd;--table-row-odd-bg-color:#282828;--table-row-hover-bg-color:#363636;--menu-item-bg-color:#555;--btn-default-bg:#222;--btn-default-color:#ccc;--btn-default-border-color:#555;--btn-default-hover-bg:#666;--btn-default-hover-color:#ccc;--btn-default-hover-border-color:#666;--highlight-background:#282b2e;--highlight-foreground:#a9b7c6;--highlight-gutter-background:#34393d;--highlight-gutter-foreground:#9ca9b6}.darkmode--activated img{opacity:.75}.darkmode--activated img:hover{opacity:.9}.darkmode--activated code{color:#69dbdc;background:0 0}button.darkmode-toggle{z-index:9999}.darkmode-ignore,img{display:flex!important}.beian img{display:inline-block!important}</style></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Ronny Lu's blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#4d-%E5%B9%B6%E8%A1%8C%E7%9A%84%E7%94%B1%E6%9D%A5"><span class="nav-number">1.</span> <span class="nav-text"> 4D 并行的由来</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A8%A1%E5%9E%8B%E5%B9%B6%E8%A1%8C"><span class="nav-number">1.1.</span> <span class="nav-text"> 模型并行</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#tp-%E5%BC%A0%E9%87%8F%E5%B9%B6%E8%A1%8C"><span class="nav-number">1.2.</span> <span class="nav-text"> TP (张量并行）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#pp-%E6%B5%81%E6%B0%B4%E7%BA%BF%E5%B9%B6%E8%A1%8C"><span class="nav-number">1.3.</span> <span class="nav-text"> PP (流水线并行）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#dp-%E6%95%B0%E6%8D%AE%E5%B9%B6%E8%A1%8C"><span class="nav-number">1.4.</span> <span class="nav-text"> DP (数据并行）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#cp-context-%E5%B9%B6%E8%A1%8Clink"><span class="nav-number">1.5.</span> <span class="nav-text"> CP (Context 并行）[link]</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#sequence-parallelism"><span class="nav-number">1.5.0.1.</span> <span class="nav-text"> Sequence Parallelism</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#context-parallelism"><span class="nav-number">1.5.0.2.</span> <span class="nav-text"> Context Parallelism</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">1.6.</span> <span class="nav-text"> 总结</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#llama-%E8%AE%AD%E7%BB%83%E7%BB%86%E8%8A%82"><span class="nav-number">2.</span> <span class="nav-text"> Llama 训练细节</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#tp-%E5%BC%A0%E9%87%8F%E5%B9%B6%E8%A1%8C-2"><span class="nav-number">2.1.</span> <span class="nav-text"> TP (张量并行）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#pp-%E6%B5%81%E6%B0%B4%E7%BA%BF%E5%B9%B6%E8%A1%8C-2"><span class="nav-number">2.2.</span> <span class="nav-text"> PP (流水线并行）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#dp-%E6%95%B0%E6%8D%AE%E5%B9%B6%E8%A1%8C-2"><span class="nav-number">2.3.</span> <span class="nav-text"> DP (数据并行）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#cp-context-%E5%B9%B6%E8%A1%8C"><span class="nav-number">2.4.</span> <span class="nav-text"> CP (Context 并行）</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Ronny Lu"
+      src="https://avatars.githubusercontent.com/u/55233584?v=4">
+  <p class="site-author-name" itemprop="name">Ronny Lu</p>
+  <div class="site-description" itemprop="description">Tech notes on LLM, LLM Infra, C++</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">50</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">14</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">14</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/01/26/Llama-3-1-405B-%E8%AE%AD%E7%BB%83/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
+      <meta itemprop="name" content="Ronny Lu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ronny Lu's blog">
+      <meta itemprop="description" content="Tech notes on LLM, LLM Infra, C++">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Llama 3.1-405B 训练 | Ronny Lu's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Llama 3.1-405B 训练
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-01-26 14:14:34 / 修改时间：14:17:58" itemprop="dateCreated datePublished" datetime="2025-01-26T14:14:34+08:00">2025-01-26</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">大模型</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E8%AE%AD%E7%BB%83%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index"><span itemprop="name">训练技术</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>4.2k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>15 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p><a target="_blank" rel="noopener" href="https://scontent-nrt1-1.xx.fbcdn.net/v/t39.2365-6/452387774_1036916434819166_4173978747091533306_n.pdf?_nc_cat=104&amp;ccb=1-7&amp;_nc_sid=3c67a6&amp;_nc_ohc=t6egZJ8QdI4Q7kNvgFMhbmG&amp;_nc_ht=scontent-nrt1-1.xx&amp;oh=00_AYBspddKakesakPWwavuhJerPmZXDEBsnrcTmoxP6-MQSg&amp;oe=66A7944D">技术报告链接</a></p>
+<p>计算资源：Llama 3.1-405B 在16,000 个 H100 GPU 上训练，每个 GPU 的运行功率为 700W TDP，配备 80GB HBM3。每台服务器配备8个 GPU 和2个 CPU。在服务器内部，8个 GPU 通过 NVLink 连接。预训练总共用了54天。</p>
+<p>Llama 3.1-405B 采用了 <strong>4D 混合并行：TP (张量并行）+ CP (序列并行）+ PP (流水线并行）+ DP (数据并行）,</strong> 配置如下表</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126134936971.png" alt="image.png" /></p>
+<span id="more"></span>
+<h2 id="4d-并行的由来"><a class="markdownIt-Anchor" href="#4d-并行的由来"></a> 4D 并行的由来</h2>
+<h3 id="模型并行"><a class="markdownIt-Anchor" href="#模型并行"></a> <strong>模型并行</strong></h3>
+<p>模型并行（MP，Model Parallelism）可分为流水线并行（PP，Pipeline Parallelism）和张量并行（TP，Tensor Parallesim），都是解决当GPU放不下一个模型时，而将模型拆分到不同的GPU上的方法。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126134945872.png" alt="image.png" /></p>
+<h3 id="tp-张量并行"><a class="markdownIt-Anchor" href="#tp-张量并行"></a> <strong>TP (张量并行）</strong></h3>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126134953133.png" alt="image.png" /></p>
+<p>优点：可以横向切分矩阵，同时也切分了激活（这样就从参数、优化器和激活3个层面都减少了显存）</p>
+<p>缺点：TP的缺点是前向和后向都有2次 AllReduce，而 Allreduce 跨机器通信比较慢，机器间带宽不如nvlink高，而且 Allreduce 不能利用通信和计算重叠，因此 TP <strong>不能跨机器用</strong></p>
+<ul>
+<li><strong>All Reduce</strong>：在所有的节点上都应用同样的 Reduce 操作。All Reduce 操作可通过单节点上Reduce + Broadcast 操作完成。如下图所示，All Reduce Sum 操作将所有计算设备上的数据汇聚到各个计算设备中，并执行求和操作。改进：<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/69797852">Ring All-Reduce 算法</a></li>
+</ul>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126135005929.png" alt="image.png" /></p>
+<h3 id="pp-流水线并行"><a class="markdownIt-Anchor" href="#pp-流水线并行"></a> <strong>PP (流水线并行）</strong></h3>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126135013648.png" alt="image.png" /></p>
+<p>PP即模型可以按照层间切分</p>
+<p>优点：只需要层之间通信，通信量相对较小，故PP可以扩展到机器间</p>
+<p>缺点：存在 bubble，可能会影响并行效率</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126135021185.png" alt="image.png" /></p>
+<h3 id="dp-数据并行"><a class="markdownIt-Anchor" href="#dp-数据并行"></a> <strong>DP (数据并行）</strong></h3>
+<p>数据并行的核心思想是对输入数据按 batch 维度进行划分，将<strong>数据分配给不同GPU进行计算</strong>。在数据并行里，<strong>每个GPU上存储的模型、优化器状态是完全相同的</strong>。当每块GPU上的前后向传播完成后，需要将每块GPU上计算出的模型梯度汇总求平均，以得到整个batch的模型梯度。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126135028031.png" alt="image.png" /></p>
+<p>数据并行是在小模型时代（BERT）最常用的并行方法，在模型不是非常大的情况下，优先使用数据并行。</p>
+<p><strong>Zero是数据并行的升级版</strong></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126135035221.png" alt="image.png" /></p>
+<p>ZeRO 的核心思想是在进行 all-reduce 操作的时候，不需要把完整的结果 reduce 到所有 gpu 上，每个 gpu 只需要维护自己的那一块，在需要完整数据的时候，再进行通信拉取完整的数据。尽管 <strong>ZeRO</strong> <strong>分片存储模型参数、梯度还有优化器状态</strong>，但是这并不是一种模型并行。<strong>ZeRO</strong> <strong>本质上就是一套数据并行的训练框架</strong>，只是加入了一套优化存储冗余的策略。</p>
+<p><strong>数据并行对于通信的额外开销低，比模型并行更适合扩展到机器间</strong></p>
+<h3 id="cp-context-并行link"><a class="markdownIt-Anchor" href="#cp-context-并行link"></a> <strong>CP (Context 并行）[</strong><a target="_blank" rel="noopener" href="https://arxiv.org/pdf/2105.13120"><strong>link</strong></a><strong>]</strong></h3>
+<h5 id="sequence-parallelism"><a class="markdownIt-Anchor" href="#sequence-parallelism"></a> <strong>Sequence Parallelism</strong></h5>
+<p>Megatron 在他们的 Tensor Parallelism 的基础上，将 Transformer 核的 LayerNorm 以及 Dropout 层的输入<strong>按 Sequence Length 维度进行了切分，</strong> 在 self-attention 计算前聚合（all-gather）了sequence的内容</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126135046659.png" alt="image.png" /></p>
+<h5 id="context-parallelism"><a class="markdownIt-Anchor" href="#context-parallelism"></a> <strong>Context Parallelism</strong></h5>
+<p>相当于 Sequence Parallelism 的升级版，<strong>解决SP中未完成的self-attention序列并行问题</strong>。Self-attention的计算里面为什么需要完整的序列？ Attention中QKV的计算需要用到一个完整sequence信息，计算上的耦合使得该模块不能先运算后进行简单拼接。</p>
+<p><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>A</mi><mi>t</mi><mi>t</mi><mi>e</mi><mi>n</mi><mi>t</mi><mi>i</mi><mi>o</mi><mi>n</mi><mo stretchy="false">(</mo><mi>Q</mi><mo separator="true">,</mo><mi>K</mi><mo separator="true">,</mo><mi>V</mi><mo stretchy="false">)</mo><mo>=</mo><mi>s</mi><mi>o</mi><mi>f</mi><mi>t</mi><mi>m</mi><mi>a</mi><mi>x</mi><mo stretchy="false">(</mo><mfrac><mrow><mi>Q</mi><msup><mi>K</mi><mi>T</mi></msup></mrow><msqrt><msub><mi>d</mi><mi>k</mi></msub></msqrt></mfrac><mo stretchy="false">)</mo><mi>V</mi></mrow><annotation encoding="application/x-tex">Attention(Q, K, V) = softmax(\frac{QK^T}{\sqrt{d_k}})V</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">A</span><span class="mord mathnormal">t</span><span class="mord mathnormal">t</span><span class="mord mathnormal">e</span><span class="mord mathnormal">n</span><span class="mord mathnormal">t</span><span class="mord mathnormal">i</span><span class="mord mathnormal">o</span><span class="mord mathnormal">n</span><span class="mopen">(</span><span class="mord mathnormal">Q</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathnormal" style="margin-right:0.07153em;">K</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathnormal" style="margin-right:0.22222em;">V</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1.627473em;vertical-align:-0.538em;"></span><span class="mord mathnormal">s</span><span class="mord mathnormal">o</span><span class="mord mathnormal" style="margin-right:0.10764em;">f</span><span class="mord mathnormal">t</span><span class="mord mathnormal">m</span><span class="mord mathnormal">a</span><span class="mord mathnormal">x</span><span class="mopen">(</span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.089473em;"><span style="top:-2.5864385em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord sqrt mtight"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8622307142857143em;"><span class="svg-align" style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord mtight" style="padding-left:0.833em;"><span class="mord mtight"><span class="mord mathnormal mtight">d</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3448em;"><span style="top:-2.3487714285714287em;margin-left:0em;margin-right:0.07142857142857144em;"><span class="pstrut" style="height:2.5em;"></span><span class="sizing reset-size3 size1 mtight"><span class="mord mathnormal mtight" style="margin-right:0.03148em;">k</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15122857142857138em;"><span></span></span></span></span></span></span></span></span><span style="top:-2.8222307142857144em;"><span class="pstrut" style="height:3em;"></span><span class="hide-tail mtight" style="min-width:0.853em;height:1.08em;"><svg width='400em' height='1.08em' viewBox='0 0 400000 1080' preserveAspectRatio='xMinYMin slice'><path d='M95,702
+c-2.7,0,-7.17,-2.7,-13.5,-8c-5.8,-5.3,-9.5,-10,-9.5,-14
+c0,-2,0.3,-3.3,1,-4c1.3,-2.7,23.83,-20.7,67.5,-54
+c44.2,-33.3,65.8,-50.3,66.5,-51c1.3,-1.3,3,-2,5,-2c4.7,0,8.7,3.3,12,10
+s173,378,173,378c0.7,0,35.3,-71,104,-213c68.7,-142,137.5,-285,206.5,-429
+c69,-144,104.5,-217.7,106.5,-221
+l0 -0
+c5.3,-9.3,12,-14,20,-14
+H400000v40H845.2724
+s-225.272,467,-225.272,467s-235,486,-235,486c-2.7,4.7,-9,7,-19,7
+c-6,0,-10,-1,-12,-3s-194,-422,-194,-422s-65,47,-65,47z
+M834 80h400000v40h-400000z'/></svg></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.17776928571428574em;"><span></span></span></span></span></span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.446108em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">Q</span><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.07153em;">K</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.9190928571428572em;"><span style="top:-2.931em;margin-right:0.07142857142857144em;"><span class="pstrut" style="height:2.5em;"></span><span class="sizing reset-size3 size1 mtight"><span class="mord mathnormal mtight" style="margin-right:0.13889em;">T</span></span></span></span></span></span></span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.538em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mclose">)</span><span class="mord mathnormal" style="margin-right:0.22222em;">V</span></span></span></span></p>
+<p>基于 ring attention 的方法</p>
+<ul>
+<li><strong>Step 1 -</strong> <strong>数据切分</strong>：Q/K/V拆分成数据 [Q0,Q1,Q2]/[K0,K1,K2]/[V0,V1,V2] ，CP设备组分为rank0、rank1、rank2，每个rank拿到固定[b, sq/3, np, hd]大小数据Q；</li>
+</ul>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126135059955.png" alt="image.png" /></p>
+<ul>
+<li><strong>Step 2 - Attention计算</strong>：第一次计算时，rank拿一份K、V数据，比如rank0拿到K0，V0。计算通过FA(FlashAttention)2模块完成获得第一个输出O_00。</li>
+</ul>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126135109436.png" alt="image.png" /></p>
+<ul>
+<li><strong>Step 3 - KV数据交换</strong>：计算的同时，可以进行数据交换。每个rank与相邻的rank进行环形P2P通信，传出自己的KV值，同时拿到下一次需要运算的数据，一共需要完成CP−1次通信。如rank0，算完K0,V0后下次需要运算的数据为K2, V2，从rank2获取；同时，rank0将K0V0数据传递给rank1。这个步骤可以和 Step 2 重叠，提高通讯效率。</li>
+</ul>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126135116119.png" alt="image.png" /></p>
+<ul>
+<li><strong>Step 4 - 计算最终输出:</strong> 每个rank的Q与KV匹配计算完后获得三个输出值，然后进行结果修正得到[O_X0, O_X1, O_X2]，X值为rank序号。最后每个rank将自己的分块结果进行聚合（加法）运算得到结果O_X。</li>
+</ul>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126135122474.png" alt="image.png" /></p>
+<p><strong>通信量</strong>：增加了p2p通信，通信总量为 2∗b∗sq∗np∗hd∗（cp−1）/ cp个单位</p>
+<p><strong>内存</strong>：假设每个rank只有一个buffer大小，QKV输入的显存变为 b∗sq∗np∗hd∗5/cp 个单位</p>
+<h3 id="总结"><a class="markdownIt-Anchor" href="#总结"></a> <strong>总结</strong></h3>
+<ul>
+<li>
+<p><strong>数据并行解决 batch size 大，存储冗余的问题，模型并行解决模型大的问题，Context 并行解决 Sequence 大的问题</strong></p>
+</li>
+<li>
+<p><strong>对于通讯需求/带宽要求的排序：张量并行 &gt; Context 并行 &gt; 流水线并行 &gt; 数据并行</strong></p>
+</li>
+</ul>
+<h2 id="llama-训练细节"><a class="markdownIt-Anchor" href="#llama-训练细节"></a> Llama 训练细节</h2>
+<h3 id="tp-张量并行-2"><a class="markdownIt-Anchor" href="#tp-张量并行-2"></a> <strong>TP (张量并行）</strong></h3>
+<p>无变化</p>
+<h3 id="pp-流水线并行-2"><a class="markdownIt-Anchor" href="#pp-流水线并行-2"></a> <strong>PP (流水线并行）</strong></h3>
+<ul>
+<li><strong>减少 bubble： 使用interleaved 1F1B scheduling</strong></li>
+</ul>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126135130127.png" alt="image.png" /></p>
+<p><strong>当一个 microbatch 的前向传播完成后，立即进入反向传播阶段，反向传播完成后就可以丢弃掉对应 microbatch 缓存的激活，减少显存的需求。同时每个设备处理的是多个层的子集，这些子集被称为模型块，每个设备可以并行执行不同阶段的计算任务，从而更好地利用流水线并行的优势，在一个mini batch的所有micro batch都反向传播完成后，进行 flushing 更新参数。</strong> 比如将模型分为2个模型块，设备 1 处理层 1、2、9、10，设备 2 处理层 3、4、11、12，设备 3 处理层 5、6、13、14，设备 2 处理层 7、8、15、16。一个 mini batch 前向传播的流程会变为 Device 1 -&gt; Device 2 -&gt; Device 3 -&gt; Device 4 -&gt; Device 1 -&gt; Device 2 -&gt; Device 3 -&gt; Device 4</p>
+<ul>
+<li>
+<p><strong>内存和计算不均衡的问题：第一个 stage 需要做 embedding -&gt; 额外 latency 和 memory, 最后一个 stage 需要计算输出和损失 -&gt; 需要额外 latency</strong></p>
+<ul>
+<li>Llama的做法：<strong>对第一个和最后一个stage 减少分配一个 transformer layer 的计算</strong></li>
+</ul>
+</li>
+</ul>
+<h3 id="dp-数据并行-2"><a class="markdownIt-Anchor" href="#dp-数据并行-2"></a> DP (数据并行）</h3>
+<p>使用了 <strong>FSDP</strong> (ZeRO stage 3 的一种实现，即对于优化器状态，梯度和参数都进行分片），</p>
+<p>回顾一下Zero stage 3会带来1.5x的额外通讯开销：</p>
+<p><strong>Stage 2 中，总通讯量为</strong> <strong>φ (对梯度</strong> <strong>Reduce-Scatter)</strong> <strong>+ φ (对更新的参数</strong> <strong>All-Gather) = 2****φ</strong></p>
+<p><strong>Stage 3 中，总通讯量为</strong> <strong>φ (前向传播时对参数</strong> <strong>All-Gather)</strong> <strong>+ φ (反向传播时对参数</strong> <strong>All-Gather) +</strong> <strong>φ (对梯度</strong> <strong>Reduce-Scatter) = 3****φ</strong></p>
+<p>LLama做的修改是仅在正向传播时对模型参数分片，<strong>反向传播时不对模型参数分片</strong>，免去了额外的 all-gather 通讯开销</p>
+<h3 id="cp-context-并行"><a class="markdownIt-Anchor" href="#cp-context-并行"></a> <strong>CP (Context 并行）</strong></h3>
+<p>没有用之前提到的 ring-attenion 方法，而<strong>使用了 All-gather 方法</strong>：</p>
+<ul>
+<li><strong>All Gather</strong>：将所有节点上收集其他所有节点上的数据，All Gather 相当于一个 Gather 操作之后跟着一个 Broadcast 操作。如下图所示，All Gather 操作将所有计算设备上的数据收集到每个计算设备中。</li>
+</ul>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126135153448.png" alt="image.png" /></p>
+<ul>
+<li>
+<p>在计算attention得时候query是按照序列并行拆分的，但是key和value都是全量的数据，要想key和value是全量的数据，那么必须获取所有卡的key和value。ring-attention 借助了 ring 的想法重叠了通讯和计算，提高通讯效率，减少显存开销</p>
+</li>
+<li>
+<p><strong>Llama 选择了直接在计算前对 KV 做 all-gather 操作，这样会更加占用显存，并且通讯和计算时间也不能重叠。</strong></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126135211167.png" alt="image.png" /></p>
+<p>Meta给的解释是：</p>
+<ul>
+<li>
+<p>更容易、更灵活地支持不同类型的注意力掩码</p>
+<ul>
+<li>Casual mask: 在Transformer模型中，自注意力（self-attention）是在整个 token 序列上计算的，包括当前 token 之后的 token。在训练期间，我们不希望模型在预测当前 token 时看到未来的 token 而“作弊”。 为了防止这种情况，我们使用了因果掩码（causal mask），将所有未来的 token 设置为零，有效地从注意力机制中屏蔽了它们。这使得<strong>模型在进行预测时只能关注过去和当前的 token</strong> ，并确保它仅基于每个时间步骤可用的信息进行预测。具体实现中，这种掩码可以通过原始输入和一个合适的上三角矩阵相乘（或者逻辑与）来得到。(<a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_35169059/article/details/101678207">Transformer的矩阵维度分析和Mask详解_transformer mask矩阵-CSDN博客</a>、<a target="_blank" rel="noopener" href="http://www.360doc.com/content/23/0607/09/7673502_1083788043.shtml">图解GPT2模型Self Attention注意力机制</a>)<br />
+<img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126135222385.png" alt="image.png" /></li>
+</ul>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126135230125.png" alt="image.png" /></p>
+<ul>
+<li>Document mask: 防止同一序列内不同 document 之间做 self-attention</li>
+</ul>
+</li>
+<li>
+<p>由于使用了GQA，通信的K和V张量比Q张量小得多，因此all-gather延迟很小。注意力计算的时间复杂度比all-gather大一个数量级（O(S^2)与O(S)，其中S表示序列长度），使all-gather的开销可以忽略不计。<br />
+<img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126135236325.png" alt="image.png" /></p>
+</li>
+<li>
+<p>猜测Ring的话会把Attention计算切成更小更碎的算子，在高带宽的机器上 all-gather 可能会更加适合</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Load-balancing 优化</p>
+<ul>
+<li>对于不同的的sequence 分片，由于有causal mask，存在计算不均衡的问题<br />
+<img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126135243392.png" alt="image.png" /></li>
+</ul>
+<p><strong>LLama 训练时将输入序列划分为 2 × CP 块，每个CP rank 接收两个块。第 i 个 CP rank 同时接收第 i 个块和第 (2 × CP − 1 − i) 个块。</strong></p>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" rel="tag"># 大模型</a>
+              <a href="/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E8%AE%AD%E7%BB%83/" rel="tag"># 大模型训练</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/01/26/%E5%BA%8F%E5%88%97%E5%B9%B6%E8%A1%8C/" rel="prev" title="序列并行">
+                  <i class="fa fa-angle-left"></i> 序列并行
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2025/01/26/LoRA-Low-Rank-Adaptation-%E4%BD%8E%E7%A7%A9%E5%BE%AE%E8%B0%83/" rel="next" title="LoRA (Low-Rank Adaptation) 低秩微调">
+                  LoRA (Low-Rank Adaptation) 低秩微调 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Ronny Lu</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">197k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">11:56</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">false</script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" integrity="sha256-UF1fgpAiu3tPJN/uCqEUHNe7pnr+QR0SQDNfgglgtcM=" crossorigin="anonymous">
+  <script class="next-config" data-name="katex" type="application/json">{"copy_tex_js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/copy-tex.min.js","integrity":"sha256-Us54+rSGDSTvIhKKUs4kygE2ipA0RXpWWh0/zLqw3bs="}}</script>
+  <script src="/js/third-party/math/katex.js"></script>
+
+
+
+</body>
+</html>

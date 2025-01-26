@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-minimal.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"luyiyun1021.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.22.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="分布式训练的意义   节省训练时间  计算速率：">
+<meta property="og:type" content="article">
+<meta property="og:title" content="分布式训练技术 (数据并行, 模型并行, DeepSpeed Zero, Megatron-LM)">
+<meta property="og:url" content="https://luyiyun1021.github.io/2025/01/26/%E5%88%86%E5%B8%83%E5%BC%8F%E8%AE%AD%E7%BB%83/index.html">
+<meta property="og:site_name" content="Ronny Lu&#39;s blog">
+<meta property="og:description" content="分布式训练的意义   节省训练时间  计算速率：">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126135905592.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126135914854.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140153578.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140139092.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140204847.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140211230.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140217206.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140223559.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140258737.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140309913.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140316557.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140323222.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140330219.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140337185.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140343047.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140349614.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140422483.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140430912.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140438042.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140445702.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140452271.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140500473.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140516538.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140541800.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140549135.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140558267.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140640118.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140646906.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140658755.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140708548.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140809738.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140823075.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140919964.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140926960.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140947155.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140954823.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126141016191.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126141023264.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126141029266.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126141045545.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126141052716.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126141058165.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126141105174.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126141111968.png">
+<meta property="article:published_time" content="2025-01-26T06:12:06.000Z">
+<meta property="article:modified_time" content="2025-01-26T09:40:31.749Z">
+<meta property="article:author" content="Ronny Lu">
+<meta property="article:tag" content="大模型">
+<meta property="article:tag" content="大模型训练">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126135905592.png">
+
+
+<link rel="canonical" href="https://luyiyun1021.github.io/2025/01/26/%E5%88%86%E5%B8%83%E5%BC%8F%E8%AE%AD%E7%BB%83/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://luyiyun1021.github.io/2025/01/26/%E5%88%86%E5%B8%83%E5%BC%8F%E8%AE%AD%E7%BB%83/","path":"2025/01/26/分布式训练/","title":"分布式训练技术 (数据并行, 模型并行, DeepSpeed Zero, Megatron-LM)"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>分布式训练技术 (数据并行, 模型并行, DeepSpeed Zero, Megatron-LM) | Ronny Lu's blog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<style>.darkmode--activated{--body-bg-color:#282828;--content-bg-color:#333;--card-bg-color:#555;--text-color:#ccc;--blockquote-color:#bbb;--link-color:#ccc;--link-hover-color:#eee;--brand-color:#ddd;--brand-hover-color:#ddd;--table-row-odd-bg-color:#282828;--table-row-hover-bg-color:#363636;--menu-item-bg-color:#555;--btn-default-bg:#222;--btn-default-color:#ccc;--btn-default-border-color:#555;--btn-default-hover-bg:#666;--btn-default-hover-color:#ccc;--btn-default-hover-border-color:#666;--highlight-background:#282b2e;--highlight-foreground:#a9b7c6;--highlight-gutter-background:#34393d;--highlight-gutter-foreground:#9ca9b6}.darkmode--activated img{opacity:.75}.darkmode--activated img:hover{opacity:.9}.darkmode--activated code{color:#69dbdc;background:0 0}button.darkmode-toggle{z-index:9999}.darkmode-ignore,img{display:flex!important}.beian img{display:inline-block!important}</style></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Ronny Lu's blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E8%AE%AD%E7%BB%83%E7%9A%84%E6%84%8F%E4%B9%89"><span class="nav-number">1.</span> <span class="nav-text"> 分布式训练的意义</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B9%B6%E8%A1%8C%E6%96%B9%E5%BC%8F"><span class="nav-number">2.</span> <span class="nav-text"> 并行方式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%B9%B6%E8%A1%8C"><span class="nav-number">2.1.</span> <span class="nav-text"> 数据并行</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A8%A1%E5%9E%8B%E5%B9%B6%E8%A1%8C"><span class="nav-number">2.2.</span> <span class="nav-text"> 模型并行</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%BC%A0%E9%87%8F%E5%B9%B6%E8%A1%8C"><span class="nav-number">2.2.1.</span> <span class="nav-text"> 张量并行</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E8%A1%8C%E5%B9%B6%E8%A1%8Crow-parallelism"><span class="nav-number">2.2.1.1.</span> <span class="nav-text"> 行并行（Row Parallelism）</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%88%97%E5%B9%B6%E8%A1%8Ccolumn-parallelism"><span class="nav-number">2.2.1.2.</span> <span class="nav-text"> 列并行（Column Parallelism）</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%B5%81%E6%B0%B4%E7%BA%BF%E5%B9%B6%E8%A1%8C"><span class="nav-number">2.2.2.</span> <span class="nav-text"> 流水线并行</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#naive-pipelining"><span class="nav-number">2.2.2.1.</span> <span class="nav-text"> Naive Pipelining</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#gpipe"><span class="nav-number">2.2.2.2.</span> <span class="nav-text"> GPipe</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#gpipe%E7%9A%84bubbles%E9%97%AE%E9%A2%98"><span class="nav-number">2.2.2.2.1.</span> <span class="nav-text"> GPipe的Bubbles问题</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#gpipe%E7%9A%84%E6%98%BE%E5%AD%98%E5%8D%A0%E7%94%A8%E9%97%AE%E9%A2%98"><span class="nav-number">2.2.2.2.2.</span> <span class="nav-text"> GPipe的显存占用问题</span></a></li></ol></li><li class="nav-item nav-level-5"><a class="nav-link" href="#pipedream-link"><span class="nav-number">2.2.2.3.</span> <span class="nav-text"> PipeDream [link]</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E8%AE%AD%E7%BB%83%E6%A1%86%E6%9E%B6"><span class="nav-number">3.</span> <span class="nav-text"> 分布式训练框架</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#megatron"><span class="nav-number">3.1.</span> <span class="nav-text"> Megatron</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#megatron-v1-link"><span class="nav-number">3.1.1.</span> <span class="nav-text"> Megatron-v1 [link]</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#tensor-%E5%B9%B6%E8%A1%8C%E7%9A%84%E9%97%AE%E9%A2%98"><span class="nav-number">3.1.1.1.</span> <span class="nav-text"> Tensor 并行的问题</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#megatron-v2-link"><span class="nav-number">3.1.2.</span> <span class="nav-text"> Megatron-v2 [link]</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#pipeline%E5%B9%B6%E8%A1%8C%E4%BC%98%E5%8C%96"><span class="nav-number">3.1.2.1.</span> <span class="nav-text"> Pipeline并行优化</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#bubble-time-fraction-%E6%AF%94%E8%BE%83"><span class="nav-number">3.1.2.2.</span> <span class="nav-text"> Bubble Time Fraction 比较</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#interleaved-1f1b-%E7%9A%84%E4%BB%A3%E4%BB%B7"><span class="nav-number">3.1.2.3.</span> <span class="nav-text"> Interleaved 1F1B 的代价</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#megatron-v3-link"><span class="nav-number">3.1.3.</span> <span class="nav-text"> Megatron-v3 [link]</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#sequence-parallel"><span class="nav-number">3.1.3.1.</span> <span class="nav-text"> Sequence Parallel</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#selective-activation-recomputation"><span class="nav-number">3.1.3.2.</span> <span class="nav-text"> Selective Activation Recomputation</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#deepspeed"><span class="nav-number">3.2.</span> <span class="nav-text"> DeepSpeed</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#zero-link"><span class="nav-number">3.2.1.</span> <span class="nav-text"> ZeRO [link]</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#zero-dp-data-parallel"><span class="nav-number">3.2.1.1.</span> <span class="nav-text"> ZeRO-DP (Data Parallel)</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#zero-r"><span class="nav-number">3.2.1.2.</span> <span class="nav-text"> ZeRO-R</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#zero-offload-link"><span class="nav-number">3.2.2.</span> <span class="nav-text"> ZeRO-Offload [link]</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%89%A9%E5%B1%95%E6%80%A7"><span class="nav-number">3.2.2.1.</span> <span class="nav-text"> 扩展性</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#zero-infinity-link"><span class="nav-number">3.2.3.</span> <span class="nav-text"> ZeRO-Infinity [link]</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#pytorch"><span class="nav-number">3.3.</span> <span class="nav-text"> Pytorch</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#dpdata-parallelism"><span class="nav-number">3.3.1.</span> <span class="nav-text"> DP（Data Parallelism）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#ddpdistributed-data-parallelism"><span class="nav-number">3.3.2.</span> <span class="nav-text"> DDP（Distributed Data Parallelism）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#fsdpfully-sharded-data-parallel"><span class="nav-number">3.3.3.</span> <span class="nav-text"> FSDP（Fully Sharded Data Parallel）</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E5%AE%9E%E6%88%98"><span class="nav-number">4.</span> <span class="nav-text"> 4. 实战</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%99%84%E5%BD%95"><span class="nav-number">5.</span> <span class="nav-text"> 附录</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9B%86%E5%90%88%E9%80%9A%E4%BF%A1%E5%8E%9F%E8%AF%AD"><span class="nav-number">5.1.</span> <span class="nav-text"> 集合通信原语</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Ronny Lu"
+      src="https://avatars.githubusercontent.com/u/55233584?v=4">
+  <p class="site-author-name" itemprop="name">Ronny Lu</p>
+  <div class="site-description" itemprop="description">Tech notes on LLM, LLM Infra, C++</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">50</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">14</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">14</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/01/26/%E5%88%86%E5%B8%83%E5%BC%8F%E8%AE%AD%E7%BB%83/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
+      <meta itemprop="name" content="Ronny Lu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ronny Lu's blog">
+      <meta itemprop="description" content="Tech notes on LLM, LLM Infra, C++">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="分布式训练技术 (数据并行, 模型并行, DeepSpeed Zero, Megatron-LM) | Ronny Lu's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          分布式训练技术 (数据并行, 模型并行, DeepSpeed Zero, Megatron-LM)
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-01-26 14:12:06 / 修改时间：17:40:31" itemprop="dateCreated datePublished" datetime="2025-01-26T14:12:06+08:00">2025-01-26</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">大模型</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E8%AE%AD%E7%BB%83%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index"><span itemprop="name">训练技术</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>7.2k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>26 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h2 id="分布式训练的意义"><a class="markdownIt-Anchor" href="#分布式训练的意义"></a> 分布式训练的意义</h2>
+<ul>
+<li>
+<p><strong>节省训练时间</strong></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126135905592.png" alt="image.png" /></p>
+<p><strong>计算速率：</strong></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126135914854.png" alt="image.png" /></p>
+</li>
+</ul>
+<span id="more"></span>
+<ul>
+<li>
+<p><strong>突破显存限制</strong></p>
+<p><strong>模型训练的总内存</strong></p>
+<ul>
+<li>
+<p>大模型混合精度训练过程中，使用 FP16 进行前向传递，FP32 反向传递梯度信息；优化器更新模型参数时，使用 FP32 优化器状态、FP32 的梯度来更新模型参数。</p>
+</li>
+<li>
+<p>在一次训练迭代中，每个可训练参数都对应1个梯度，2个优化器状态（Adam)。设模型参数量为φ (FP16)，那么梯度的参数量为2φ (FP32)，Adam优化器的参数量为4φ (FP32)</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140153578.png" alt="image.png" /></p>
+</li>
+<li>
+<p>一般大模型训练为了节省内存，使用激活重计算来减少中间激活值。</p>
+<ul>
+<li>训练总内存 = 模型内存(φ) + 梯度内存(2φ) + 优化器内存(2φ) + 激活内存(?φ) + 其他内存(1.xφ)</li>
+</ul>
+</li>
+<li>
+<p>因此在LLMs大模型训练过程中最少需要8X倍于模型权重的大小内存，eg.LLAMA-65B:</p>
+<ul>
+<li>
+<p>65B模型权重参数I30GB,训练时候总消耗内存最小为130GBx8≈1TB。</p>
+</li>
+<li>
+<p>1TG/64GB≈17，除去激活值需要的内存，仅仅放下一个大模型就需要32张卡。</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="并行方式"><a class="markdownIt-Anchor" href="#并行方式"></a> 并行方式</h2>
+<p>主要可以分为三种并行方式：数据并行（Data Parallel）、张量并行（Tensor Parallel）和流水线并行（Pipeline Parallel）；其中</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140139092.png" alt="image.png" /></p>
+<h3 id="数据并行"><a class="markdownIt-Anchor" href="#数据并行"></a> 数据并行</h3>
+<p>数据并行是目前最为常见和基础的并行方式。这种并行方式的核心思想是对输入数据按 batch 维度进行划分，将<strong>数据分配给不同GPU进行计算</strong>。在数据并行里，<strong>每个GPU上存储的模型、优化器状态是完全相同的</strong>。当每块GPU上的前后向传播完成后，需要将每块GPU上计算出的模型梯度汇总求平均，以得到整个batch的模型梯度。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140204847.png" alt="image.png" /></p>
+<h3 id="模型并行"><a class="markdownIt-Anchor" href="#模型并行"></a> 模型并行</h3>
+<p>模型并行（MP，Model Parallelism）可分为流水线并行（PP，Pipeline Parallelism）和张量并行（TP，Tensor Parallesim），都是解决当GPU放不下一个模型时，而将模型拆分到不同的GPU上的方法。</p>
+<p>在<strong>数据并行</strong>训练中，一个明显的特点是<strong>每个 GPU 持有整个模型权重的副本</strong>。当参数规模为千亿时，存储模型参数就需要数百GB的显存空间，超出单个GPU卡的显存容量。显然，仅靠数据并行无法满足超大规模模型训练对于显存的需求。为了解决这个问题，可以采用模型并行技术。与数据并行在不同设备都有完整的计算图不同，模型并行是不同设备负责单个计算图不同部分的计算。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140211230.png" alt="image.png" /></p>
+<p>模型并行从计算图的切分角度：</p>
+<p>1、按模型的layer层切分到不同设备，即_<strong>层间并行</strong>_，我们称之为<strong>流水线并行</strong>。</p>
+<p>2、将计算图中的层内的参数切分到不同设备，即_<strong>层内并行</strong>_，我们称之为<strong>张量并行</strong>。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140217206.png" alt="image.png" /></p>
+<p>由于Pipeline并行和Tensor并行是正交的，所以可以同时使用，如下图pipeline并行是竖切，tensor并行是横切，每个色块代表一个device，一个模型运行在4个device上</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140223559.png" alt="image.png" /></p>
+<h4 id="张量并行"><a class="markdownIt-Anchor" href="#张量并行"></a> 张量并行</h4>
+<p>模型并行是不同设备负责单个计算图不同部分的计算。而将计算图中的层内的参数（张量）切分到不同设备（即层内并行），每个设备只拥有模型的一部分，以减少内存负荷，称之为张量模型并行。</p>
+<p>张量并行从数学原理上来看就是对于<code>linear</code>层就是把矩阵分块进行计算，然后把结果合并；对于非<code>linear</code>层，则不做额外设计；张量并行的核心就是将矩阵乘法进行拆分，从而降低模型对单卡的显存需求</p>
+<p>对于模型中某一个线性变换<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Y</mi><mo>=</mo><mi>X</mi><mi>A</mi></mrow><annotation encoding="application/x-tex">Y=XA</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathnormal" style="margin-right:0.22222em;">Y</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathnormal" style="margin-right:0.07847em;">X</span><span class="mord mathnormal">A</span></span></span></span>（X是输入，是权重，Y是输出）可以有两种变换方式：</p>
+<p>1、<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>X</mi><mi>A</mi><mo>=</mo><mo stretchy="false">[</mo><mi>X</mi><mn>1</mn><mtext>​</mtext><mi>X</mi><mn>2</mn><mtext>​</mtext><mo stretchy="false">]</mo><mo stretchy="false">[</mo><mi>A</mi><mn>1</mn><mi>A</mi><mn>2</mn><mtext>​</mtext><mo stretchy="false">]</mo><mo>=</mo><mi>X</mi><mn>1</mn><mi>A</mi><mn>1</mn><mo>+</mo><mi>X</mi><mn>2</mn><mi>A</mi><mn>2</mn><mo>=</mo><mi>Y</mi><mn>1</mn><mo>+</mo><mi>Y</mi><mn>2</mn><mo>=</mo><mi>Y</mi></mrow><annotation encoding="application/x-tex">XA=[ X1 ​ X2 ​ ][ A1 A2 ​ ]=X1A1+X2A2=Y1+Y2=Y</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathnormal" style="margin-right:0.07847em;">X</span><span class="mord mathnormal">A</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">[</span><span class="mord mathnormal" style="margin-right:0.07847em;">X</span><span class="mord">1</span><span class="mord">​</span><span class="mord mathnormal" style="margin-right:0.07847em;">X</span><span class="mord">2</span><span class="mord">​</span><span class="mclose">]</span><span class="mopen">[</span><span class="mord mathnormal">A</span><span class="mord">1</span><span class="mord mathnormal">A</span><span class="mord">2</span><span class="mord">​</span><span class="mclose">]</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.76666em;vertical-align:-0.08333em;"></span><span class="mord mathnormal" style="margin-right:0.07847em;">X</span><span class="mord">1</span><span class="mord mathnormal">A</span><span class="mord">1</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathnormal" style="margin-right:0.07847em;">X</span><span class="mord">2</span><span class="mord mathnormal">A</span><span class="mord">2</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.76666em;vertical-align:-0.08333em;"></span><span class="mord mathnormal" style="margin-right:0.22222em;">Y</span><span class="mord">1</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathnormal" style="margin-right:0.22222em;">Y</span><span class="mord">2</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathnormal" style="margin-right:0.22222em;">Y</span></span></span></span></p>
+<p>2、<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>X</mi><mi>A</mi><mo>=</mo><mi>X</mi><mtext>​</mtext><mo stretchy="false">[</mo><mi>A</mi><mn>1</mn><mtext>​</mtext><mi>A</mi><mn>2</mn><mtext>​</mtext><mo stretchy="false">]</mo><mo>=</mo><mo stretchy="false">[</mo><mi>X</mi><mi>A</mi><mn>1</mn><mtext>​</mtext><mi>X</mi><mi>A</mi><mn>2</mn><mtext>​</mtext><mo stretchy="false">]</mo><mo>=</mo><mo stretchy="false">[</mo><mi>Y</mi><mn>1</mn><mtext>​</mtext><mi>Y</mi><mn>2</mn><mtext>​</mtext><mo stretchy="false">]</mo><mo>=</mo><mi>Y</mi></mrow><annotation encoding="application/x-tex">XA= X ​ [ A1 ​ A2 ​ ]=[ XA1 ​ XA2 ​ ]=[ Y1 ​ Y2 ​ ]=Y</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathnormal" style="margin-right:0.07847em;">X</span><span class="mord mathnormal">A</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.07847em;">X</span><span class="mord">​</span><span class="mopen">[</span><span class="mord mathnormal">A</span><span class="mord">1</span><span class="mord">​</span><span class="mord mathnormal">A</span><span class="mord">2</span><span class="mord">​</span><span class="mclose">]</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">[</span><span class="mord mathnormal" style="margin-right:0.07847em;">X</span><span class="mord mathnormal">A</span><span class="mord">1</span><span class="mord">​</span><span class="mord mathnormal" style="margin-right:0.07847em;">X</span><span class="mord mathnormal">A</span><span class="mord">2</span><span class="mord">​</span><span class="mclose">]</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">[</span><span class="mord mathnormal" style="margin-right:0.22222em;">Y</span><span class="mord">1</span><span class="mord">​</span><span class="mord mathnormal" style="margin-right:0.22222em;">Y</span><span class="mord">2</span><span class="mord">​</span><span class="mclose">]</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathnormal" style="margin-right:0.22222em;">Y</span></span></span></span></p>
+<p>分别对应两种并行方式：</p>
+<h5 id="行并行row-parallelism"><a class="markdownIt-Anchor" href="#行并行row-parallelism"></a> 行并行（Row Parallelism）</h5>
+<p><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>X</mi><mi>A</mi><mo>=</mo><mo stretchy="false">[</mo><mi>X</mi><mn>1</mn><mtext>​</mtext><mi>X</mi><mn>2</mn><mtext>​</mtext><mo stretchy="false">]</mo><mo stretchy="false">[</mo><mi>A</mi><mn>1</mn><mi>A</mi><mn>2</mn><mtext>​</mtext><mo stretchy="false">]</mo><mo>=</mo><mi>X</mi><mn>1</mn><mi>A</mi><mn>1</mn><mo>+</mo><mi>X</mi><mn>2</mn><mi>A</mi><mn>2</mn><mo>=</mo><mi>Y</mi><mn>1</mn><mo>+</mo><mi>Y</mi><mn>2</mn><mo>=</mo><mi>Y</mi></mrow><annotation encoding="application/x-tex">XA=[ X1 ​ X2 ​ ][ A1 A2 ​ ]=X1A1+X2A2=Y1+Y2=Y</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathnormal" style="margin-right:0.07847em;">X</span><span class="mord mathnormal">A</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">[</span><span class="mord mathnormal" style="margin-right:0.07847em;">X</span><span class="mord">1</span><span class="mord">​</span><span class="mord mathnormal" style="margin-right:0.07847em;">X</span><span class="mord">2</span><span class="mord">​</span><span class="mclose">]</span><span class="mopen">[</span><span class="mord mathnormal">A</span><span class="mord">1</span><span class="mord mathnormal">A</span><span class="mord">2</span><span class="mord">​</span><span class="mclose">]</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.76666em;vertical-align:-0.08333em;"></span><span class="mord mathnormal" style="margin-right:0.07847em;">X</span><span class="mord">1</span><span class="mord mathnormal">A</span><span class="mord">1</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathnormal" style="margin-right:0.07847em;">X</span><span class="mord">2</span><span class="mord mathnormal">A</span><span class="mord">2</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.76666em;vertical-align:-0.08333em;"></span><span class="mord mathnormal" style="margin-right:0.22222em;">Y</span><span class="mord">1</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathnormal" style="margin-right:0.22222em;">Y</span><span class="mord">2</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathnormal" style="margin-right:0.22222em;">Y</span></span></span></span></p>
+<p>X1 和 A1 就可以放到 GPU0 之上计算得出 Y1，X2 和 A2 可以放到第二个 GPU1 之上计算得出 Y2，然后，把Y1和Y2结果相加，得到最终的输出Y。$</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140258737.png" alt="image.png" /></p>
+<h5 id="列并行column-parallelism"><a class="markdownIt-Anchor" href="#列并行column-parallelism"></a> 列并行（Column Parallelism）</h5>
+<p><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>X</mi><mi>A</mi><mo>=</mo><mi>X</mi><mtext>​</mtext><mo stretchy="false">[</mo><mi>A</mi><mn>1</mn><mtext>​</mtext><mi>A</mi><mn>2</mn><mtext>​</mtext><mo stretchy="false">]</mo><mo>=</mo><mo stretchy="false">[</mo><mi>X</mi><mi>A</mi><mn>1</mn><mtext>​</mtext><mi>X</mi><mi>A</mi><mn>2</mn><mtext>​</mtext><mo stretchy="false">]</mo><mo>=</mo><mo stretchy="false">[</mo><mi>Y</mi><mn>1</mn><mtext>​</mtext><mi>Y</mi><mn>2</mn><mtext>​</mtext><mo stretchy="false">]</mo><mo>=</mo><mi>Y</mi></mrow><annotation encoding="application/x-tex">XA= X ​ [ A1 ​ A2 ​ ]=[ XA1 ​ XA2 ​ ]=[ Y1 ​ Y2 ​ ]=Y</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathnormal" style="margin-right:0.07847em;">X</span><span class="mord mathnormal">A</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.07847em;">X</span><span class="mord">​</span><span class="mopen">[</span><span class="mord mathnormal">A</span><span class="mord">1</span><span class="mord">​</span><span class="mord mathnormal">A</span><span class="mord">2</span><span class="mord">​</span><span class="mclose">]</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">[</span><span class="mord mathnormal" style="margin-right:0.07847em;">X</span><span class="mord mathnormal">A</span><span class="mord">1</span><span class="mord">​</span><span class="mord mathnormal" style="margin-right:0.07847em;">X</span><span class="mord mathnormal">A</span><span class="mord">2</span><span class="mord">​</span><span class="mclose">]</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">[</span><span class="mord mathnormal" style="margin-right:0.22222em;">Y</span><span class="mord">1</span><span class="mord">​</span><span class="mord mathnormal" style="margin-right:0.22222em;">Y</span><span class="mord">2</span><span class="mord">​</span><span class="mclose">]</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathnormal" style="margin-right:0.22222em;">Y</span></span></span></span></p>
+<p>将 X 分别放置在GPU0 和GPU1，将 A1 放置在 GPU0，将 A2 放置在 GPU1，然后分别进行矩阵运行，最终将2个GPU上面的矩阵拼接在一起，得到最终的输出Y。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140309913.png" alt="image.png" /></p>
+<h4 id="流水线并行"><a class="markdownIt-Anchor" href="#流水线并行"></a> 流水线并行</h4>
+<p>**流水线并行（Pipeline Parallelism，PP）**是一种并行计算策略，将模型的各个层分段处理，并将每个段分布在不同的计算设备上，使得前后阶段能够流水式、分批进行工作。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140316557.png" alt="image.png" /></p>
+<h5 id="naive-pipelining"><a class="markdownIt-Anchor" href="#naive-pipelining"></a> Naive Pipelining</h5>
+<p>当一个模型大到单个GPU无法训练时，最直接的想法是对模型层进行划分，然后将划分后的部分放置在不同的GPU上。下面以一个4层的序列模型为例，介绍朴素层并行：</p>
+<p>假设一个大模型有4层，采用PP的方式，可以把其中的0层放在GPU序号为0的GPU的显存中，其他的1–3层以此类推。</p>
+<p>整个朴素层并行前向传播和后向传播的过程如下图所示。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140323222.png" alt="image.png" /></p>
+<p><strong>朴素层并行的缺点</strong>：</p>
+<ul>
+<li>
+<p><strong>低GPU利用率</strong>。 在任意时刻，有且仅有一个GPU在工作，其他GPU都是空闲的。</p>
+</li>
+<li>
+<p><strong>计算和通信没有重叠</strong>。在发送前向传播的中间结果(FWD)或者反向传播的中间结果(BWD)时，GPU也是空闲的。</p>
+</li>
+<li>
+<p><strong>高显存占用</strong>。GPU1需要保存整个minibatch的所有激活，直至最后完成参数更新。如果batch size很大，这将对显存带来巨大的挑战。</p>
+</li>
+</ul>
+<h5 id="gpipe"><a class="markdownIt-Anchor" href="#gpipe"></a> <strong>GPipe</strong></h5>
+<p>GPipe通过将minibatch划分为更小且相等尺寸的microbatch来提高效率。具体来说，让每个microbatch独立的计算前后向传播，然后将每个mircobatch的梯度相加，就能得到整个batch的梯度。由于每个层仅在一个GPU上，对mircobatch的梯度求和仅需要在本地进行即可，不需要通信。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140330219.png" alt="image.png" /></p>
+<p>在GPipe的调度中，每个timestep上花费的时间要比朴素层并行更短，因为每个GPU仅需要处理microbatch</p>
+<h6 id="gpipe的bubbles问题"><a class="markdownIt-Anchor" href="#gpipe的bubbles问题"></a> <strong>GPipe的Bubbles问题</strong></h6>
+<p>bubbles指的是流水线中没有进行任何有效工作的点。这是由于操作之间的依赖导致的。例如，在GPU3执行完F1之前，GPU4只能等待。整个流水线过程中的bubbles如下图所示</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140337185.png" alt="image.png" /></p>
+<p>增大microbatch的数量，可以降低bubbles的比例</p>
+<h6 id="gpipe的显存占用问题"><a class="markdownIt-Anchor" href="#gpipe的显存占用问题"></a> <strong>GPipe的显存占用问题</strong></h6>
+<p>在GPipe中，GPU需要在前向传播至反向传播这段时间内缓存激活(activations)。</p>
+<h5 id="pipedream-link"><a class="markdownIt-Anchor" href="#pipedream-link"></a> <strong>PipeDream [</strong><a target="_blank" rel="noopener" href="https://dl.acm.org/doi/pdf/10.1145/3341301.3359646"><strong>link</strong></a><strong>]</strong></h5>
+<p>GPipe需要等所有的microbatch前向传播完成后，才会开始反向传播。PipeDream提出了 <strong>1F1B</strong> 流水线策略，即一个前向通道和一个后向通道。1F1B 流水线策略引入了任务调度机制，使得下游设备能够在等待上游计算的同时执行其他可并行的任务，从而提高设备的利用率。<strong>当一个microbatch的前向传播完成后，立即进入反向传播阶段</strong>。理论上，反向传播完成后就可以丢弃掉对应microbatch缓存的激活。由于PipeDream的反向传播完成的要比GPipe早，因此也会减少显存的需求。</p>
+<p>下图是PipeDream的调度图，4个GPU和8个microbatchs。蓝色的方块表示前向传播，绿色表示反向传播，数字则是microbatch的id。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140343047.png" alt="image.png" /></p>
+<p><strong>如何避免正向和反向传播中权重的冲突？</strong></p>
+<p><strong>引入多版本控制</strong></p>
+<ul>
+<li>
+<p><strong>Weight stashing</strong></p>
+<p><strong>各个阶段****都用最新版本的权重进行前向计算</strong>，处理输入的Micro-batch。计算前向传播之后，会将这份参数保存下来用于同一个Micro-batch的后向计算。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140349614.png" alt="image.png" /></p>
+</li>
+<li>
+<p><strong>Vertical Sync</strong></p>
+<p>每个Micro-batch进入pipeline时都使用输入stage最新版本的参数，并且参数的版本号会伴随该Micro-batch数据整个生命周期，在<strong>各个阶段都是用同一个版本的****权重</strong>（而不是Weight stashing那样都使用最新版本的参数），从而实现了stage间的参数一致性。</p>
+</li>
+</ul>
+<h2 id="分布式训练框架"><a class="markdownIt-Anchor" href="#分布式训练框架"></a> 分布式训练框架</h2>
+<h3 id="megatron"><a class="markdownIt-Anchor" href="#megatron"></a> Megatron</h3>
+<p>NVIDIA Megatron 是一个基于 PyTorch 的分布式训练框架，用来训练超大Transformer语言模型</p>
+<h4 id="megatron-v1-link"><a class="markdownIt-Anchor" href="#megatron-v1-link"></a> Megatron-v1 [<a target="_blank" rel="noopener" href="https://arxiv.org/pdf/1909.08053">link</a>]</h4>
+<p>Megatron-v1 专门对 Tranformer 模型提出了<strong>张量并行</strong>的方案。</p>
+<p>Tranformer 中的 MLP 结构均包含两层全连接（FC）层，即存在两个矩阵乘，对第一个 FC 层的参数矩阵按列切块，对第二个 FC层参数矩阵按行切块。这样第一个 FC 层的输出恰好满足第二个 FC 层数据输入要求（按列切分），因此可以省去第一个 FC 层后的汇总通信操作。</p>
+<p>多头自注意力机制的张量并行与 MLP 类似，因为具有多个独立的头，因此相较于 MLP 更容易实现并行</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140422483.png" alt="image.png" /></p>
+<p><strong>通信成本</strong>：每个 MLP 层或者 Self-Attention 层都是需要1次 All-reduce 操作，前向 + 反向则是2次 All-reduce 操作。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140430912.png" alt="image.png" /></p>
+<h5 id="tensor-并行的问题"><a class="markdownIt-Anchor" href="#tensor-并行的问题"></a> <strong>Tensor 并行的问题</strong></h5>
+<p><strong>activation占用显存上</strong>：切分了大部分的activation，<strong>layernorm、dropout前后的显存没有切分</strong>。v3的序列并行做的主要事情就是把activation切分彻底。</p>
+<p><strong>通信量大</strong>：不同卡上的结果需要合并，此时会有较大的通信量，通常比数据并行、pipeline并行的通信量要大很多。受限于通信量大，因此tensor并行通常只用于机器内的并行，例如nvidia实验中，多机、每个机器上8张卡，tensor并行最多设置为8。</p>
+<h4 id="megatron-v2-link"><a class="markdownIt-Anchor" href="#megatron-v2-link"></a> Megatron-v2 [<a target="_blank" rel="noopener" href="https://arxiv.org/pdf/2104.04473">link</a>]</h4>
+<p>v2这篇大部分是在讨论<strong>3D并行</strong>（combine pipeline, tensor, and data parallelism), 对于pipeline并行也做了一些优化</p>
+<ul>
+<li>
+<p><strong>Takeaway 1</strong>: Model parallelism 中，pipeline parallelism 的特点是点对点通信成本较低。而 tensor parallelism 则使用 all-reduce 通信。当考虑不同形式的模型并行时，tensor 并行的数量需要小于等于机器的卡数，然后使用流水线并行来跨服务器扩展到更大的模型。</p>
+</li>
+<li>
+<p><strong>Takeaway 2</strong>: Data parallelism 比 Model parallelism 通信成本和对中间结果的缓存要求更低，更利于扩展到更多gpu中。</p>
+</li>
+</ul>
+<h5 id="pipeline并行优化"><a class="markdownIt-Anchor" href="#pipeline并行优化"></a> <strong>Pipeline并行优化</strong></h5>
+<p><strong>朴素的 pipelining —&gt; GPipe 减少气泡 —&gt; 1F1B pipeline 减少 activation 显存占用 —&gt;</strong> <strong>interleaved 1F1B 进一步减少气泡</strong></p>
+<p>Megatron 给出了非交错式和交错式 (interleaved) 两种方式调度方式，如图所示。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140438042.png" alt="image.png" /></p>
+<p><strong>1F1B 非交错式调度模式</strong>可分为三个阶段。首先是热身阶段，在该阶段中，计算设备中进行不同数量的前向计算。接下来的阶段是前向-后向阶段，计算设备按顺序执行一次前向计算，然后进行一次后向计算。最后一个阶段是后向阶段，计算设备在完成最后一次后向计算。相比于 GPipe 策略，非交错式调度模式在节省内存方面表现更好，如图示的device4，在完成 micro-batch 1 的前向传输之后马上开始进行 micro-batch 1 的反向 Backward Pass，减少了 micro-batch 1的 Activations 在其他 Device 中的缓存时间。然而，<strong>它需要与 GPipe 策略一样的时间来完成一轮计算</strong>。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140445702.png" alt="image.png" /></p>
+<p><strong>1F1B 交错式调度模式</strong>要求 micro-batch 的数量是流水线阶段的整数倍。每个设备不再仅负责连续多个层的计算，而是可以处理多个层的子集，这些子集被称为模型块。具体而言，在之前的模式中，设备 1 可能负责层 1-4，设备 2 负责层 5-8，以此类推。然而，在新的模式下，<strong>设备 1 可以处理层 1、2、9、10</strong>，<strong>设备 2 处理层 3、4、11、12</strong>，以此类推。这种模式下，每个设备在流水线中被分配到多个阶段。例如，设备 1 可能参与热身阶段、前向计算阶段和后向计算阶段的某些子集任务。每个设备可以并行执行不同阶段的计算任务，从而更好地利用流水线并行的优势。这种模式不仅在内存消耗方面表现出色，还能够提高计算效率，使得大型模型的并行系统能够更高效地完成计算任务。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140452271.png" alt="image.png" /></p>
+<h5 id="bubble-time-fraction-比较"><a class="markdownIt-Anchor" href="#bubble-time-fraction-比较"></a> <strong>Bubble Time Fraction 比较</strong></h5>
+<p><strong>Gpipe</strong>: <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mfrac><mrow><mi>p</mi><mo>−</mo><mn>1</mn></mrow><mi>m</mi></mfrac></mrow><annotation encoding="application/x-tex">\frac{p - 1}{m}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.242216em;vertical-align:-0.345em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.897216em;"><span style="top:-2.6550000000000002em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">m</span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.446108em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">p</span><span class="mbin mtight">−</span><span class="mord mtight">1</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.345em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span>, microbatches in a batch as<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>m</mi></mrow><annotation encoding="application/x-tex">m</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.43056em;vertical-align:0em;"></span><span class="mord mathnormal">m</span></span></span></span>, the number of pipeline stages (number of devices used for pipeline parallelism) as<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>p</mi></mrow><annotation encoding="application/x-tex">p</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.625em;vertical-align:-0.19444em;"></span><span class="mord mathnormal">p</span></span></span></span></p>
+<p><strong>Default 1F1B</strong>: <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mfrac><mrow><mi>p</mi><mo>−</mo><mn>1</mn></mrow><mi>m</mi></mfrac></mrow><annotation encoding="application/x-tex">\frac{p - 1}{m}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.242216em;vertical-align:-0.345em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.897216em;"><span style="top:-2.6550000000000002em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">m</span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.446108em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">p</span><span class="mbin mtight">−</span><span class="mord mtight">1</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.345em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span></p>
+<p><strong>Interleaved 1F1B</strong>: <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mfrac><mn>1</mn><mi>v</mi></mfrac><mo>⋅</mo><mfrac><mrow><mi>p</mi><mo>−</mo><mn>1</mn></mrow><mi>m</mi></mfrac></mrow><annotation encoding="application/x-tex">\frac{1}{v} \cdot \frac{p - 1}{m}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.190108em;vertical-align:-0.345em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.845108em;"><span style="top:-2.6550000000000002em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.03588em;">v</span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.394em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">1</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.345em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1.242216em;vertical-align:-0.345em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.897216em;"><span style="top:-2.6550000000000002em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">m</span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.446108em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">p</span><span class="mbin mtight">−</span><span class="mord mtight">1</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.345em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span>, stages (or model chunks) each device has as<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>v</mi></mrow><annotation encoding="application/x-tex">v</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.43056em;vertical-align:0em;"></span><span class="mord mathnormal" style="margin-right:0.03588em;">v</span></span></span></span></p>
+<h5 id="interleaved-1f1b-的代价"><a class="markdownIt-Anchor" href="#interleaved-1f1b-的代价"></a> <strong>Interleaved 1F1B 的代价</strong></h5>
+<p><strong>代价一个是额外引入了成倍的通讯</strong>，本来 1F1B 只有 p 个 stage 间需要按顺序通信传递 bsh 大小的中间结果，传递 p-1 次。现在 interleaved 变成了 pv 个 stage 间按顺序传递，传递 pv-1 次。<strong>增加了 p(v-1) 次的通信量</strong>。</p>
+<h4 id="megatron-v3-link"><a class="markdownIt-Anchor" href="#megatron-v3-link"></a> Megatron-v3 [<a target="_blank" rel="noopener" href="https://arxiv.org/pdf/2205.05198">link</a>]</h4>
+<p>MegatronLM的第三篇论文【Reducing Activation Recomputation in Large Transformer Models】是2022年出的，<strong>这篇论文做的主要事情是 activation 的优化</strong>。在大模型训练过程中显存占用过大往往成为瓶颈，一般会通过 recomputation 重计算的方式降低显存占用，但会带来额外的计算代价。这篇论文提出了两种方法，分别是 sequece parallel 和 selective activation recomputation，这两种方法和Tensor并行是可以相结合的，可以有效减少不必要的计算量。</p>
+<ul>
+<li>
+<p>序列并行（sequece parallel）将 tensor 并行时的 activation 分得更彻底，减少了计算量，且没有增加通信的数据量，相当于减少显存也减少时间；</p>
+</li>
+<li>
+<p>selective activation recomputation 比无 activation recomputation 更加节省显存且增加的计算量不大，比 full activation recomputation 增加了显存但速度更快。</p>
+</li>
+</ul>
+<h5 id="sequence-parallel"><a class="markdownIt-Anchor" href="#sequence-parallel"></a> <strong>Sequence Parallel</strong></h5>
+<p>如下图，前面v1的时候我们也提到tensor并行时只对下面两个框内的 model state 和 activation 做切分，layernorm 和 dropout 的都没分。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140500473.png" alt="image.png" /></p>
+<p>Megatron 在他们的 Tensor Parallelism 的基础上，将 Transformer 核的 LayerNorm 以及 Dropout 层的输入<strong>按 Sequence Length 维度进行了切分</strong>，使得各个设备上面只需要做一部分的 Dropout 和 LayerNorm 即可。</p>
+<p>这里把 v1 中的<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>f</mi></mrow><annotation encoding="application/x-tex">f</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="mord mathnormal" style="margin-right:0.10764em;">f</span></span></span></span> copy 操作和<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mover accent="true"><mi>f</mi><mo stretchy="true">‾</mo></mover></mrow><annotation encoding="application/x-tex">\overline{f}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.08888em;vertical-align:-0.19444em;"></span><span class="mord overline"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.89444em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.10764em;">f</span></span></span><span style="top:-3.81444em;"><span class="pstrut" style="height:3em;"></span><span class="overline-line" style="border-bottom-width:0.04em;"></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.19444em;"><span></span></span></span></span></span></span></span></span> all-reduce 操作换成了<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>g</mi></mrow><annotation encoding="application/x-tex">g</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.625em;vertical-align:-0.19444em;"></span><span class="mord mathnormal" style="margin-right:0.03588em;">g</span></span></span></span> all-gather 操作和<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mover accent="true"><mi>g</mi><mo stretchy="true">‾</mo></mover></mrow><annotation encoding="application/x-tex">\overline{g}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.825em;vertical-align:-0.19444em;"></span><span class="mord overline"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.63056em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.03588em;">g</span></span></span><span style="top:-3.55056em;"><span class="pstrut" style="height:3em;"></span><span class="overline-line" style="border-bottom-width:0.04em;"></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.19444em;"><span></span></span></span></span></span></span></span></span> reduce-scatter运算。Tensor并行在一次前向和后向总共有4次的 all-reduce 操作，在Sequence并行一次前向和后向总共有4次all-gather和4次reduce-scatter操作。而 ring all-reduce 执行过程可以分解为一个 reduce-scatter 然后跟着一个 all-gather ，因此Sequence并行相比<strong>没有引入更多的通信代价</strong>。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140516538.png" alt="image.png" /></p>
+<h5 id="selective-activation-recomputation"><a class="markdownIt-Anchor" href="#selective-activation-recomputation"></a> <strong>Selective Activation Recomputation</strong></h5>
+<p>Full activation recomputation 是最常见的方法，就是对每一层只保存输入，做后向前，再做一遍这一层的前向计算。这样需要的activation可以降低到只存输入，2sbh，2是因为fp16占两个字节。<strong>Full activation recomputation的主要问题是多走了一遍前向。</strong></p>
+<p>selective 的动机是把模型层分成两种，一种计算量大但是 activation 小，另一种计算量小但是相对activation 大，那他这里就<strong>只保存计算量大但是 activation 小的层的激活</strong>。这样只需要花相对少的activation 便可以减少较多的计算量。</p>
+<p>在 gpt3 中，论文发现 softmax 这里需要的 activation 占三分之二，但是计算量比较小，那这里每次重计算，其他的三分之一的 activation 就存起来。通过实验发现能够<strong>节省 70%激活所需要的显存，同时只增加 2.7% 重计算的额外开销</strong>。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140541800.png" alt="image.png" /></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140549135.png" alt="image.png" /></p>
+<h3 id="deepspeed"><a class="markdownIt-Anchor" href="#deepspeed"></a> DeepSpeed</h3>
+<p>微软的大模型训练框架,核心技术是 Zero 相关的一系列paper。</p>
+<p>在过去两年 DeepSpeed 团队发表了三篇ZeRO相关的论文，提出了去除冗余参数、引入CPU和内存、引入NVMe等方法，从始至终都围绕着一个目标：将显存优化进行到底。</p>
+<h4 id="zero-link"><a class="markdownIt-Anchor" href="#zero-link"></a> ZeRO [<a target="_blank" rel="noopener" href="https://arxiv.org/pdf/1910.02054">link</a>]</h4>
+<p><strong>ZeRO = ZeRO-DP</strong> (优化 model states) <strong>+ ZeRO-R</strong> (优化 activations, temporary buffers, and memory fragments)</p>
+<h5 id="zero-dp-data-parallel"><a class="markdownIt-Anchor" href="#zero-dp-data-parallel"></a> ZeRO-DP (Data Parallel)</h5>
+<p>在<strong>混合精度训练</strong>中，前向传播和反向传播都使用 fp16 的权重和激活函数。然而，为了有效地计算并应用反向传播结束时的更新，混合精度优化器保留了一份 fp32 的参数副本以及所有其他优化器状态的 fp32 副本。以 <strong>Adam</strong> 为具体例子，使用 Adam 对一个有 φ 参数的模型进行混合精度训练，需要足够的内存来存储<strong>参数和梯度的 fp16 副本</strong>，分别需要 <strong>2****φ</strong> <strong>和</strong> <strong>2****φ</strong> 字节的内存。此外，它还需要存储<strong>优化器状态：参数、动量和方差的 fp32 副本</strong>，分别需要 <strong>4<strong><strong>φ</strong></strong>, 4****φ</strong> <strong>和 4****φ</strong> 字节的内存。我们用 K 来表示优化器状态的内存倍增器，即存储它们需要额外的 Kφ 字节内存。混合精度 Adam 的 K 值为 12。总共这就导致了 2φ + 2φ + Kφ = <strong>16****φ</strong> 字节的内存需求。</p>
+<p>ZeRO-DP 有三个主要的优化阶段，这些阶段分别对应于优化器状态、梯度和参数的分区</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140558267.png" alt="image.png" /></p>
+<ul>
+<li>
+<p><strong>ZeRO-DP Stage 1: 优化器状态</strong> <strong>Partitioning</strong> - 内存减少4倍，通信量与数据并行相同。</p>
+<p>在这一阶段，优化器的状态（如动量和方差）被分区存储在各个GPU中。这意味着每个GPU只保存其负责部分的状态，从而大幅减少了单个GPU所需的内存。</p>
+<ul>
+<li>
+<p><strong>Step 1:</strong> 执行1步 Step forward &amp; backward 计算后，各得一份梯度<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>G</mi><mi>n</mi></msub></mrow><annotation encoding="application/x-tex">G_n</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal">G</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.151392em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">n</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140640118.png" alt="image.png" /></p>
+</li>
+<li>
+<p><strong>Step 2:</strong> 对梯度<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>G</mi><mi>n</mi></msub></mrow><annotation encoding="application/x-tex">G_n</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal">G</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.151392em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">n</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span>执行 AIl-Reduce , 得到完整梯度<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>G</mi></mrow><annotation encoding="application/x-tex">G</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathnormal">G</span></span></span></span></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140646906.png" alt="image.png" /></p>
+</li>
+<li>
+<p><strong>Step 3</strong>: 得到完整梯度<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>G</mi></mrow><annotation encoding="application/x-tex">G</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathnormal">G</span></span></span></span>,对对应的权重<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>W</mi><mi>n</mi></msub></mrow><annotation encoding="application/x-tex">W_n</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.13889em;">W</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.151392em;"><span style="top:-2.5500000000000003em;margin-left:-0.13889em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">n</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span>更新，而权重<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>W</mi><mi>n</mi></msub></mrow><annotation encoding="application/x-tex">W_n</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.13889em;">W</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.151392em;"><span style="top:-2.5500000000000003em;margin-left:-0.13889em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">n</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span>更新由对应的优化器状态<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>O</mi><mi>n</mi></msub></mrow><annotation encoding="application/x-tex">O_n</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.02778em;">O</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.151392em;"><span style="top:-2.5500000000000003em;margin-left:-0.02778em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">n</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span>和梯度<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>G</mi></mrow><annotation encoding="application/x-tex">G</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathnormal">G</span></span></span></span>共同决定</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140658755.png" alt="image.png" /></p>
+</li>
+<li>
+<p><strong>Step 4</strong>: 再对权重<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>W</mi></mrow><annotation encoding="application/x-tex">W</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathnormal" style="margin-right:0.13889em;">W</span></span></span></span>执行 all-gather 使得每 GPU 都有更新后完整<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>W</mi></mrow><annotation encoding="application/x-tex">W</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathnormal" style="margin-right:0.13889em;">W</span></span></span></span></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140708548.png" alt="image.png" /></p>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>ZeRO-DP Stage 2: 增加梯度</strong> <strong>Partitioning</strong> - 内存减少8倍，通信量与数据并行相同。</p>
+<p>此阶段在优化器状态分区的基础上，进一步将梯度也进行分区。这样，每个GPU不仅其优化器状态是局部的，其梯度也是局部的，进一步减少了内存需求。</p>
+<p><strong>做法</strong>: 把 stage 1 step 2 的 all-reduce 操作替换成 **Reduce-Scatter, 而 All-Reduce 操作本身就包括 Reduce-Scatter，**没有增加通信开销，同时减少了显存开销</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140809738.png" alt="image.png" /></p>
+<p><strong>Naive DP 的做法</strong></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140823075.png" alt="image.png" /></p>
+<p><strong>Naive DP</strong> 在汇总梯度和分发更新后参数时使用了 <strong>All-Reduce</strong> 操作，<strong>ZeRO-DP</strong> <strong>Stage 2</strong> 现在改成了对梯度 <strong>Reduce-Scatter</strong>，对参数更新 <strong>All-Gather</strong>，相当于把两个阶段拆开了，没有增加通讯，白嫖很多显存空间。</p>
+</li>
+<li>
+<p><strong>ZeRO-DP Stage 3: 增加参数</strong> <strong>Partitioning</strong> - 内存减少与数据并行程度<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>N</mi><mi>d</mi></msub></mrow><annotation encoding="application/x-tex">N_d</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.10903em;">N</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.33610799999999996em;"><span style="top:-2.5500000000000003em;margin-left:-0.10903em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">d</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span>线性相关。例如，跨64个GPU（<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>N</mi><mi>d</mi></msub><mo>=</mo><mn>64</mn></mrow><annotation encoding="application/x-tex">N_d = 64</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.10903em;">N</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.33610799999999996em;"><span style="top:-2.5500000000000003em;margin-left:-0.10903em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">d</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.64444em;vertical-align:0em;"></span><span class="mord">6</span><span class="mord">4</span></span></span></span>）分区将实现64倍的内存减少。这会导致<strong>通信量增加50%</strong>。</p>
+<p>在此阶段，模型的参数也被分区存储。这意味着每个GPU只存储和更新一部分模型参数，大大减少了单个GPU上的内存需求。虽然这增加了一些通信开销（因为在前向和后向传播中需要更频繁地交换参数信息），但这种增加是有限的。</p>
+<p><strong>Stage 2 中，总通讯量为</strong> <strong>φ (对梯度</strong> <strong>Reduce-Scatter)</strong> <strong>+ φ (对更新的参数</strong> <strong>All-Gather) = 2****φ</strong></p>
+<p><strong>Stage 3 中，总通讯量为</strong> <strong>φ (前向传播时对参数</strong> <strong>All-Gather)</strong> <strong>+ φ (反向传播时对参数</strong> <strong>All-Gather) +</strong> <strong>φ (对梯度</strong> <strong>Reduce-Scatter) = 3****φ</strong></p>
+</li>
+</ul>
+<p><strong>ZeRO-Animation</strong><br />
+﻿<a target="_blank" rel="noopener" href="https://www.microsoft.com/en-us/research/blog/ZeRO-deepspeed-new-system-optimizations-enable-training-models-with-over-100-billion-parameters/">视频出处</a></p>
+<p>ZeRO-DP 的核心思想是在进行 all-reduce 操作的时候，不需要把完整的结果 reduce 到所有 gpu 上，每个 gpu 只需要维护自己的那一块，在需要完整数据的时候，再进行通信拉取完整的数据。尽管 ZeRO 分片存储模型参数、梯度还有优化器状态，但是这并不是一种模型并行。<strong>ZeRO</strong> <strong>本质上就是一套数据并行的训练框架</strong>，只是加入了一套优化存储冗余的策略。</p>
+<h5 id="zero-r"><a class="markdownIt-Anchor" href="#zero-r"></a> <strong>ZeRO-R</strong></h5>
+<p>在 ZeRO-DP 提高了 model states 的 memory efficiency 之后，由<strong>激活数据、临时缓冲区和无法使用的内存碎片</strong>所消耗的剩余内存可能成为第二个内存瓶颈。ZeRO-R 针对这方面做了优化。</p>
+<ul>
+<li>
+<p>**Activation: 把 activation checkpoints 也做分片，需要用时进行 All-gather 操作，**对于非常大的模型，ZeRO 甚至可以选择将 activation partition 移动到 CPU 内存中。</p>
+</li>
+<li>
+<p><strong>Temporary buffers:</strong> 模型训练过程中经常会创建一些大小不等的临时缓冲区，比如对梯度进行 All-Reduce 啥的，解决办法就是**预先创建一个固定的缓冲区，**训练过程中不再动态创建，如果要传输的数据较小，则多组数据 bucket 后再一次性传输，提高效率。</p>
+</li>
+<li>
+<p><strong>Fragmented Memory</strong>: 内存碎片化是由于短生命周期和长生命周期内存对象之间的交错造成的。在前向传播过程中，激活检查点是长生命周期的，但是重新计算的激活是短生命周期的。类似地，在反向计算中，激活梯度是短生命周期的，而参数梯度是长生命周期的。解决方法是<strong>预先分配一块连续的显存</strong>，将常驻显存的模型状态和checkpointed activation存在里面，剩余显存用于动态创建和销毁discarded activation，复用了操作系统对内存的优化，<strong>不断内存整理</strong>。</p>
+</li>
+</ul>
+<h4 id="zero-offload-link"><a class="markdownIt-Anchor" href="#zero-offload-link"></a> ZeRO-Offload [<a target="_blank" rel="noopener" href="https://arxiv.org/pdf/2101.06840">link</a>]</h4>
+<p><strong>ZeRO-Offload 把一部分计算量小的活放到CPU上去做</strong></p>
+<ul>
+<li>
+<p>将计算得到的梯度 offload 到 CPU</p>
+</li>
+<li>
+<p>在CPU上维护优化器状态，如动量和方差</p>
+</li>
+<li>
+<p>在CPU上执行参数更新计算</p>
+</li>
+</ul>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140919964.png" alt="image.png" /></p>
+<p><strong>CPU与GPU通信成本很大</strong>，为尽可能节省开销，GPU在计算梯度的同时也在把计算好的梯度传递给CPU，当计算梯度完成时，CPU也同时获得了所有的梯度，CPU更新参数的过程也是如此，<strong>动态同步更新</strong>参数。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140926960.png" alt="image.png" /></p>
+<h5 id="扩展性"><a class="markdownIt-Anchor" href="#扩展性"></a> 扩展性</h5>
+<p>在多卡场景，ZeRO-Offload 利用了 ZeRO-2，回忆下 ZeRO-2 是将 Adam 状态和梯度进行了分区，每张卡只保存<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mfrac><mn>1</mn><mi>N</mi></mfrac></mrow><annotation encoding="application/x-tex">\frac{1}{N}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.190108em;vertical-align:-0.345em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.845108em;"><span style="top:-2.6550000000000002em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.10903em;">N</span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.394em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">1</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.345em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span>，而 ZeRO-Offload 做的同样是将这<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mfrac><mn>1</mn><mi>N</mi></mfrac></mrow><annotation encoding="application/x-tex">\frac{1}{N}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.190108em;vertical-align:-0.345em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.845108em;"><span style="top:-2.6550000000000002em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.10903em;">N</span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.394em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">1</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.345em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span>的 Adam 状态和梯度都 offload 到内存，在 CPU 上进行参数更新。</p>
+<p><code>注意：在多卡场景，利用CPU多核并行计算，每张卡至少对应一个CPU进程，由这个进程负责进行局部参数更新。</code></p>
+<p>并且CPU和GPU的通信量和<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>N</mi></mrow><annotation encoding="application/x-tex">N</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathnormal" style="margin-right:0.10903em;">N</span></span></span></span>无关，因为传输的是 fp16 gradient 和 fp16 parameter，总的传输量是固定的，由于利用多核并行计算，每个CPU进程只负责 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mfrac><mn>1</mn><mi>N</mi></mfrac></mrow><annotation encoding="application/x-tex">\frac{1}{N}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.190108em;vertical-align:-0.345em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.845108em;"><span style="top:-2.6550000000000002em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.10903em;">N</span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.394em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">1</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.345em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span>的计算，反而随着卡数增加节省了CPU计算时间。</p>
+<h4 id="zero-infinity-link"><a class="markdownIt-Anchor" href="#zero-infinity-link"></a> ZeRO-Infinity [<a target="_blank" rel="noopener" href="https://arxiv.org/pdf/2104.07857">link</a>]</h4>
+<p><strong>ZeRO-Infinity</strong> 是一种新颖的深度学习 (DL) 训练技术，用于将模型训练从单个 GPU 扩展到具有数千个 GPU 的大型超级计算机。它利用系统的全部内存容量，同时<strong>利用所有异构内存</strong>（GPU、CPU 和非易失性内存，简称 NVMe），为前所未有的模型规模提供支持。</p>
+<p><a target="_blank" rel="noopener" href="https://www.microsoft.com/en-us/research/uploads/prod/2021/04/1400x788_deepspeed_nologo-1.mp4">视频链接</a></p>
+<p><strong>ZeRO-Offload v.s. ZeRO-Infinity</strong></p>
+<p>DeepSpeed 在 ZeRO-2 中首次引入了与 ZeRO-Offload。ZeRO-Infinity 是用在 ZeRO-3 中的下一代 offload 功能。ZeRO-Infinity 能够卸载比 ZeRO-Offload 更多的数据，并且具有更有效地利用带宽以及计算和通信的重叠。</p>
+<h3 id="pytorch"><a class="markdownIt-Anchor" href="#pytorch"></a> Pytorch</h3>
+<h4 id="dpdata-parallelism"><a class="markdownIt-Anchor" href="#dpdata-parallelism"></a> <strong>DP（Data Parallelism）</strong></h4>
+<p>数据并行主要介绍<code>torch.nn.DataParallel</code>，这是Pytorch最早提供的一种数据并行方式，它基于单进程多线程进行实现的，它使用<strong>一个进程来计算模型权重</strong>，在每个批处理期间将数据分发到每个GPU。</p>
+<p><strong>处理过程</strong></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140947155.png" alt="image.png" /></p>
+<h4 id="ddpdistributed-data-parallelism"><a class="markdownIt-Anchor" href="#ddpdistributed-data-parallelism"></a> DDP（Distributed Data Parallelism）</h4>
+<p>分布式数据并行(<code>torch.nn.DistributedDataParallel</code>)，基于多进程进行实现的，每个进程都有独立的优化器，执行自己的更新过程。每个进程都执行相同的任务，并且每个进程都与所有其他进程通信。进程（GPU）之间只传递梯度，这样网络通信就不再是瓶颈。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126140954823.png" alt="image.png" /></p>
+<p>DP 和 DDP 的主要差异有以下几点：</p>
+<ul>
+<li>
+<p>DP 是基于单进程多线程的实现，只用于单机情况，而 <strong>DDP 是多进程实现</strong>的，每个 GPU 对应一个进程，适用于单机和多机情况，真正实现分布式训练，并且因为每个进程都是独立的 Python 解释器，DDP 避免了 GIL 带来的性能开销。</p>
+</li>
+<li>
+<p>参数更新的方式不同。DDP在各进程完成前向传播后，<strong>梯度在各个 GPUs 间进行 Ring All-Reduce</strong>，每个 GPU 都收到其他 GPU 的梯度，从而可以独自进行反向传播和参数更新。（而 DP是梯度汇总到 GPU0，反向传播更新参数，再广播参数给其他剩余的 GPU）</p>
+</li>
+<li>
+<p>通信效率。<strong>DataParallel</strong> 是将梯度 reduce 到主卡，在主卡上更新参数，再将参数 broadcast 给其他 GPU，这样<strong>无论是主卡的负载还是通信开销都比 DDP 大很多</strong></p>
+</li>
+</ul>
+<h4 id="fsdpfully-sharded-data-parallel"><a class="markdownIt-Anchor" href="#fsdpfully-sharded-data-parallel"></a> FSDP（Fully Sharded Data Parallel）</h4>
+<p><strong>ZeRO stage 3 的实现</strong></p>
+<h2 id="4-实战"><a class="markdownIt-Anchor" href="#4-实战"></a> 4. <strong>实战</strong></h2>
+<p>使用的是 seq_len=1024，hidden_size=1024，attention-head_size=16，layer_size=24，模型参数大小为3.45亿的 Transformer 模型。batch_size=8，实验结果如下</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Gpu 数</td>
+<td>ZeRO Stage</td>
+<td>张量并行度</td>
+<td>流水线并行度</td>
+<td>micro batch 大小</td>
+<td>每个 Iteration 训练时间 (s)</td>
+<td>单卡显存占用 (MB)</td>
+</tr>
+<tr>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+<td>4</td>
+<td>0.63</td>
+<td>8856</td>
+</tr>
+<tr>
+<td>2</td>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+<td>4</td>
+<td>0.40</td>
+<td>8180</td>
+</tr>
+<tr>
+<td>2</td>
+<td>0</td>
+<td>1</td>
+<td>2</td>
+<td>4</td>
+<td>0.48</td>
+<td>5579</td>
+</tr>
+<tr>
+<td>2</td>
+<td>0</td>
+<td>1</td>
+<td>2</td>
+<td>2</td>
+<td>0.46</td>
+<td>4702</td>
+</tr>
+<tr>
+<td>2</td>
+<td>0</td>
+<td>1</td>
+<td>2</td>
+<td>1</td>
+<td>0.65</td>
+<td>4501</td>
+</tr>
+<tr>
+<td>2</td>
+<td>0</td>
+<td>2</td>
+<td>1</td>
+<td>4</td>
+<td>0.54</td>
+<td>4618</td>
+</tr>
+<tr>
+<td>2</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>4</td>
+<td>0.40</td>
+<td>4903</td>
+</tr>
+</tbody>
+</table>
+<h2 id="附录"><a class="markdownIt-Anchor" href="#附录"></a> 附录</h2>
+<h3 id="集合通信原语"><a class="markdownIt-Anchor" href="#集合通信原语"></a> <strong>集合通信原语</strong></h3>
+<ul>
+<li>
+<p><strong>Broadcast</strong>：主节点把自身的数据发送到集群中的其他节点。分布式训练系统中常用于网络参数的初始化。如图4.21所示，计算设备 1 将大小为 1 × N 的张量进行广播，最终每张卡输出均为 [1 × N] 的矩阵。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126141016191.png" alt="image.png" /></p>
+</li>
+<li>
+<p><strong>Scatter</strong>：主节点将数据进行划分并散布至其他指定的节点。Scatter 与 Broadcast 非常相似，但不同的是，Scatter 是将数据的不同部分，按需发送给所有的进程。如下图所示，计算设备1 将大小为 1 × N 的张量分为 4 份后发送到不同节点。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126141023264.png" alt="image.png" /></p>
+</li>
+<li>
+<p><strong>Reduce</strong>：是一系列简单运算操作的统称，是将不同节点上的计算结果进行聚合（Aggregation），可以细分为：SUM、MIN、MAX、PROD、LOR 等类型的规约操作。如下图所示，ReduceSum 操作将所有其它计算设备上的数据汇聚到计算设备 1，并执行求和操作。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126141029266.png" alt="image.png" /></p>
+</li>
+<li>
+<p><strong>All Reduce</strong>：在所有的节点上都应用同样的 Reduce 操作。All Reduce 操作可通过单节点上Reduce + Broadcast 操作完成。如下图所示，All Reduce Sum 操作将所有计算设备上的数据汇聚到各个计算设备中，并执行求和操作。<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/69797852">Ring All-Reduce 算法</a></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126141045545.png" alt="image.png" /></p>
+</li>
+<li>
+<p><strong>Gather</strong>：将多个节点上的数据收集到单个节点上，Gather 可以理解为反向的 Scatter。如下图所示，Gather 操作将所有计算设备上的数据收集到计算设备 1 中。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126141052716.png" alt="image.png" /></p>
+</li>
+<li>
+<p><strong>All Gather</strong>：将所有节点上收集其他所有节点上的数据，All Gather 相当于一个 Gather 操作之后跟着一个 Broadcast 操作。如下图所示，All Gather 操作将所有计算设备上的数据收集到每个计算设备中。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126141058165.png" alt="image.png" /></p>
+</li>
+<li>
+<p><strong>Reduce Scatter</strong>：将每个节点中的张量切分为多个块，每个块分配给不同的节点。接收到的块会在每个节点上进行特定的操作，例如求和、取平均值等。如下图所示，每个计算设备都将其中的张量切分为 4 块，并分发到 4 个不同的计算设备中，每个计算设备分别对接收到的分块进行特定操作。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126141105174.png" alt="image.png" /></p>
+</li>
+<li>
+<p><strong>All to All</strong>：将每个节点的张量切分为多个块，每个块分别发送给不同的节点。如下图所示，每个计算设备都将其中的张量切分为 4 块，并分发到 4 个不同的计算设备中。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126141111968.png" alt="image.png" /></p>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" rel="tag"># 大模型</a>
+              <a href="/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E8%AE%AD%E7%BB%83/" rel="tag"># 大模型训练</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/01/26/%E6%B7%B7%E5%90%88%E4%B8%93%E5%AE%B6%E6%A8%A1%E5%9E%8B%EF%BC%88MoE%EF%BC%89%E8%AF%A6%E8%A7%A3/" rel="prev" title="混合专家模型（MoE）详解">
+                  <i class="fa fa-angle-left"></i> 混合专家模型（MoE）详解
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2025/01/26/%E5%BA%8F%E5%88%97%E5%B9%B6%E8%A1%8C/" rel="next" title="序列并行">
+                  序列并行 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Ronny Lu</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">197k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">11:56</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">false</script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" integrity="sha256-UF1fgpAiu3tPJN/uCqEUHNe7pnr+QR0SQDNfgglgtcM=" crossorigin="anonymous">
+  <script class="next-config" data-name="katex" type="application/json">{"copy_tex_js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/copy-tex.min.js","integrity":"sha256-Us54+rSGDSTvIhKKUs4kygE2ipA0RXpWWh0/zLqw3bs="}}</script>
+  <script src="/js/third-party/math/katex.js"></script>
+
+
+
+</body>
+</html>

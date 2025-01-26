@@ -15,19 +15,19 @@
 
 
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha256-5eIC48iZUHmSlSUz9XtjRyK2mzQkHScZY1WdMaoz74E=" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-minimal.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
 
-<script class="next-config" data-name="main" type="application/json">{"hostname":"luyiyun1021.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.21.1","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+<script class="next-config" data-name="main" type="application/json">{"hostname":"luyiyun1021.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.22.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
 
-    <meta name="description" content="GPT整体的模型架构都是以Transformer的解码器为模块进行堆叠而成。主要的创新点集中在模型训练策略，还有就是讲究一个大力出奇迹。 论文时间轴">
+    <meta name="description" content="GPT整体的模型架构都是以Transformer的解码器为模块进行堆叠而成。主要的创新点集中在模型训练策略，还有就是讲究一个大力出奇迹。  论文时间轴">
 <meta property="og:type" content="article">
 <meta property="og:title" content="GPT系列">
 <meta property="og:url" content="https://luyiyun1021.github.io/2025/01/09/GPT%E7%B3%BB%E5%88%97/index.html">
 <meta property="og:site_name" content="Ronny Lu&#39;s blog">
-<meta property="og:description" content="GPT整体的模型架构都是以Transformer的解码器为模块进行堆叠而成。主要的创新点集中在模型训练策略，还有就是讲究一个大力出奇迹。 论文时间轴">
+<meta property="og:description" content="GPT整体的模型架构都是以Transformer的解码器为模块进行堆叠而成。主要的创新点集中在模型训练策略，还有就是讲究一个大力出奇迹。  论文时间轴">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250109170449688.png">
 <meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250109170604083.png">
@@ -157,14 +157,14 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%BA%E6%96%87%E6%97%B6%E9%97%B4%E8%BD%B4"><span class="nav-number">1.</span> <span class="nav-text">论文时间轴</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#GPT"><span class="nav-number">2.</span> <span class="nav-text">GPT</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BC%95%E8%A8%80"><span class="nav-number">2.1.</span> <span class="nav-text">引言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%AD%E7%BB%83"><span class="nav-number">2.2.</span> <span class="nav-text">训练</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%97%A0%E7%9B%91%E7%9D%A3%E9%A2%84%E8%AE%AD%E7%BB%83%EF%BC%9A%E9%A2%84%E8%AE%AD%E7%BB%83"><span class="nav-number">2.2.1.</span> <span class="nav-text">无监督预训练：预训练</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%9C%89%E7%9B%91%E7%9D%A3%E5%BE%AE%E8%B0%83"><span class="nav-number">2.2.2.</span> <span class="nav-text">有监督微调</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#GPT2"><span class="nav-number">3.</span> <span class="nav-text">GPT2</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BC%95%E8%A8%80-1"><span class="nav-number">3.1.</span> <span class="nav-text">引言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A8%A1%E5%9E%8B"><span class="nav-number">3.2.</span> <span class="nav-text">模型</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#GPT-1%E5%92%8CGPT-2%E5%8C%BA%E5%88%AB"><span class="nav-number">3.2.1.</span> <span class="nav-text">GPT-1和GPT-2区别</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%AE%AD%E7%BB%83%E6%95%B0%E6%8D%AE"><span class="nav-number">3.2.2.</span> <span class="nav-text">训练数据</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#GPT-2%E6%A8%A1%E5%9E%8B%E5%A4%A7%E5%B0%8F"><span class="nav-number">3.2.3.</span> <span class="nav-text">GPT-2模型大小</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%AE%AD%E7%BB%83%E6%96%B9%E5%BC%8F"><span class="nav-number">3.2.4.</span> <span class="nav-text">训练方式</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#GPT3"><span class="nav-number">4.</span> <span class="nav-text">GPT3</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BC%95%E8%A8%80-2"><span class="nav-number">4.1.</span> <span class="nav-text">引言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A8%A1%E5%9E%8B-1"><span class="nav-number">4.2.</span> <span class="nav-text">模型</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%AE%AD%E7%BB%83%E6%96%B9%E5%BC%8F-1"><span class="nav-number">4.2.1.</span> <span class="nav-text">训练方式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%A8%A1%E5%9E%8B%E6%9E%B6%E6%9E%84"><span class="nav-number">4.2.2.</span> <span class="nav-text">模型架构</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#InstructGPT-ChatGPT-GPT3-5"><span class="nav-number">5.</span> <span class="nav-text">InstructGPT&#x2F;ChatGPT&#x2F;GPT3.5</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8C%87%E7%A4%BA%E5%AD%A6%E4%B9%A0%EF%BC%88Instruct-Learning%EF%BC%89%E5%92%8C%E6%8F%90%E7%A4%BA%EF%BC%88Prompt-Learning%EF%BC%89%E5%AD%A6%E4%B9%A0"><span class="nav-number">5.1.</span> <span class="nav-text">指示学习（Instruct Learning）和提示（Prompt Learning）学习</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BA%BA%E7%B1%BB%E5%8F%8D%E9%A6%88%E7%9A%84%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0-%EF%BC%88RLHF%EF%BC%89"><span class="nav-number">5.2.</span> <span class="nav-text">人类反馈的强化学习 （RLHF）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#InstructGPT-ChatGPT%E5%8E%9F%E7%90%86%E8%A7%A3%E8%AF%BB"><span class="nav-number">5.3.</span> <span class="nav-text">InstructGPT&#x2F;ChatGPT原理解读</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E9%9B%86%E9%87%87%E9%9B%86"><span class="nav-number">5.3.1.</span> <span class="nav-text">数据集采集</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#SFT%E6%95%B0%E6%8D%AE%E9%9B%86"><span class="nav-number">5.3.1.1.</span> <span class="nav-text">SFT数据集</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#RM%E6%95%B0%E6%8D%AE%E9%9B%86"><span class="nav-number">5.3.1.2.</span> <span class="nav-text">RM数据集</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#PPO%E6%95%B0%E6%8D%AE%E9%9B%86"><span class="nav-number">5.3.1.3.</span> <span class="nav-text">PPO数据集</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90"><span class="nav-number">5.3.1.4.</span> <span class="nav-text">数据分析</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%AE%AD%E7%BB%83%E4%BB%BB%E5%8A%A1"><span class="nav-number">5.3.2.</span> <span class="nav-text">训练任务</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%9C%89%E7%9B%91%E7%9D%A3%E5%BE%AE%E8%B0%83%EF%BC%88SFT%EF%BC%89"><span class="nav-number">5.3.2.1.</span> <span class="nav-text">有监督微调（SFT）</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%A5%96%E5%8A%B1%E6%A8%A1%E5%9E%8B%EF%BC%88RM%EF%BC%89"><span class="nav-number">5.3.2.2.</span> <span class="nav-text">奖励模型（RM）</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0%E6%A8%A1%E5%9E%8B%EF%BC%88PPO%EF%BC%89"><span class="nav-number">5.3.2.3.</span> <span class="nav-text">强化学习模型（PPO）</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#InstructGPT-ChatGPT%E7%9A%84%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90"><span class="nav-number">5.4.</span> <span class="nav-text">InstructGPT&#x2F;ChatGPT的性能分析</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BC%98%E7%82%B9"><span class="nav-number">5.4.1.</span> <span class="nav-text">优点</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%BC%BA%E7%82%B9"><span class="nav-number">5.4.2.</span> <span class="nav-text">缺点</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="nav-number">6.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%BA%E6%96%87%E6%97%B6%E9%97%B4%E8%BD%B4"><span class="nav-number">1.</span> <span class="nav-text"> 论文时间轴</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#gpt"><span class="nav-number">2.</span> <span class="nav-text"> GPT</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BC%95%E8%A8%80"><span class="nav-number">2.1.</span> <span class="nav-text"> 引言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%AD%E7%BB%83"><span class="nav-number">2.2.</span> <span class="nav-text"> 训练</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%97%A0%E7%9B%91%E7%9D%A3%E9%A2%84%E8%AE%AD%E7%BB%83%E9%A2%84%E8%AE%AD%E7%BB%83"><span class="nav-number">2.2.1.</span> <span class="nav-text"> 无监督预训练：预训练</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%9C%89%E7%9B%91%E7%9D%A3%E5%BE%AE%E8%B0%83"><span class="nav-number">2.2.2.</span> <span class="nav-text"> 有监督微调</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#gpt2"><span class="nav-number">3.</span> <span class="nav-text"> GPT2</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BC%95%E8%A8%80-2"><span class="nav-number">3.1.</span> <span class="nav-text"> 引言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A8%A1%E5%9E%8B"><span class="nav-number">3.2.</span> <span class="nav-text"> 模型</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#gpt-1%E5%92%8Cgpt-2%E5%8C%BA%E5%88%AB"><span class="nav-number">3.2.1.</span> <span class="nav-text"> GPT-1和GPT-2区别</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%AE%AD%E7%BB%83%E6%95%B0%E6%8D%AE"><span class="nav-number">3.2.2.</span> <span class="nav-text"> 训练数据</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#gpt-2%E6%A8%A1%E5%9E%8B%E5%A4%A7%E5%B0%8F"><span class="nav-number">3.2.3.</span> <span class="nav-text"> GPT-2模型大小</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%AE%AD%E7%BB%83%E6%96%B9%E5%BC%8F"><span class="nav-number">3.2.4.</span> <span class="nav-text"> 训练方式</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#gpt3"><span class="nav-number">4.</span> <span class="nav-text"> GPT3</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BC%95%E8%A8%80-3"><span class="nav-number">4.1.</span> <span class="nav-text"> 引言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A8%A1%E5%9E%8B-2"><span class="nav-number">4.2.</span> <span class="nav-text"> 模型</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%AE%AD%E7%BB%83%E6%96%B9%E5%BC%8F-2"><span class="nav-number">4.2.1.</span> <span class="nav-text"> 训练方式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%A8%A1%E5%9E%8B%E6%9E%B6%E6%9E%84"><span class="nav-number">4.2.2.</span> <span class="nav-text"> 模型架构</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#instructgptchatgptgpt35"><span class="nav-number">5.</span> <span class="nav-text"> InstructGPT&#x2F;ChatGPT&#x2F;GPT3.5</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8C%87%E7%A4%BA%E5%AD%A6%E4%B9%A0instruct-learning%E5%92%8C%E6%8F%90%E7%A4%BAprompt-learning%E5%AD%A6%E4%B9%A0"><span class="nav-number">5.1.</span> <span class="nav-text"> 指示学习（Instruct Learning）和提示（Prompt Learning）学习</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BA%BA%E7%B1%BB%E5%8F%8D%E9%A6%88%E7%9A%84%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0-rlhf"><span class="nav-number">5.2.</span> <span class="nav-text"> 人类反馈的强化学习 （RLHF）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#instructgptchatgpt%E5%8E%9F%E7%90%86%E8%A7%A3%E8%AF%BB"><span class="nav-number">5.3.</span> <span class="nav-text"> InstructGPT&#x2F;ChatGPT原理解读</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E9%9B%86%E9%87%87%E9%9B%86"><span class="nav-number">5.3.1.</span> <span class="nav-text"> 数据集采集</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#sft%E6%95%B0%E6%8D%AE%E9%9B%86"><span class="nav-number">5.3.1.1.</span> <span class="nav-text"> SFT数据集</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#rm%E6%95%B0%E6%8D%AE%E9%9B%86"><span class="nav-number">5.3.1.2.</span> <span class="nav-text"> RM数据集</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#ppo%E6%95%B0%E6%8D%AE%E9%9B%86"><span class="nav-number">5.3.1.3.</span> <span class="nav-text"> PPO数据集</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90"><span class="nav-number">5.3.1.4.</span> <span class="nav-text"> 数据分析</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%AE%AD%E7%BB%83%E4%BB%BB%E5%8A%A1"><span class="nav-number">5.3.2.</span> <span class="nav-text"> 训练任务</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%9C%89%E7%9B%91%E7%9D%A3%E5%BE%AE%E8%B0%83sft"><span class="nav-number">5.3.2.1.</span> <span class="nav-text"> 有监督微调（SFT）</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%A5%96%E5%8A%B1%E6%A8%A1%E5%9E%8Brm"><span class="nav-number">5.3.2.2.</span> <span class="nav-text"> 奖励模型（RM）</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0%E6%A8%A1%E5%9E%8Bppo"><span class="nav-number">5.3.2.3.</span> <span class="nav-text"> 强化学习模型（PPO）</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#instructgptchatgpt%E7%9A%84%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90"><span class="nav-number">5.4.</span> <span class="nav-text"> InstructGPT&#x2F;ChatGPT的性能分析</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BC%98%E7%82%B9"><span class="nav-number">5.4.1.</span> <span class="nav-text"> 优点</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%BC%BA%E7%82%B9"><span class="nav-number">5.4.2.</span> <span class="nav-text"> 缺点</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="nav-number">6.</span> <span class="nav-text"> 参考资料</span></a></li></ol></div>
         </div>
         <!--/noindex-->
 
         <div class="site-overview-wrap sidebar-panel">
           <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
     <img class="site-author-image" itemprop="image" alt="Ronny Lu"
-      src="/images/avatar.jpeg">
+      src="https://avatars.githubusercontent.com/u/55233584?v=4">
   <p class="site-author-name" itemprop="name">Ronny Lu</p>
   <div class="site-description" itemprop="description">Tech notes on LLM, LLM Infra, C++</div>
 </div>
@@ -172,18 +172,18 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">29</span>
+          <span class="site-state-item-count">50</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
           <a href="/categories/">
-        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-count">14</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-count">14</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -213,7 +213,7 @@
     <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/01/09/GPT%E7%B3%BB%E5%88%97/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpeg">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
       <meta itemprop="name" content="Ronny Lu">
     </span>
 
@@ -287,7 +287,7 @@
         <i class="far fa-clock"></i>
       </span>
       <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>8 分钟</span>
+      <span>31 分钟</span>
     </span>
 </div>
 
@@ -298,9 +298,9 @@
     
     
     <div class="post-body" itemprop="articleBody"><p>GPT整体的模型架构都是以Transformer的解码器为模块进行堆叠而成。主要的创新点集中在模型训练策略，还有就是讲究一个大力出奇迹。</p>
-<h2 id="论文时间轴"><a href="#论文时间轴" class="headerlink" title="论文时间轴"></a>论文时间轴</h2><p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250109170449688.png" alt="image.png"></p>
+<h2 id="论文时间轴"><a class="markdownIt-Anchor" href="#论文时间轴"></a> 论文时间轴</h2>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250109170449688.png" alt="image.png" /></p>
 <span id="more"></span>
-
 <p><strong>GPT</strong>：Transformer解码器，在没有标号的大量的文本数据上，训练一个语言模型，来获得预训练模型，后续在子任务上做微调，得到每一个任务所用的分类器。</p>
 <p><strong>BERT</strong>：Transformer编码器，收集了一个更大的数据集，用来做预训练，效果比GPT好。BERT有两个模型，BERT-base模型与GPT模型参数相差不大，BERT-Large比BERT-base模型大。</p>
 <blockquote>
@@ -310,14 +310,18 @@
 <p><strong>GPT-3</strong>：GPT-3对GPT-2的改进就是数据和模型都大了100倍（1750亿参数）。大力出奇迹，效果非常惊艳。几乎没有什么团队去复现结果。</p>
 <p><strong>InstructGPT</strong> ：使用了指示学习（Instruction Learning）和人类反馈的强化学习（Reinforcement Learning from Human Feedback，RLHF）来指导模型的训练。<strong>ChatGPT</strong> (也被称为<strong>GPT3.5</strong>)就是使用了InstructGPT的模型结构和训练方法。</p>
 <p><strong>GPT-4</strong>：改进了 GPT-3.5 的架构，参数数量显著增加（具体参数量未公开，传言有1.8万亿参数），并引入了更多的训练数据和新的优化方法。这使得 GPT-4.0 在处理复杂任务和理解更细微的上下文时表现更好。</p>
-<h2 id="GPT"><a href="#GPT" class="headerlink" title="GPT"></a>GPT</h2><p>论文标题：“Improving Language Understanding by Generative Pre-Training”，2018.6.</p>
+<h2 id="gpt"><a class="markdownIt-Anchor" href="#gpt"></a> GPT</h2>
+<p>论文标题：“Improving Language Understanding by Generative Pre-Training”，2018.6.</p>
 <p>在自然语言处理领域，有很多各式各样的的任务，如问答，文本分类等。然而，现有的无标签文本非常多，而有标签的文本很少，这使得在这些有标签文本训练一个好的分辨模型很难，因为数据集太少。因此GPT第一个版本主要就是为了解决这个问题而提出的一套针对语言模型的预训练方法，使得大量的无标签数据能够被使用，并且对预训练好的模型加以微调使其适用于许多的下游任务。在微调时，构造与子任务相关的输入，从而之只需要很少改变模型架构。</p>
-<h3 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h3><p>如何利用无标签的数据，当时最成功的还是词嵌入模型（Word Embeddings）。</p>
+<h3 id="引言"><a class="markdownIt-Anchor" href="#引言"></a> 引言</h3>
+<p>如何利用无标签的数据，当时最成功的还是词嵌入模型（Word Embeddings）。</p>
 <p>使用无标记数据时，需要的两个困难：</p>
 <ul>
-<li><p>损失函数设计困难：不清楚什么样的优化目标对文本有效</p>
+<li>
+<p>损失函数设计困难：不清楚什么样的优化目标对文本有效</p>
 </li>
-<li><p>特征迁移困难：怎么样把学习到的问题表示，传递到下游的子任务上；没有一种表示，能够迁移到所有子任务上</p>
+<li>
+<p>特征迁移困难：怎么样把学习到的问题表示，传递到下游的子任务上；没有一种表示，能够迁移到所有子任务上</p>
 </li>
 </ul>
 <p>提出一个半监督的方法（预训练+微调）：在没有标号的数据上，训练一个比较大的语言模型，然后再再子任务上微调。</p>
@@ -326,229 +330,313 @@
 </ul>
 <p>后续的BERT、GPT的方法，预训练 + 微调，不再叫做半监督学习，而叫做自监督学习。</p>
 <p>GPT架构使用Transformer块，相比于RNN，在做迁移学习时，Transformer块学到的特征更加稳健。作者猜测Transformer里面有更结构化的记忆，使得能够处理更长的问题信息，从而能偶抽取出句子层面、段落层面的语义信息。在迁移时，使用任务相关的输入表示。</p>
-<h3 id="训练"><a href="#训练" class="headerlink" title="训练"></a>训练</h3><h4 id="无监督预训练：预训练"><a href="#无监督预训练：预训练" class="headerlink" title="无监督预训练：预训练"></a>无监督预训练：预训练</h4><ul>
-<li><p>什么最大似然函数<br>  GPT 的目标是最大化以下联合概率：</p>
-<p>  ﻿$P(X)&#x3D;P(x1,x2,…,xT)&#x3D;P(x1)⋅P(x2∣x1)⋅P(x3∣x1,x2)⋯P(xT∣x1,x2,…,xT−1)$﻿</p>
-<p>  最大似然估计的目标是通过选择模型参数 $\theta$ 来最大化训练数据的似然函数 $L(\theta)$：</p>
-<p>  ﻿$L(\theta) &#x3D; \prod_{t&#x3D;1}^{T} P(x_t | x_1, x_2, \dots, x_{t-1}; \theta)$﻿</p>
-<p>  为了方便计算，通常将这个似然函数取对数，转化为对数似然（Log-Likelihood）：</p>
-<p>  ﻿$\log L(\theta) &#x3D; \sum_{t&#x3D;1}^{T} \log P(x_t | x_1, x_2, \dots, x_{t-1}; \theta)$</p>
+<h3 id="训练"><a class="markdownIt-Anchor" href="#训练"></a> 训练</h3>
+<h4 id="无监督预训练预训练"><a class="markdownIt-Anchor" href="#无监督预训练预训练"></a> 无监督预训练：预训练</h4>
+<ul>
+<li>
+<p>什么最大似然函数<br />
+GPT 的目标是最大化以下联合概率：</p>
+<p><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>P</mi><mo stretchy="false">(</mo><mi>X</mi><mo stretchy="false">)</mo><mo>=</mo><mi>P</mi><mo stretchy="false">(</mo><mi>x</mi><mn>1</mn><mo separator="true">,</mo><mi>x</mi><mn>2</mn><mo separator="true">,</mo><mo>…</mo><mo separator="true">,</mo><mi>x</mi><mi>T</mi><mo stretchy="false">)</mo><mo>=</mo><mi>P</mi><mo stretchy="false">(</mo><mi>x</mi><mn>1</mn><mo stretchy="false">)</mo><mo>⋅</mo><mi>P</mi><mo stretchy="false">(</mo><mi>x</mi><mn>2</mn><mo>∣</mo><mi>x</mi><mn>1</mn><mo stretchy="false">)</mo><mo>⋅</mo><mi>P</mi><mo stretchy="false">(</mo><mi>x</mi><mn>3</mn><mo>∣</mo><mi>x</mi><mn>1</mn><mo separator="true">,</mo><mi>x</mi><mn>2</mn><mo stretchy="false">)</mo><mo>⋯</mo><mi>P</mi><mo stretchy="false">(</mo><mi>x</mi><mi>T</mi><mo>∣</mo><mi>x</mi><mn>1</mn><mo separator="true">,</mo><mi>x</mi><mn>2</mn><mo separator="true">,</mo><mo>…</mo><mo separator="true">,</mo><mi>x</mi><mi>T</mi><mtext>−</mtext><mn>1</mn><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">P(X)=P(x1,x2,…,xT)=P(x1)⋅P(x2∣x1)⋅P(x3∣x1,x2)⋯P(xT∣x1,x2,…,xT−1)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.13889em;">P</span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.07847em;">X</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.13889em;">P</span><span class="mopen">(</span><span class="mord mathnormal">x</span><span class="mord">1</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathnormal">x</span><span class="mord">2</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="minner">…</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathnormal">x</span><span class="mord mathnormal" style="margin-right:0.13889em;">T</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.13889em;">P</span><span class="mopen">(</span><span class="mord mathnormal">x</span><span class="mord">1</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.13889em;">P</span><span class="mopen">(</span><span class="mord mathnormal">x</span><span class="mord">2</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">∣</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">x</span><span class="mord">1</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.13889em;">P</span><span class="mopen">(</span><span class="mord mathnormal">x</span><span class="mord">3</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">∣</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">x</span><span class="mord">1</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathnormal">x</span><span class="mord">2</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="minner">⋯</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathnormal" style="margin-right:0.13889em;">P</span><span class="mopen">(</span><span class="mord mathnormal">x</span><span class="mord mathnormal" style="margin-right:0.13889em;">T</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">∣</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">x</span><span class="mord">1</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathnormal">x</span><span class="mord">2</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="minner">…</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathnormal">x</span><span class="mord mathnormal" style="margin-right:0.13889em;">T</span><span class="mord">−</span><span class="mord">1</span><span class="mclose">)</span></span></span></span></p>
+<p>最大似然估计的目标是通过选择模型参数 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>θ</mi></mrow><annotation encoding="application/x-tex">\theta</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.69444em;vertical-align:0em;"></span><span class="mord mathnormal" style="margin-right:0.02778em;">θ</span></span></span></span> 来最大化训练数据的似然函数 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>L</mi><mo stretchy="false">(</mo><mi>θ</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">L(\theta)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">L</span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.02778em;">θ</span><span class="mclose">)</span></span></span></span>：</p>
+<p><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>L</mi><mo stretchy="false">(</mo><mi>θ</mi><mo stretchy="false">)</mo><mo>=</mo><msubsup><mo>∏</mo><mrow><mi>t</mi><mo>=</mo><mn>1</mn></mrow><mi>T</mi></msubsup><mi>P</mi><mo stretchy="false">(</mo><msub><mi>x</mi><mi>t</mi></msub><mi mathvariant="normal">∣</mi><msub><mi>x</mi><mn>1</mn></msub><mo separator="true">,</mo><msub><mi>x</mi><mn>2</mn></msub><mo separator="true">,</mo><mo>…</mo><mo separator="true">,</mo><msub><mi>x</mi><mrow><mi>t</mi><mo>−</mo><mn>1</mn></mrow></msub><mo separator="true">;</mo><mi>θ</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">L(\theta) = \prod_{t=1}^{T} P(x_t | x_1, x_2, \dots, x_{t-1}; \theta)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">L</span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.02778em;">θ</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1.2809409999999999em;vertical-align:-0.29971000000000003em;"></span><span class="mop"><span class="mop op-symbol small-op" style="position:relative;top:-0.0000050000000000050004em;">∏</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.981231em;"><span style="top:-2.40029em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">t</span><span class="mrel mtight">=</span><span class="mord mtight">1</span></span></span></span><span style="top:-3.2029em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.13889em;">T</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.29971000000000003em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathnormal" style="margin-right:0.13889em;">P</span><span class="mopen">(</span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2805559999999999em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">t</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord">∣</span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="minner">…</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.301108em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">t</span><span class="mbin mtight">−</span><span class="mord mtight">1</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.208331em;"><span></span></span></span></span></span></span><span class="mpunct">;</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathnormal" style="margin-right:0.02778em;">θ</span><span class="mclose">)</span></span></span></span></p>
+<p>为了方便计算，通常将这个似然函数取对数，转化为对数似然（Log-Likelihood）：</p>
+<p><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>log</mi><mo>⁡</mo><mi>L</mi><mo stretchy="false">(</mo><mi>θ</mi><mo stretchy="false">)</mo><mo>=</mo><msubsup><mo>∑</mo><mrow><mi>t</mi><mo>=</mo><mn>1</mn></mrow><mi>T</mi></msubsup><mi>log</mi><mo>⁡</mo><mi>P</mi><mo stretchy="false">(</mo><msub><mi>x</mi><mi>t</mi></msub><mi mathvariant="normal">∣</mi><msub><mi>x</mi><mn>1</mn></msub><mo separator="true">,</mo><msub><mi>x</mi><mn>2</mn></msub><mo separator="true">,</mo><mo>…</mo><mo separator="true">,</mo><msub><mi>x</mi><mrow><mi>t</mi><mo>−</mo><mn>1</mn></mrow></msub><mo separator="true">;</mo><mi>θ</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">\log L(\theta) = \sum_{t=1}^{T} \log P(x_t | x_1, x_2, \dots, x_{t-1}; \theta)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mop">lo<span style="margin-right:0.01389em;">g</span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathnormal">L</span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.02778em;">θ</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1.2809409999999999em;vertical-align:-0.29971000000000003em;"></span><span class="mop"><span class="mop op-symbol small-op" style="position:relative;top:-0.0000050000000000050004em;">∑</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.981231em;"><span style="top:-2.40029em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">t</span><span class="mrel mtight">=</span><span class="mord mtight">1</span></span></span></span><span style="top:-3.2029em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.13889em;">T</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.29971000000000003em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mop">lo<span style="margin-right:0.01389em;">g</span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathnormal" style="margin-right:0.13889em;">P</span><span class="mopen">(</span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2805559999999999em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">t</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord">∣</span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="minner">…</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.301108em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">t</span><span class="mbin mtight">−</span><span class="mord mtight">1</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.208331em;"><span></span></span></span></span></span></span><span class="mpunct">;</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathnormal" style="margin-right:0.02778em;">θ</span><span class="mclose">)</span></span></span></span></p>
 </li>
 </ul>
-<p>﻿</p>
 <p><strong>GPT的目标函数</strong></p>
-<p>给定一个未监督的语料信息$\mathcal{U}&#x3D;\left{u_{1}, \ldots, u_{n}\right}$，使用标准的语言模型，使下面这个似然函数最大化：</p>
-<p>﻿$L_{1}(\mathcal{U})&#x3D;\sum_i \log P\left(u_{i} \mid u_{i-k}, \ldots, u_{i-1} ; \Theta\right)$﻿</p>
+<p>给定一个未监督的语料信息<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="script">U</mi><mo>=</mo><mrow><mo fence="true">{</mo><msub><mi>u</mi><mn>1</mn></msub><mo separator="true">,</mo><mo>…</mo><mo separator="true">,</mo><msub><mi>u</mi><mi>n</mi></msub><mo fence="true">}</mo></mrow></mrow><annotation encoding="application/x-tex">\mathcal{U}=\left\{u_{1}, \ldots, u_{n}\right\}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord"><span class="mord mathcal" style="margin-right:0.09931em;">U</span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="minner"><span class="mopen delimcenter" style="top:0em;">{</span><span class="mord"><span class="mord mathnormal">u</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">1</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="minner">…</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathnormal">u</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.151392em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">n</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose delimcenter" style="top:0em;">}</span></span></span></span></span>，使用标准的语言模型，使下面这个似然函数最大化：</p>
+<p><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>L</mi><mn>1</mn></msub><mo stretchy="false">(</mo><mi mathvariant="script">U</mi><mo stretchy="false">)</mo><mo>=</mo><msub><mo>∑</mo><mi>i</mi></msub><mi>log</mi><mo>⁡</mo><mi>P</mi><mrow><mo fence="true">(</mo><msub><mi>u</mi><mi>i</mi></msub><mo>∣</mo><msub><mi>u</mi><mrow><mi>i</mi><mo>−</mo><mi>k</mi></mrow></msub><mo separator="true">,</mo><mo>…</mo><mo separator="true">,</mo><msub><mi>u</mi><mrow><mi>i</mi><mo>−</mo><mn>1</mn></mrow></msub><mo separator="true">;</mo><mi mathvariant="normal">Θ</mi><mo fence="true">)</mo></mrow></mrow><annotation encoding="application/x-tex">L_{1}(\mathcal{U})=\sum_i \log P\left(u_{i} \mid u_{i-k}, \ldots, u_{i-1} ; \Theta\right)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathnormal">L</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">1</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mopen">(</span><span class="mord"><span class="mord mathcal" style="margin-right:0.09931em;">U</span></span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1.0497100000000001em;vertical-align:-0.29971000000000003em;"></span><span class="mop"><span class="mop op-symbol small-op" style="position:relative;top:-0.0000050000000000050004em;">∑</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.16195399999999993em;"><span style="top:-2.40029em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.29971000000000003em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mop">lo<span style="margin-right:0.01389em;">g</span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathnormal" style="margin-right:0.13889em;">P</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="minner"><span class="mopen delimcenter" style="top:0em;">(</span><span class="mord"><span class="mord mathnormal">u</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.31166399999999994em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">i</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">∣</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mord"><span class="mord mathnormal">u</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361079999999999em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">i</span><span class="mbin mtight">−</span><span class="mord mathnormal mtight" style="margin-right:0.03148em;">k</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.208331em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="minner">…</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathnormal">u</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.311664em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">i</span><span class="mbin mtight">−</span><span class="mord mtight">1</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.208331em;"><span></span></span></span></span></span></span><span class="mpunct">;</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord">Θ</span><span class="mclose delimcenter" style="top:0em;">)</span></span></span></span></span></p>
 <p>其中，_k_为上下文窗口大小，Θ为模型参数。</p>
-<p>简单来说就是根据上文的k个单词，预测下一个最大概率的单词$u_i$﻿</p>
+<p>简单来说就是根据上文的k个单词，预测下一个最大概率的单词<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>u</mi><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">u_i</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal">u</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.31166399999999994em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span></p>
 <p>使用多层Transformer decoder块作为语言模型（标准的语言模型，根据已有的词进行下一个词的预测，不能使它看到所有的词，所以只有解码器）。</p>
 <p>模型输入输出如下所示</p>
-<p>﻿$\begin{aligned} h_{0} &amp; &#x3D;U W_{e}+W_{p} \ h_{l} &amp; &#x3D;\operatorname{transformer_ block}\left(h_{l-1}\right) \forall i \in[1, n] \ P(u) &amp; &#x3D;\operatorname{softmax}\left(h_{n} W_{e}^{T}\right)\end{aligned}$﻿</p>
-<p>其中$U&#x3D;\left(u_{-k}, \ldots, u_{-1}\right)$为上下文tokens向量，𝑛为transformer的层数，𝑊为词嵌入矩阵维度，𝑊𝑝为位置编码矩阵。</p>
-<h4 id="有监督微调"><a href="#有监督微调" class="headerlink" title="有监督微调"></a>有监督微调</h4><p>在得到预训练模型后，就使用有标签的数据进行微调。具体来说每一次我给你一个长为m的一个词的序列，然后告诉你这个序列它对应的标号是y，也就是每次给定一个序列预测他这个y。微调优化目标是最小化分类目标函数。</p>
+<p><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mtable rowspacing="0.24999999999999992em" columnalign="right left" columnspacing="0em"><mtr><mtd><mstyle scriptlevel="0" displaystyle="true"><msub><mi>h</mi><mn>0</mn></msub></mstyle></mtd><mtd><mstyle scriptlevel="0" displaystyle="true"><mrow><mrow></mrow><mo>=</mo><mi>U</mi><msub><mi>W</mi><mi>e</mi></msub><mo>+</mo><msub><mi>W</mi><mi>p</mi></msub></mrow></mstyle></mtd></mtr><mtr><mtd><mstyle scriptlevel="0" displaystyle="true"><msub><mi>h</mi><mi>l</mi></msub></mstyle></mtd><mtd><mstyle scriptlevel="0" displaystyle="true"><mrow><mrow></mrow><mo>=</mo><mi mathvariant="normal">transformer_block</mi><mo>⁡</mo><mrow><mo fence="true">(</mo><msub><mi>h</mi><mrow><mi>l</mi><mo>−</mo><mn>1</mn></mrow></msub><mo fence="true">)</mo></mrow><mi mathvariant="normal">∀</mi><mi>i</mi><mo>∈</mo><mo stretchy="false">[</mo><mn>1</mn><mo separator="true">,</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mstyle></mtd></mtr><mtr><mtd><mstyle scriptlevel="0" displaystyle="true"><mrow><mi>P</mi><mo stretchy="false">(</mo><mi>u</mi><mo stretchy="false">)</mo></mrow></mstyle></mtd><mtd><mstyle scriptlevel="0" displaystyle="true"><mrow><mrow></mrow><mo>=</mo><mi mathvariant="normal">softmax</mi><mo>⁡</mo><mrow><mo fence="true">(</mo><msub><mi>h</mi><mi>n</mi></msub><msubsup><mi>W</mi><mi>e</mi><mi>T</mi></msubsup><mo fence="true">)</mo></mrow></mrow></mstyle></mtd></mtr></mtable><annotation encoding="application/x-tex">\begin{aligned} h_{0} &amp; =U W_{e}+W_{p} \\ h_{l} &amp; =\operatorname{transformer\_ block}\left(h_{l-1}\right) \forall i \in[1, n] \\ P(u) &amp; =\operatorname{softmax}\left(h_{n} W_{e}^{T}\right)\end{aligned}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:4.551331000000001em;vertical-align:-2.0256655000000006em;"></span><span class="mord"><span class="mtable"><span class="col-align-r"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:2.5256655em;"><span style="top:-4.6856655em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord"><span class="mord mathnormal">h</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">0</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span><span style="top:-3.1856655em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord"><span class="mord mathnormal">h</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.33610799999999996em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.01968em;">l</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span><span style="top:-1.6343344999999996em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.13889em;">P</span><span class="mopen">(</span><span class="mord mathnormal">u</span><span class="mclose">)</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:2.0256655000000006em;"><span></span></span></span></span></span><span class="col-align-l"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:2.5256655em;"><span style="top:-4.6856655em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord"></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mord mathnormal" style="margin-right:0.10903em;">U</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.13889em;">W</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.151392em;"><span style="top:-2.5500000000000003em;margin-left:-0.13889em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">e</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.13889em;">W</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.15139200000000003em;"><span style="top:-2.5500000000000003em;margin-left:-0.13889em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">p</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.286108em;"><span></span></span></span></span></span></span></span></span><span style="top:-3.1856655em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord"></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mop"><span class="mord mathrm">t</span><span class="mord mathrm">r</span><span class="mord mathrm">a</span><span class="mord mathrm">n</span><span class="mord mathrm">s</span><span class="mord mathrm" style="margin-right:0.07778em;">f</span><span class="mord mathrm">o</span><span class="mord mathrm">r</span><span class="mord mathrm">m</span><span class="mord mathrm">e</span><span class="mord mathrm">r</span><span class="mord mathrm" style="margin-right:0.02778em;">_</span><span class="mord mathrm">b</span><span class="mord mathrm">l</span><span class="mord mathrm">o</span><span class="mord mathrm">c</span><span class="mord mathrm">k</span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="minner"><span class="mopen delimcenter" style="top:0em;">(</span><span class="mord"><span class="mord mathnormal">h</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361079999999999em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.01968em;">l</span><span class="mbin mtight">−</span><span class="mord mtight">1</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.208331em;"><span></span></span></span></span></span></span><span class="mclose delimcenter" style="top:0em;">)</span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord">∀</span><span class="mord mathnormal">i</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">∈</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mopen">[</span><span class="mord">1</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathnormal">n</span><span class="mclose">]</span></span></span><span style="top:-1.6343344999999996em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord"></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mop"><span class="mord mathrm">s</span><span class="mord mathrm">o</span><span class="mord mathrm" style="margin-right:0.07778em;">f</span><span class="mord mathrm">t</span><span class="mord mathrm">m</span><span class="mord mathrm">a</span><span class="mord mathrm">x</span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="minner"><span class="mopen delimcenter" style="top:0em;"><span class="delimsizing size1">(</span></span><span class="mord"><span class="mord mathnormal">h</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.151392em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">n</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.13889em;">W</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8913309999999999em;"><span style="top:-2.4530000000000003em;margin-left:-0.13889em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">e</span></span></span></span><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.13889em;">T</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.247em;"><span></span></span></span></span></span></span><span class="mclose delimcenter" style="top:0em;"><span class="delimsizing size1">)</span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:2.0256655000000006em;"><span></span></span></span></span></span></span></span></span></span></span></p>
+<p>其中<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>U</mi><mo>=</mo><mrow><mo fence="true">(</mo><msub><mi>u</mi><mrow><mo>−</mo><mi>k</mi></mrow></msub><mo separator="true">,</mo><mo>…</mo><mo separator="true">,</mo><msub><mi>u</mi><mrow><mo>−</mo><mn>1</mn></mrow></msub><mo fence="true">)</mo></mrow></mrow><annotation encoding="application/x-tex">U=\left(u_{-k}, \ldots, u_{-1}\right)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathnormal" style="margin-right:0.10903em;">U</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="minner"><span class="mopen delimcenter" style="top:0em;">(</span><span class="mord"><span class="mord mathnormal">u</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361079999999999em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">−</span><span class="mord mathnormal mtight" style="margin-right:0.03148em;">k</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.208331em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="minner">…</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathnormal">u</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.301108em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">−</span><span class="mord mtight">1</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.208331em;"><span></span></span></span></span></span></span><span class="mclose delimcenter" style="top:0em;">)</span></span></span></span></span>为上下文tokens向量，𝑛为transformer的层数，𝑊为词嵌入矩阵维度，𝑊𝑝为位置编码矩阵。</p>
+<h4 id="有监督微调"><a class="markdownIt-Anchor" href="#有监督微调"></a> 有监督微调</h4>
+<p>在得到预训练模型后，就使用有标签的数据进行微调。具体来说每一次我给你一个长为m的一个词的序列，然后告诉你这个序列它对应的标号是y，也就是每次给定一个序列预测他这个y。微调优化目标是最小化分类目标函数。</p>
 <p>NLP领域四大常见的应用：</p>
 <ul>
-<li><p>分类：给定一段话或文本，判断所属标号；如用户的评价是正面还是负面的。一段文本，在前面加入开始词元[Start]，在后面加入抽取词元[Extract]，做成一个序列，放入Transformer解码器中，模型对最后一个词抽取的特征[Extract]放入线性层进行分类。</p>
+<li>
+<p>分类：给定一段话或文本，判断所属标号；如用户的评价是正面还是负面的。一段文本，在前面加入开始词元[Start]，在后面加入抽取词元[Extract]，做成一个序列，放入Transformer解码器中，模型对最后一个词抽取的特征[Extract]放入线性层进行分类。</p>
 </li>
-<li><p>蕴含：给一段话，再给一个假设，判断前面一段话是否蕴含提出的假设。如文本：a给b送一朵玫瑰；假设：a喜欢b。判断前面文本是否支持假设。即两端文本做三分类问题，支持，不支持，既不支持也不反对。将两端问题串成一个序列，使用开始符，分隔符，抽取符。</p>
+<li>
+<p>蕴含：给一段话，再给一个假设，判断前面一段话是否蕴含提出的假设。如文本：a给b送一朵玫瑰；假设：a喜欢b。判断前面文本是否支持假设。即两端文本做三分类问题，支持，不支持，既不支持也不反对。将两端问题串成一个序列，使用开始符，分隔符，抽取符。</p>
 </li>
-<li><p>相似：判断两段文字是不是相似。如一个搜索词与文档是不是相似，或两个文档相似去重。相似是对称的，a和b相似，则b和a也相似。所以，做了两个序列，两个序列的文字顺序不同，再使用开始符，分隔符，抽取符。得到两段输出后，经过Transformer，在做加号，最后经过线性层输出，得到是相似还是不是相似的二分类问题。</p>
+<li>
+<p>相似：判断两段文字是不是相似。如一个搜索词与文档是不是相似，或两个文档相似去重。相似是对称的，a和b相似，则b和a也相似。所以，做了两个序列，两个序列的文字顺序不同，再使用开始符，分隔符，抽取符。得到两段输出后，经过Transformer，在做加号，最后经过线性层输出，得到是相似还是不是相似的二分类问题。</p>
 </li>
-<li><p>多选题：问一个问题，给几个答案，选择最可能的几个答案。如果有n个答案，构造n个序列，前面是问题，每一个答案作为第二个序列；每个序列进入Transformer块，最后经过线性层，输出答案的置信度；最后做一个softmax。</p>
+<li>
+<p>多选题：问一个问题，给几个答案，选择最可能的几个答案。如果有n个答案，构造n个序列，前面是问题，每一个答案作为第二个序列；每个序列进入Transformer块，最后经过线性层，输出答案的置信度；最后做一个softmax。</p>
 </li>
 </ul>
 <p>复用预训练的Transformer的结构，加一个线性层，不同的任务需要不同的输入。</p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250109170604083.png" alt="image.png"></p>
-<h2 id="GPT2"><a href="#GPT2" class="headerlink" title="GPT2"></a>GPT2</h2><p>论文标题：Language Models are Unsupervised Multitask Learners，2019</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250109170604083.png" alt="image.png" /></p>
+<h2 id="gpt2"><a class="markdownIt-Anchor" href="#gpt2"></a> GPT2</h2>
+<p>论文标题：Language Models are Unsupervised Multitask Learners，2019</p>
 <p>自从GPT提出后，Google紧随其后提出了BERT预训练模型，采用更大的模型和更大的数据，在各方面效果都要优于GPT。作为竞争对手，GPT当然是要反击的，那怎么做呢？如果单纯加大模型于增加数据量，或许能击败BERT，但是却少了些新意，因此GPT2从另外一个角度，除了加大模型和数据量，还引入了zero-shot设定，就是在做下游任务是，不需要下游任务的任何标签信息，也不需要重新训练一个模型，即在更难的一个设定上体现他的一个新意度。</p>
-<h3 id="引言-1"><a href="#引言-1" class="headerlink" title="引言"></a>引言</h3><p>现在主流的机器学习系统训练方式为：一个任务收集一个数据集，然后再上面做模型训练和预测，因现在模型泛化性能不是很好。</p>
+<h3 id="引言-2"><a class="markdownIt-Anchor" href="#引言-2"></a> 引言</h3>
+<p>现在主流的机器学习系统训练方式为：一个任务收集一个数据集，然后再上面做模型训练和预测，因现在模型泛化性能不是很好。</p>
 <p>多任务学习：训练一个模型时，同时看多个数据集，通过多个损失函数，来达到一个模型能够在多个任务上都能用。但是NLP中使用的不多，主要使用的还是预训练+微调方式。但还是有两个问题：第一个是对每一个下游任务，需要重新训练模型；二是需要收集有标号的数据才行。这样导致，拓展到新的任务上，还是有成本的。</p>
 <p><strong>GPT-2还是在做语言模型，在到下游任务时，会使用zero-shot的设定（不需要下游任务的标注信息，不引入模型没有见过的特殊符号），这样训练一个模型，任何地方都可以用。</strong></p>
-<h3 id="模型"><a href="#模型" class="headerlink" title="模型"></a>模型</h3><h4 id="GPT-1和GPT-2区别"><a href="#GPT-1和GPT-2区别" class="headerlink" title="GPT-1和GPT-2区别"></a>GPT-1和GPT-2区别</h4><ul>
+<h3 id="模型"><a class="markdownIt-Anchor" href="#模型"></a> 模型</h3>
+<h4 id="gpt-1和gpt-2区别"><a class="markdownIt-Anchor" href="#gpt-1和gpt-2区别"></a> GPT-1和GPT-2区别</h4>
+<ul>
 <li>GPT-1时，根据不同的下游任务，会调整输入信息，会加入开始符、分隔符、结束符等信息，然后在使用有标记的数据进行微调，让模型去认识这些符号。而GPT-2做下游任务时，不再加入开始符、分隔符、结束符等模型未见过的信息，而是采用zero-shot的设定。GPT-2下游任务模型的输入，和预训练时，模型看到的输入是一样的。</li>
 </ul>
 <p>例如：</p>
 <ul>
-<li><p>英语翻译为法语：translate to french, english text, french text</p>
+<li>
+<p>英语翻译为法语：translate to french, english text, french text</p>
 </li>
-<li><p>做阅读理解：answer the question, document, question, answer</p>
+<li>
+<p>做阅读理解：answer the question, document, question, answer</p>
 </li>
 </ul>
 <p>这个提示符后面叫做Prompt。</p>
-<h4 id="训练数据"><a href="#训练数据" class="headerlink" title="训练数据"></a>训练数据</h4><p>BERT训练数据：Wikipedia</p>
+<h4 id="训练数据"><a class="markdownIt-Anchor" href="#训练数据"></a> 训练数据</h4>
+<p>BERT训练数据：Wikipedia</p>
 <p>Common Crawl项目：一个公开的爬虫项目，不断抓取网页放在AWS上，是能下载到最大的文本数据集，TB级别的数据量。但作者认为这个不好用，因为信噪比比较低，抓取的网页，较多是没有信息的网页。GPT-2使用Reddit里面的数据，选取最近3词评论以上的数据，得到4500万分链接，将数据抽取出来，得到一个数据集，约800万文本，40GB的文字。</p>
-<h4 id="GPT-2模型大小"><a href="#GPT-2模型大小" class="headerlink" title="GPT-2模型大小"></a>GPT-2模型大小</h4><p>GPT2也是基于Transformer解码器的架构，作者设计了4种大小的模型，参数结构如下：</p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250109170614852.png" alt="image.png"></p>
+<h4 id="gpt-2模型大小"><a class="markdownIt-Anchor" href="#gpt-2模型大小"></a> GPT-2模型大小</h4>
+<p>GPT2也是基于Transformer解码器的架构，作者设计了4种大小的模型，参数结构如下：</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250109170614852.png" alt="image.png" /></p>
 <p>可以看到，最大模型的参数量已经去到了15个亿。还有一个细节就是GPT2调整了transformer解码器结构：将layer normalization放到每个sub-block之前，并在最后一个Self-attention后再增加一个layer normalization。</p>
-<h4 id="训练方式"><a href="#训练方式" class="headerlink" title="训练方式"></a>训练方式</h4><p>采用预训练+zero-shot的训练范式。为实现zero-shot，GPT2在做下游任务时，输入就不能像GPT那样在构造输入时加入开始、中间和结束的特殊字符，因为这些特殊字符是模型在预训练时没有见过的。正确的输入应该和预训练模型看到的文本一样，更像一个自然语言。比如在做机器翻译时，直接可以输入“请将下面一段英文翻译成法语，英文文本”，由于在训练时可能已经存在很多这样的翻译文本样例，因此模型就可以实现输出一段法语。</p>
-<h2 id="GPT3"><a href="#GPT3" class="headerlink" title="GPT3"></a>GPT3</h2><p>论文题目：Language Models are Few-Shot Learners，2020</p>
+<h4 id="训练方式"><a class="markdownIt-Anchor" href="#训练方式"></a> 训练方式</h4>
+<p>采用预训练+zero-shot的训练范式。为实现zero-shot，GPT2在做下游任务时，输入就不能像GPT那样在构造输入时加入开始、中间和结束的特殊字符，因为这些特殊字符是模型在预训练时没有见过的。正确的输入应该和预训练模型看到的文本一样，更像一个自然语言。比如在做机器翻译时，直接可以输入“请将下面一段英文翻译成法语，英文文本”，由于在训练时可能已经存在很多这样的翻译文本样例，因此模型就可以实现输出一段法语。</p>
+<h2 id="gpt3"><a class="markdownIt-Anchor" href="#gpt3"></a> GPT3</h2>
+<p>论文题目：Language Models are Few-Shot Learners，2020</p>
 <p>GPT-3：自回归语言模型，有1750亿个可学习参数，比之前非稀疏模型在可学习参数上要大10倍。GPT-3作用到子任务上，不做任何的梯度更新或是微调；GPT-3可以生成一些人类难以区分的文章。</p>
-<h3 id="引言-2"><a href="#引言-2" class="headerlink" title="引言"></a>引言</h3><p>GPT2实验采用了zero-shot设定，在新意度上很高，但是有效性却比较低。而GPT3则是尝试解决GPT2的有效性，因此回到了GPT提到的Few-shot设置，即模型在做下游任务时，可以看到一些任务的样例，而不是像GPT2那样啥样例都不给。此外，GPT3还是只采用无监督预训练方式，那么传统的二阶段训练方式（预训练+微调）有什么问题？二阶段训练方式在预训练好一个模型后，还需要一个与任务相关的数据集，以及跟任务相关的微调方式。去除这种方式是可取的，有以下几个原因：</p>
+<h3 id="引言-3"><a class="markdownIt-Anchor" href="#引言-3"></a> 引言</h3>
+<p>GPT2实验采用了zero-shot设定，在新意度上很高，但是有效性却比较低。而GPT3则是尝试解决GPT2的有效性，因此回到了GPT提到的Few-shot设置，即模型在做下游任务时，可以看到一些任务的样例，而不是像GPT2那样啥样例都不给。此外，GPT3还是只采用无监督预训练方式，那么传统的二阶段训练方式（预训练+微调）有什么问题？二阶段训练方式在预训练好一个模型后，还需要一个与任务相关的数据集，以及跟任务相关的微调方式。去除这种方式是可取的，有以下几个原因：</p>
 <ul>
-<li><p>微调需要一个较大的有标签数据，对于一些如问答型任务，做标签是很困难的；</p>
+<li>
+<p>微调需要一个较大的有标签数据，对于一些如问答型任务，做标签是很困难的；</p>
 </li>
-<li><p>当一个样本没有出现在数据分布里是，微调模型的泛化能力不一定好，即尽管微调效果好，也不一定说明预训练的模型泛化能力好，因为极有可能微调是过拟合了预训练的训练数据，或者说预训练训练数据和下游任务数据有一定重合性，所以效果会好一点；</p>
+<li>
+<p>当一个样本没有出现在数据分布里是，微调模型的泛化能力不一定好，即尽管微调效果好，也不一定说明预训练的模型泛化能力好，因为极有可能微调是过拟合了预训练的训练数据，或者说预训练训练数据和下游任务数据有一定重合性，所以效果会好一点；</p>
 </li>
-<li><p>以人类角度来阐述为什么不用微调，就是说人类做任务不需要一个很大的数据集进行微调，比如一个人有一定的语言功底，让你去做一个别的事情，可能就是告诉你怎么做并提供几个样例就可以了，GPT3就是采用一样的思想。</p>
+<li>
+<p>以人类角度来阐述为什么不用微调，就是说人类做任务不需要一个很大的数据集进行微调，比如一个人有一定的语言功底，让你去做一个别的事情，可能就是告诉你怎么做并提供几个样例就可以了，GPT3就是采用一样的思想。</p>
 </li>
 </ul>
 <p>总的来说，GPT3就是一个参数特别大，效果也很好的一个模型。</p>
-<p><strong>多任务预训练（上下文训练</strong>，类似于 meta-learning 元学习的想法，元学习的核心思想在于通过少量的数据寻找一个合适的初始化范围，使得模型能够在有限的数据集上快速拟合，并获得不错的效果<strong>）</strong></p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250109170624378.png" alt="image.png"></p>
+<p><strong>多任务预训练（上下文训练</strong>，类似于 meta-learning 元学习的想法，元学习的核心思想在于通过少量的数据寻找一个合适的初始化范围，使得模型能够在有限的数据集上快速拟合，并获得不错的效果**）**</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250109170624378.png" alt="image.png" /></p>
 <p>模型评估方式（3种）：</p>
 <ul>
-<li><p>few-shot learning：语境学习允许尽可能多的示例活动将适合模型的上下文窗口(通常10 - 100)</p>
+<li>
+<p>few-shot learning：语境学习允许尽可能多的示例活动将适合模型的上下文窗口(通常10 - 100)</p>
 </li>
-<li><p>one-shot learning：只提供一个示例，如英语翻译德语时，只提供第一个词怎么翻译，后续让模型自己翻译</p>
+<li>
+<p>one-shot learning：只提供一个示例，如英语翻译德语时，只提供第一个词怎么翻译，后续让模型自己翻译</p>
 </li>
-<li><p>zero-shot：一个示例样本都没有</p>
+<li>
+<p>zero-shot：一个示例样本都没有</p>
 </li>
 </ul>
 <p>在三个设定下，模型的学习区别，x轴为语言模型的大小，其中虚线是每个子任务，做平均变成了实线。</p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250109170634563.png" alt="image.png"></p>
-<h3 id="模型-1"><a href="#模型-1" class="headerlink" title="模型"></a>模型</h3><h4 id="训练方式-1"><a href="#训练方式-1" class="headerlink" title="训练方式"></a>训练方式</h4><p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250109170649230.png" alt="image.png"></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250109170634563.png" alt="image.png" /></p>
+<h3 id="模型-2"><a class="markdownIt-Anchor" href="#模型-2"></a> 模型</h3>
+<h4 id="训练方式-2"><a class="markdownIt-Anchor" href="#训练方式-2"></a> 训练方式</h4>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250109170649230.png" alt="image.png" /></p>
 <ul>
-<li><p>Fine-tuning：训练完成预训练模型后，在每一个子任务上提供训练样本；微调对数据量的要求少于从0开始训练；</p>
+<li>
+<p>Fine-tuning：训练完成预训练模型后，在每一个子任务上提供训练样本；微调对数据量的要求少于从0开始训练；</p>
 </li>
-<li><p>Zero-shot：任务描述和prompt之间没有任何样本</p>
+<li>
+<p>Zero-shot：任务描述和prompt之间没有任何样本</p>
 </li>
-<li><p>One-shot：任务描述和prompt之前，插入一个样本进来。样本只做预测，不做训练，模型在前向推理时，使用注意力机制，处理比较长的信息，从中间抽取出有用的信息。</p>
+<li>
+<p>One-shot：任务描述和prompt之前，插入一个样本进来。样本只做预测，不做训练，模型在前向推理时，使用注意力机制，处理比较长的信息，从中间抽取出有用的信息。</p>
 </li>
-<li><p>Few-shot：任务描述和prompt之前，插入多个样本进来。多个不一定有用，可能模型不能处理很长的数据。</p>
+<li>
+<p>Few-shot：任务描述和prompt之前，插入多个样本进来。多个不一定有用，可能模型不能处理很长的数据。</p>
 </li>
 </ul>
 <p>几种训练方式简单概括如下：</p>
 <ul>
-<li><p>fine-tuning：预训练 + 微调计算loss更新梯度，然后预测。会更新模型参数</p>
+<li>
+<p>fine-tuning：预训练 + 微调计算loss更新梯度，然后预测。会更新模型参数</p>
 </li>
-<li><p>zero-shot：预训练 + task description + prompt，直接预测。不更新模型参数</p>
+<li>
+<p>zero-shot：预训练 + task description + prompt，直接预测。不更新模型参数</p>
 </li>
-<li><p>one-shot：预训练 + task description + example + prompt，预测。不更新模型参数</p>
+<li>
+<p>one-shot：预训练 + task description + example + prompt，预测。不更新模型参数</p>
 </li>
-<li><p>few-shot：预训练 + task description + examples + prompt，预测。不更新模型参数</p>
+<li>
+<p>few-shot：预训练 + task description + examples + prompt，预测。不更新模型参数</p>
 </li>
 </ul>
-<h4 id="模型架构"><a href="#模型架构" class="headerlink" title="模型架构"></a>模型架构</h4><p>GPT-3的模型和GPT-2的模型是一样的，稍微有点改动，把transformer换成了Sparse Transformer中的结构，并设计8个不同大小的模型。</p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250109170702577.png" alt="image.png"></p>
+<h4 id="模型架构"><a class="markdownIt-Anchor" href="#模型架构"></a> 模型架构</h4>
+<p>GPT-3的模型和GPT-2的模型是一样的，稍微有点改动，把transformer换成了Sparse Transformer中的结构，并设计8个不同大小的模型。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250109170702577.png" alt="image.png" /></p>
 <ul>
-<li><p>整体：GPT3模型偏扁</p>
+<li>
+<p>整体：GPT3模型偏扁</p>
 </li>
-<li><p>Batch Size：使用相对比较大的批量大小，计算性能更好，每台机器的并行度更高，通讯量变低，降低批量里的噪音分布式比较好，小的模型批量大小更容易过拟合—些。</p>
+<li>
+<p>Batch Size：使用相对比较大的批量大小，计算性能更好，每台机器的并行度更高，通讯量变低，降低批量里的噪音分布式比较好，小的模型批量大小更容易过拟合—些。</p>
 </li>
-<li><p>过拟合：模型越来越大的时候过拟合没有那么的严重，搜索范围更广，可能存在一个比较简单的模型架构，SDG可以帮助找到那个模型，使泛化精度更好一些。</p>
+<li>
+<p>过拟合：模型越来越大的时候过拟合没有那么的严重，搜索范围更广，可能存在一个比较简单的模型架构，SDG可以帮助找到那个模型，使泛化精度更好一些。</p>
 </li>
-<li><p>学习率模型批量大小增大学习率下降。</p>
+<li>
+<p>学习率模型批量大小增大学习率下降。</p>
 </li>
 </ul>
 <p><strong>Sparse Transformer</strong></p>
 <ul>
-<li><p>Self-Attention：每个 token 之间两两计算 attention，复杂度$O(n²)$﻿</p>
+<li>
+<p>Self-Attention：每个 token 之间两两计算 attention，复杂度<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>O</mi><mo stretchy="false">(</mo><mi>n</mi><mtext>²</mtext><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">O(n²)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.02778em;">O</span><span class="mopen">(</span><span class="mord mathnormal">n</span><span class="mord">²</span><span class="mclose">)</span></span></span></span></p>
 </li>
-<li><p>Sparse Attention：每个 token 只与其他 token 的一个子集计算 attention，复杂度 $O(n∗logn)$﻿</p>
+<li>
+<p>Sparse Attention：每个 token 只与其他 token 的一个子集计算 attention，复杂度 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>O</mi><mo stretchy="false">(</mo><mi>n</mi><mtext>∗</mtext><mi>l</mi><mi>o</mi><mi>g</mi><mi>n</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">O(n∗logn)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.02778em;">O</span><span class="mopen">(</span><span class="mord mathnormal">n</span><span class="mord">∗</span><span class="mord mathnormal" style="margin-right:0.01968em;">l</span><span class="mord mathnormal">o</span><span class="mord mathnormal" style="margin-right:0.03588em;">g</span><span class="mord mathnormal">n</span><span class="mclose">)</span></span></span></span></p>
 </li>
-<li><p>Sparse Attention 除了相对距离不超过k以及相对距离为$k，2k，3k，…$的 token，其他所有token的注意力都设为0：</p>
+<li>
+<p>Sparse Attention 除了相对距离不超过k以及相对距离为<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>k</mi><mtext>，</mtext><mn>2</mn><mi>k</mi><mtext>，</mtext><mn>3</mn><mi>k</mi><mtext>，</mtext><mo>…</mo></mrow><annotation encoding="application/x-tex">k，2k，3k，…</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.69444em;vertical-align:0em;"></span><span class="mord mathnormal" style="margin-right:0.03148em;">k</span><span class="mord cjk_fallback">，</span><span class="mord">2</span><span class="mord mathnormal" style="margin-right:0.03148em;">k</span><span class="mord cjk_fallback">，</span><span class="mord">3</span><span class="mord mathnormal" style="margin-right:0.03148em;">k</span><span class="mord cjk_fallback">，</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="minner">…</span></span></span></span>的 token，其他所有token的注意力都设为0：</p>
 </li>
 </ul>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250109170712746.png" alt="image.png"></p>
-<h2 id="InstructGPT-ChatGPT-GPT3-5"><a href="#InstructGPT-ChatGPT-GPT3-5" class="headerlink" title="InstructGPT&#x2F;ChatGPT&#x2F;GPT3.5"></a>InstructGPT&#x2F;ChatGPT&#x2F;GPT3.5</h2><p>InstructGPT 使用了指示学习（Instruction Learning）和人类反馈的强化学习（Reinforcement Learning from Human Feedback，RLHF）来指导模型的训练。ChatGPT (也被称为GPT3.5) 和InstructGPT在模型结构，训练方式上都完全一致，它们不同的仅仅是采集数据的方式上有所差异。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250109170712746.png" alt="image.png" /></p>
+<h2 id="instructgptchatgptgpt35"><a class="markdownIt-Anchor" href="#instructgptchatgptgpt35"></a> InstructGPT/ChatGPT/GPT3.5</h2>
+<p>InstructGPT 使用了指示学习（Instruction Learning）和人类反馈的强化学习（Reinforcement Learning from Human Feedback，RLHF）来指导模型的训练。ChatGPT (也被称为GPT3.5) 和InstructGPT在模型结构，训练方式上都完全一致，它们不同的仅仅是采集数据的方式上有所差异。</p>
 <p>预训练模型自诞生之始，一个备受诟病的问题就是预训练模型的偏见性。因为预训练模型都是通过海量数据在超大参数量级的模型上训练出来的，对比完全由人工规则控制的专家系统来说，预训练模型就像一个黑盒子。没有人能够保证预训练模型不会生成一些包含种族歧视，性别歧视等危险内容，因为它的几十GB甚至几十TB的训练数据里几乎肯定包含类似的训练样本。这也就是InstructGPT和ChatGPT的提出动机，论文中用3H概括了它们的优化目标：</p>
 <ul>
-<li><p>有用的（Helpful）;</p>
+<li>
+<p>有用的（Helpful）;</p>
 </li>
-<li><p>可信的（Honest）;</p>
+<li>
+<p>可信的（Honest）;</p>
 </li>
-<li><p>无害的（Harmless）。</p>
+<li>
+<p>无害的（Harmless）。</p>
 </li>
 </ul>
-<h3 id="指示学习（Instruct-Learning）和提示（Prompt-Learning）学习"><a href="#指示学习（Instruct-Learning）和提示（Prompt-Learning）学习" class="headerlink" title="指示学习（Instruct Learning）和提示（Prompt Learning）学习"></a>指示学习（Instruct Learning）和提示（Prompt Learning）学习</h3><p>指示学习是谷歌Deepmind的Quoc V.Le团队在2021年的一篇名为《Finetuned Language Models Are Zero-Shot Learners》文章中提出的思想。指示学习和提示学习的目的都是去挖掘语言模型本身具备的知识。不同的是Prompt是激发语言模型的<strong>补全能力</strong>，例如根据上半句生成下半句，或是完形填空等。Instruct是激发语言模型的理解能力，它通过给出更明显的指令，让模型去做出正确的行动。我们可以通过下面的例子来理解这两个不同的学习方式：</p>
+<h3 id="指示学习instruct-learning和提示prompt-learning学习"><a class="markdownIt-Anchor" href="#指示学习instruct-learning和提示prompt-learning学习"></a> 指示学习（Instruct Learning）和提示（Prompt Learning）学习</h3>
+<p>指示学习是谷歌Deepmind的Quoc V.Le团队在2021年的一篇名为《Finetuned Language Models Are Zero-Shot Learners》文章中提出的思想。指示学习和提示学习的目的都是去挖掘语言模型本身具备的知识。不同的是Prompt是激发语言模型的<strong>补全能力</strong>，例如根据上半句生成下半句，或是完形填空等。Instruct是激发语言模型的理解能力，它通过给出更明显的指令，让模型去做出正确的行动。我们可以通过下面的例子来理解这两个不同的学习方式：</p>
 <ol>
-<li><p>提示学习：给女朋友买了这个项链，她很喜欢，这个项链太____了。</p>
+<li>
+<p>提示学习：给女朋友买了这个项链，她很喜欢，这个项链太____了。</p>
 </li>
-<li><p>指示学习：这句话的情感是非常正向的：给女朋友买了这个项链，她很喜欢。</p>
+<li>
+<p>指示学习：这句话的情感是非常正向的：给女朋友买了这个项链，她很喜欢。</p>
 </li>
 </ol>
 <p>指示学习的优点是它经过多任务的微调后，也能够在其他任务上做zero-shot，而提示学习都是针对一个任务的。泛化能力不如指示学习。我们可以通过下图来理解微调，提示学习和指示学习。</p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250109170721839.png" alt="image.png"></p>
-<h3 id="人类反馈的强化学习-（RLHF）"><a href="#人类反馈的强化学习-（RLHF）" class="headerlink" title="人类反馈的强化学习 （RLHF）"></a>人类反馈的强化学习 （RLHF）</h3><p>因为训练得到的模型并不是非常可控的，模型可以看做对训练集分布的一个拟合。那么反馈到生成模型中，训练数据的分布便是影响生成内容的质量最重要的一个因素。有时候我们希望模型并不仅仅只受训练数据的影响，而是人为可控的，从而保证生成数据的有用性，真实性和无害性。论文中多次提到了对齐（Alignment）问题，我们可以理解为模型的输出内容和人类喜欢的输出内容的对齐，人类喜欢的不止包括生成内容的流畅性和语法的正确性，还包括生成内容的有用性、真实性和无害性。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250109170721839.png" alt="image.png" /></p>
+<h3 id="人类反馈的强化学习-rlhf"><a class="markdownIt-Anchor" href="#人类反馈的强化学习-rlhf"></a> 人类反馈的强化学习 （RLHF）</h3>
+<p>因为训练得到的模型并不是非常可控的，模型可以看做对训练集分布的一个拟合。那么反馈到生成模型中，训练数据的分布便是影响生成内容的质量最重要的一个因素。有时候我们希望模型并不仅仅只受训练数据的影响，而是人为可控的，从而保证生成数据的有用性，真实性和无害性。论文中多次提到了对齐（Alignment）问题，我们可以理解为模型的输出内容和人类喜欢的输出内容的对齐，人类喜欢的不止包括生成内容的流畅性和语法的正确性，还包括生成内容的有用性、真实性和无害性。</p>
 <p>我们知道强化学习通过奖励（Reward）机制来指导模型训练，奖励机制可以看做传统模型训练机制的损失函数。奖励的计算要比损失函数更灵活和多样（AlphaGO的奖励是对局的胜负），这带来的代价是奖励的计算是不可导的，因此不能直接拿来做反向传播。强化学习的思路是通过对奖励的大量采样来拟合损失函数，从而实现模型的训练。同样人类反馈也是不可导的，那么我们也可以将人工反馈作为强化学习的奖励，基于人类反馈的强化学习便应运而生。</p>
 <p>RLHF最早可以追溯到Google在2017年发表的《Deep Reinforcement Learning from Human Preferences》，它通过人工标注作为反馈，提升了强化学习在模拟机器人以及雅达利游戏上的表现效果。</p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250109170730546.png" alt="image.png"></p>
-<p>InstructGPT&#x2F;ChatGPT中还用到了强化学习中一个经典的算法：OpenAI提出的最近策略优化（Proximal Policy Optimization，PPO）<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/590311003#ref_7">[7]</a>。PPO算法是一种新型的Policy Gradient算法，Policy Gradient算法对步长十分敏感，但是又难以选择合适的步长，在训练过程中新旧策略的的变化差异如果过大则不利于学习。PPO提出了新的目标函数可以在多个训练步骤实现小批量的更新，解决了Policy Gradient算法中步长难以确定的问题。其实TRPO也是为了解决这个思想但是相比于TRPO算法PPO算法更容易求解。</p>
-<h3 id="InstructGPT-ChatGPT原理解读"><a href="#InstructGPT-ChatGPT原理解读" class="headerlink" title="InstructGPT&#x2F;ChatGPT原理解读"></a>InstructGPT&#x2F;ChatGPT原理解读</h3><p>有了上面这些基础知识，我们再去了解InstructGPT和ChatGPT就会简单很多。简单来说，InstructGPT&#x2F;ChatGPT都是采用了<strong>GPT-3</strong>的网络结构，通过<strong>指示学习</strong>构建训练样本来训练一个反应预测内容效果的奖励模型（RM），最后通过这个奖励模型的打分来指导强化学习模型的训练。InstructGPT&#x2F;ChatGPT的训练流程如图所示。</p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250109170739026.png" alt="image.png"></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250109170730546.png" alt="image.png" /></p>
+<p>InstructGPT/ChatGPT中还用到了强化学习中一个经典的算法：OpenAI提出的最近策略优化（Proximal Policy Optimization，PPO）<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/590311003#ref_7">[7]</a>。PPO算法是一种新型的Policy Gradient算法，Policy Gradient算法对步长十分敏感，但是又难以选择合适的步长，在训练过程中新旧策略的的变化差异如果过大则不利于学习。PPO提出了新的目标函数可以在多个训练步骤实现小批量的更新，解决了Policy Gradient算法中步长难以确定的问题。其实TRPO也是为了解决这个思想但是相比于TRPO算法PPO算法更容易求解。</p>
+<h3 id="instructgptchatgpt原理解读"><a class="markdownIt-Anchor" href="#instructgptchatgpt原理解读"></a> InstructGPT/ChatGPT原理解读</h3>
+<p>有了上面这些基础知识，我们再去了解InstructGPT和ChatGPT就会简单很多。简单来说，InstructGPT/ChatGPT都是采用了<strong>GPT-3</strong>的网络结构，通过<strong>指示学习</strong>构建训练样本来训练一个反应预测内容效果的奖励模型（RM），最后通过这个奖励模型的打分来指导强化学习模型的训练。InstructGPT/ChatGPT的训练流程如图所示。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250109170739026.png" alt="image.png" /></p>
 <p>InstructGPT的计算流程：（1）有监督微调（SFT）；（2）奖励模型（RM）训练；（3）通过PPO根据奖励模型进行强化学习。</p>
-<p>从上图中我们可以看出，InstructGPT&#x2F;ChatGPT的训练可以分成3步，其中第2步和第3步是的奖励模型和强化学习的SFT模型可以反复迭代优化。</p>
+<p>从上图中我们可以看出，InstructGPT/ChatGPT的训练可以分成3步，其中第2步和第3步是的奖励模型和强化学习的SFT模型可以反复迭代优化。</p>
 <ol>
-<li><p>根据采集的SFT数据集对GPT-3进行有监督的微调（Supervised FineTune，SFT）；</p>
+<li>
+<p>根据采集的SFT数据集对GPT-3进行有监督的微调（Supervised FineTune，SFT）；</p>
 </li>
-<li><p>收集人工标注的对比数据，训练奖励模型（Reword Model，RM）；</p>
+<li>
+<p>收集人工标注的对比数据，训练奖励模型（Reword Model，RM）；</p>
 </li>
-<li><p>使用RM作为强化学习的优化目标，利用PPO算法微调SFT模型。</p>
+<li>
+<p>使用RM作为强化学习的优化目标，利用PPO算法微调SFT模型。</p>
 </li>
 </ol>
-<p>我们将分别介绍InstructGPT&#x2F;ChatGPT的数据集采集和模型训练两个方面的内容。</p>
-<h4 id="数据集采集"><a href="#数据集采集" class="headerlink" title="数据集采集"></a>数据集采集</h4><p>InstructGPT&#x2F;ChatGPT的训练分成3步，每一步需要的数据也有些许差异，下面我们分别介绍它们。</p>
-<h5 id="SFT数据集"><a href="#SFT数据集" class="headerlink" title="SFT数据集"></a>SFT数据集</h5><p>SFT数据集是用来训练第1步有监督的模型，即使用采集的新数据，按照GPT-3的训练方式对GPT-3进行微调。因为GPT-3是一个基于提示学习的生成模型，因此SFT数据集也是由提示-答复对组成的样本。SFT数据一部分来自使用OpenAI的PlayGround的用户，另一部分来自OpenAI雇佣的40名标注工（labeler）。并且他们对labeler进行了培训。在这个数据集中，标注工的工作是根据内容自己编写指示，并且要求编写的指示满足下面三点：</p>
+<p>我们将分别介绍InstructGPT/ChatGPT的数据集采集和模型训练两个方面的内容。</p>
+<h4 id="数据集采集"><a class="markdownIt-Anchor" href="#数据集采集"></a> 数据集采集</h4>
+<p>InstructGPT/ChatGPT的训练分成3步，每一步需要的数据也有些许差异，下面我们分别介绍它们。</p>
+<h5 id="sft数据集"><a class="markdownIt-Anchor" href="#sft数据集"></a> SFT数据集</h5>
+<p>SFT数据集是用来训练第1步有监督的模型，即使用采集的新数据，按照GPT-3的训练方式对GPT-3进行微调。因为GPT-3是一个基于提示学习的生成模型，因此SFT数据集也是由提示-答复对组成的样本。SFT数据一部分来自使用OpenAI的PlayGround的用户，另一部分来自OpenAI雇佣的40名标注工（labeler）。并且他们对labeler进行了培训。在这个数据集中，标注工的工作是根据内容自己编写指示，并且要求编写的指示满足下面三点：</p>
 <ul>
-<li><p><strong>简单任务</strong>：labeler给出任意一个简单的任务，同时要确保任务的多样性；</p>
+<li>
+<p><strong>简单任务</strong>：labeler给出任意一个简单的任务，同时要确保任务的多样性；</p>
 </li>
-<li><p><strong>Few-shot任务</strong>：labeler给出一个指示，以及该指示的多个查询-响应对；</p>
+<li>
+<p><strong>Few-shot任务</strong>：labeler给出一个指示，以及该指示的多个查询-响应对；</p>
 </li>
-<li><p><strong>用户相关的</strong>：从接口中获取用例，然后让labeler根据这些用例编写指示。</p>
+<li>
+<p><strong>用户相关的</strong>：从接口中获取用例，然后让labeler根据这些用例编写指示。</p>
 </li>
 </ul>
-<h5 id="RM数据集"><a href="#RM数据集" class="headerlink" title="RM数据集"></a>RM数据集</h5><p>RM数据集用来训练第2步的奖励模型，我们也需要为InstructGPT&#x2F;ChatGPT的训练设置一个奖励目标，要尽可能全面且真实的对齐我们需要模型生成的内容。很自然的，我们可以通过人工标注的方式来提供这个奖励，通过人工对可以给那些涉及偏见的生成内容更低的分从而鼓励模型不去生成这些人类不喜欢的内容。InstructGPT&#x2F;ChatGPT的做法是先让模型生成一批候选文本，让后通过labeler根据生成数据的质量对这些生成内容进行排序。</p>
-<h5 id="PPO数据集"><a href="#PPO数据集" class="headerlink" title="PPO数据集"></a>PPO数据集</h5><p>InstructGPT的PPO数据没有进行标注，它均来自GPT-3的API的用户。既又不同用户提供的不同种类的生成任务，其中占比最高的包括生成任务（45.6%），QA（12.4%），头脑风暴（11.2%），对话（8.4%）等。</p>
-<h5 id="数据分析"><a href="#数据分析" class="headerlink" title="数据分析"></a>数据分析</h5><p>因为InstructGPT&#x2F;ChatGPT是在GPT-3基础上做的微调，而且因为涉及了人工标注，它们数据总量并不大。</p>
+<h5 id="rm数据集"><a class="markdownIt-Anchor" href="#rm数据集"></a> RM数据集</h5>
+<p>RM数据集用来训练第2步的奖励模型，我们也需要为InstructGPT/ChatGPT的训练设置一个奖励目标，要尽可能全面且真实的对齐我们需要模型生成的内容。很自然的，我们可以通过人工标注的方式来提供这个奖励，通过人工对可以给那些涉及偏见的生成内容更低的分从而鼓励模型不去生成这些人类不喜欢的内容。InstructGPT/ChatGPT的做法是先让模型生成一批候选文本，让后通过labeler根据生成数据的质量对这些生成内容进行排序。</p>
+<h5 id="ppo数据集"><a class="markdownIt-Anchor" href="#ppo数据集"></a> PPO数据集</h5>
+<p>InstructGPT的PPO数据没有进行标注，它均来自GPT-3的API的用户。既又不同用户提供的不同种类的生成任务，其中占比最高的包括生成任务（45.6%），QA（12.4%），头脑风暴（11.2%），对话（8.4%）等。</p>
+<h5 id="数据分析"><a class="markdownIt-Anchor" href="#数据分析"></a> 数据分析</h5>
+<p>因为InstructGPT/ChatGPT是在GPT-3基础上做的微调，而且因为涉及了人工标注，它们数据总量并不大。</p>
 <p>论文的附录A对数据的分布进行了更详细的讨论，这里我列出几个可能影响模型效果的几项：</p>
 <ul>
-<li><p>数据中96%以上是英文，其它20个语种例如中文，法语，西班牙语等加起来不到4%，这可能导致InstructGPT&#x2F;ChatGPT能进行其它语种的生成，但效果应该远不如英文；</p>
+<li>
+<p>数据中96%以上是英文，其它20个语种例如中文，法语，西班牙语等加起来不到4%，这可能导致InstructGPT/ChatGPT能进行其它语种的生成，但效果应该远不如英文；</p>
 </li>
-<li><p>提示种类共有9种，而且绝大多数是生成类任务，可能会导致模型有覆盖不到的任务类型；</p>
+<li>
+<p>提示种类共有9种，而且绝大多数是生成类任务，可能会导致模型有覆盖不到的任务类型；</p>
 </li>
-<li><p>40名外包员工来自美国和东南亚，分布比较集中且人数较少， InstructGPT&#x2F;ChatGPT的目标是训练一个价值观正确的预训练模型，它的价值观是由这40个外包员工的价值观组合而成。而这个比较窄的分布可能会生成一些其他地区比较在意的歧视，偏见问题。</p>
+<li>
+<p>40名外包员工来自美国和东南亚，分布比较集中且人数较少， InstructGPT/ChatGPT的目标是训练一个价值观正确的预训练模型，它的价值观是由这40个外包员工的价值观组合而成。而这个比较窄的分布可能会生成一些其他地区比较在意的歧视，偏见问题。</p>
 </li>
 </ul>
 <p>此外，ChatGPT的博客中讲到ChatGPT和InstructGPT的训练方式相同，不同点仅仅是它们采集数据上有所不同，但是并没有更多的资料来讲数据采集上有哪些细节上的不同。考虑到ChatGPT仅仅被用在对话领域，这里我猜测ChatGPT在数据采集上有两个不同：1. 提高了对话类任务的占比；2. 将提示的方式转换Q&amp;A的方式。当然这里也仅仅是猜测，更准确的描述要等到ChatGPT的论文、源码等更详细的资料公布我们才能知道。</p>
-<h4 id="训练任务"><a href="#训练任务" class="headerlink" title="训练任务"></a>训练任务</h4><p>我们刚介绍到InstructGPT&#x2F;ChatGPT有三步训练方式。这三步训练会涉及三个模型：SFT，RM以及PPO，下面我们详细介绍它们。</p>
-<h5 id="有监督微调（SFT）"><a href="#有监督微调（SFT）" class="headerlink" title="有监督微调（SFT）"></a>有监督微调（SFT）</h5><p>这一步的训练和GPT-3一致，而且作者发现让模型适当过拟合有助于后面两步的训练。</p>
-<h5 id="奖励模型（RM）"><a href="#奖励模型（RM）" class="headerlink" title="奖励模型（RM）"></a>奖励模型（RM）</h5><p>因为训练RM的数据是一个labeler根据生成结果排序的形式，所以它可以看做一个回归模型。RM结构是将SFT训练后的模型的最后的嵌入层去掉后的模型。它的输入是prompt和Reponse，输出是奖励值。具体的讲，对弈每个prompt，InstructGPT&#x2F;ChatGPT会随机生成 K 个输出（ 4≤K≤9 ），然后它们向每个labeler成对的展示输出结果，也就是每个prompt共展示 CK2 个结果，然后用户从中选择效果更好的输出。在训练时，InstructGPT&#x2F;ChatGPT将每个prompt的 CK2 个响应对作为一个batch，这种按prompt为batch的训练方式要比传统的按样本为batch的方式更不容易过拟合，因为这种方式每个prompt会且仅会输入到模型中一次。</p>
+<h4 id="训练任务"><a class="markdownIt-Anchor" href="#训练任务"></a> 训练任务</h4>
+<p>我们刚介绍到InstructGPT/ChatGPT有三步训练方式。这三步训练会涉及三个模型：SFT，RM以及PPO，下面我们详细介绍它们。</p>
+<h5 id="有监督微调sft"><a class="markdownIt-Anchor" href="#有监督微调sft"></a> 有监督微调（SFT）</h5>
+<p>这一步的训练和GPT-3一致，而且作者发现让模型适当过拟合有助于后面两步的训练。</p>
+<h5 id="奖励模型rm"><a class="markdownIt-Anchor" href="#奖励模型rm"></a> 奖励模型（RM）</h5>
+<p>因为训练RM的数据是一个labeler根据生成结果排序的形式，所以它可以看做一个回归模型。RM结构是将SFT训练后的模型的最后的嵌入层去掉后的模型。它的输入是prompt和Reponse，输出是奖励值。具体的讲，对弈每个prompt，InstructGPT/ChatGPT会随机生成 K 个输出（ 4≤K≤9 ），然后它们向每个labeler成对的展示输出结果，也就是每个prompt共展示 CK2 个结果，然后用户从中选择效果更好的输出。在训练时，InstructGPT/ChatGPT将每个prompt的 CK2 个响应对作为一个batch，这种按prompt为batch的训练方式要比传统的按样本为batch的方式更不容易过拟合，因为这种方式每个prompt会且仅会输入到模型中一次。</p>
 <p>奖励模型的损失函数表示为式(1)。这个损失函数的目标是最大化labeler更喜欢的响应和不喜欢的响应之间的差值。</p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250109170755396.png" alt="image.png"></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250109170755396.png" alt="image.png" /></p>
 <p>其中 rθ(x,y) 是提示 x 和响应 y 在参数为 θ 的奖励模型下的奖励值， yw 是labeler更喜欢的响应结果， yl 是labeler不喜欢的响应结果。 D 是整个训练数据集。</p>
-<h5 id="强化学习模型（PPO）"><a href="#强化学习模型（PPO）" class="headerlink" title="强化学习模型（PPO）"></a>强化学习模型（PPO）</h5><p>强化学习和预训练模型是最近两年最为火热的AI方向之二，之前不少科研工作者说强化学习并不是一个非常适合应用到预训练模型中，因为很难通过模型的输出内容建立奖励机制。而InstructGPT&#x2F;ChatGPT反直觉的做到了这点，它通过结合人工标注，将强化学习引入到预训练语言模型是这个算法最大的创新点。</p>
-<p>PPO的训练集完全来自API。它通过第2步得到的奖励模型来指导SFT模型的继续训练。很多时候强化学习是非常难训练的，InstructGPT&#x2F;ChatGPT在训练过程中就遇到了两个问题：</p>
+<h5 id="强化学习模型ppo"><a class="markdownIt-Anchor" href="#强化学习模型ppo"></a> 强化学习模型（PPO）</h5>
+<p>强化学习和预训练模型是最近两年最为火热的AI方向之二，之前不少科研工作者说强化学习并不是一个非常适合应用到预训练模型中，因为很难通过模型的输出内容建立奖励机制。而InstructGPT/ChatGPT反直觉的做到了这点，它通过结合人工标注，将强化学习引入到预训练语言模型是这个算法最大的创新点。</p>
+<p>PPO的训练集完全来自API。它通过第2步得到的奖励模型来指导SFT模型的继续训练。很多时候强化学习是非常难训练的，InstructGPT/ChatGPT在训练过程中就遇到了两个问题：</p>
 <ol>
-<li><p>问题1：随着模型的更新，强化学习模型产生的数据和训练奖励模型的数据的差异会越来越大。作者的解决方案是在损失函数中加入KL惩罚项 βlog⁡(πϕRL(y∣x)&#x2F;πSFT(y∣x)) 来确保PPO模型的输出和SFT的输出差距不会很大。</p>
+<li>
+<p>问题1：随着模型的更新，强化学习模型产生的数据和训练奖励模型的数据的差异会越来越大。作者的解决方案是在损失函数中加入KL惩罚项 βlog⁡(πϕRL(y∣x)/πSFT(y∣x)) 来确保PPO模型的输出和SFT的输出差距不会很大。</p>
 </li>
-<li><p>问题2：只用PPO模型进行训练的话，会导致模型在通用NLP任务上性能的大幅下降，作者的解决方案是在训练目标中加入了通用的语言模型目标 γEx∼Dpretrain [log⁡(πϕRL(x))] ，这个变量在论文中被叫做PPO-ptx。</p>
+<li>
+<p>问题2：只用PPO模型进行训练的话，会导致模型在通用NLP任务上性能的大幅下降，作者的解决方案是在训练目标中加入了通用的语言模型目标 γEx∼Dpretrain [log⁡(πϕRL(x))] ，这个变量在论文中被叫做PPO-ptx。</p>
 </li>
 </ol>
 <p>综上，PPO的训练目标为</p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250109170802276.png" alt="image.png"></p>
-<h3 id="InstructGPT-ChatGPT的性能分析"><a href="#InstructGPT-ChatGPT的性能分析" class="headerlink" title="InstructGPT&#x2F;ChatGPT的性能分析"></a>InstructGPT&#x2F;ChatGPT的性能分析</h3><p>不可否认的是，InstructGPT&#x2F;ChatGPT的效果是非常棒的，尤其是引入了人工标注之后，让模型的“价值观”和的正确程度和人类行为模式的“真实性”上都大幅的提升。那么，仅仅根据InstructGPT&#x2F;ChatGPT的技术方案和训练方式，我们就可以分析出它可以带来哪些效果提升呢？</p>
-<h4 id="优点"><a href="#优点" class="headerlink" title="优点"></a>优点</h4><ul>
-<li><p><strong>InstructGPT&#x2F;ChatGPT的效果比GPT-3更加真实</strong>：这个很好理解，因为GPT-3本身就具有非常强的泛化能力和生成能力，再加上InstructGPT&#x2F;ChatGPT引入了不同的labeler进行提示编写和生成结果排序，而且还是在GPT-3之上进行的微调，这使得我们在训练奖励模型时对更加真实的数据会有更高的奖励。作者也在TruthfulQA数据集上对比了它们和GPT-3的效果，实验结果表明甚至13亿小尺寸的PPO-ptx的效果也要比GPT-3要好。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250109170802276.png" alt="image.png" /></p>
+<h3 id="instructgptchatgpt的性能分析"><a class="markdownIt-Anchor" href="#instructgptchatgpt的性能分析"></a> InstructGPT/ChatGPT的性能分析</h3>
+<p>不可否认的是，InstructGPT/ChatGPT的效果是非常棒的，尤其是引入了人工标注之后，让模型的“价值观”和的正确程度和人类行为模式的“真实性”上都大幅的提升。那么，仅仅根据InstructGPT/ChatGPT的技术方案和训练方式，我们就可以分析出它可以带来哪些效果提升呢？</p>
+<h4 id="优点"><a class="markdownIt-Anchor" href="#优点"></a> 优点</h4>
+<ul>
+<li>
+<p><strong>InstructGPT/ChatGPT的效果比GPT-3更加真实</strong>：这个很好理解，因为GPT-3本身就具有非常强的泛化能力和生成能力，再加上InstructGPT/ChatGPT引入了不同的labeler进行提示编写和生成结果排序，而且还是在GPT-3之上进行的微调，这使得我们在训练奖励模型时对更加真实的数据会有更高的奖励。作者也在TruthfulQA数据集上对比了它们和GPT-3的效果，实验结果表明甚至13亿小尺寸的PPO-ptx的效果也要比GPT-3要好。</p>
 </li>
-<li><p><strong>InstructGPT&#x2F;ChatGPT在模型的无害性上比GPT-3效果要有些许提升</strong>：原理同上。但是作者发现InstructGPT在歧视、偏见等数据集上并没有明显的提升。这是因为GPT-3本身就是一个效果非常好的模型，它生成带有有害、歧视、偏见等情况的有问题样本的概率本身就会很低。仅仅通过40个labeler采集和标注的数据很可能无法对模型在这些方面进行充分的优化，所以会带来模型效果的提升很少或者无法察觉。</p>
+<li>
+<p><strong>InstructGPT/ChatGPT在模型的无害性上比GPT-3效果要有些许提升</strong>：原理同上。但是作者发现InstructGPT在歧视、偏见等数据集上并没有明显的提升。这是因为GPT-3本身就是一个效果非常好的模型，它生成带有有害、歧视、偏见等情况的有问题样本的概率本身就会很低。仅仅通过40个labeler采集和标注的数据很可能无法对模型在这些方面进行充分的优化，所以会带来模型效果的提升很少或者无法察觉。</p>
 </li>
-<li><p><strong>InstructGPT&#x2F;ChatGPT具有很强的Coding能力</strong>：首先GPT-3就具有很强的Coding能力，基于GPT-3制作的API也积累了大量的Coding代码。而且也有部分OpenAI的内部员工参与了数据采集工作。通过Coding相关的大量数据以及人工标注，训练出来的InstructGPT&#x2F;ChatGPT具有非常强的Coding能力也就不意外了。</p>
-</li>
-</ul>
-<h4 id="缺点"><a href="#缺点" class="headerlink" title="缺点"></a>缺点</h4><ul>
-<li><p><strong>InstructGPT&#x2F;ChatGPT会降低模型在通用NLP任务上的效果</strong>：我们在PPO的训练的时候讨论了这点，虽然修改损失函数可以缓和，但这个问题并没有得到彻底解决。</p>
-</li>
-<li><p><strong>有时候InstructGPT&#x2F;ChatGPT会给出一些荒谬的输出</strong>：虽然InstructGPT&#x2F;ChatGPT使用了人类反馈，但限于人力资源有限。影响模型效果最大的还是有监督的语言模型任务，人类只是起到了纠正作用。所以很有可能受限于纠正数据的有限，或是有监督任务的误导（只考虑模型的输出，没考虑人类想要什么），导致它生成内容的不真实。就像一个学生，虽然有老师对他指导，但也不能确定学生可以学会所有知识点。</p>
-</li>
-<li><p><strong>模型对指示非常敏感</strong>：这个也可以归结为labeler标注的数据量不够，因为指示是模型产生输出的唯一线索，如果指示的数量和种类训练的不充分的话，就可能会让模型存在这个问题。</p>
-</li>
-<li><p><strong>模型对简单概念的过分解读</strong>：这可能是因为labeler在进行生成内容的比较时，倾向于给给长的输出内容更高的奖励。</p>
-</li>
-<li><p><strong>对有害的指示可能会输出有害的答复</strong>：例如InstructGPT&#x2F;ChatGPT也会对用户提出的“AI毁灭人类计划书”给出行动方案（这个是因为InstructGPT&#x2F;ChatGPT假设labeler编写的指示是合理且价值观正确的，并没有对用户给出的指示做更详细的判断，从而会导致模型会对任意输入都给出答复。虽然后面的奖励模型可能会给这类输出较低的奖励值，但模型在生成文本时，不仅要考虑模型的价值观，也要考虑生成内容和指示的匹配度，有时候生成一些价值观有问题的输出也是可能的。</p>
+<li>
+<p><strong>InstructGPT/ChatGPT具有很强的Coding能力</strong>：首先GPT-3就具有很强的Coding能力，基于GPT-3制作的API也积累了大量的Coding代码。而且也有部分OpenAI的内部员工参与了数据采集工作。通过Coding相关的大量数据以及人工标注，训练出来的InstructGPT/ChatGPT具有非常强的Coding能力也就不意外了。</p>
 </li>
 </ul>
-<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p>﻿<a target="_blank" rel="noopener" href="https://dongnian.icu/paper_reading/2.5.GPT_GPT-2_GPT-3/index.html">https://dongnian.icu/paper_reading&#x2F;2.5.GPT_GPT-2_GPT-3&#x2F;index.html</a>﻿</p>
-<p>﻿<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/590311003">https://zhuanlan.zhihu.com/p/590311003</a></p>
+<h4 id="缺点"><a class="markdownIt-Anchor" href="#缺点"></a> 缺点</h4>
+<ul>
+<li>
+<p><strong>InstructGPT/ChatGPT会降低模型在通用NLP任务上的效果</strong>：我们在PPO的训练的时候讨论了这点，虽然修改损失函数可以缓和，但这个问题并没有得到彻底解决。</p>
+</li>
+<li>
+<p><strong>有时候InstructGPT/ChatGPT会给出一些荒谬的输出</strong>：虽然InstructGPT/ChatGPT使用了人类反馈，但限于人力资源有限。影响模型效果最大的还是有监督的语言模型任务，人类只是起到了纠正作用。所以很有可能受限于纠正数据的有限，或是有监督任务的误导（只考虑模型的输出，没考虑人类想要什么），导致它生成内容的不真实。就像一个学生，虽然有老师对他指导，但也不能确定学生可以学会所有知识点。</p>
+</li>
+<li>
+<p><strong>模型对指示非常敏感</strong>：这个也可以归结为labeler标注的数据量不够，因为指示是模型产生输出的唯一线索，如果指示的数量和种类训练的不充分的话，就可能会让模型存在这个问题。</p>
+</li>
+<li>
+<p><strong>模型对简单概念的过分解读</strong>：这可能是因为labeler在进行生成内容的比较时，倾向于给给长的输出内容更高的奖励。</p>
+</li>
+<li>
+<p><strong>对有害的指示可能会输出有害的答复</strong>：例如InstructGPT/ChatGPT也会对用户提出的“AI毁灭人类计划书”给出行动方案（这个是因为InstructGPT/ChatGPT假设labeler编写的指示是合理且价值观正确的，并没有对用户给出的指示做更详细的判断，从而会导致模型会对任意输入都给出答复。虽然后面的奖励模型可能会给这类输出较低的奖励值，但模型在生成文本时，不仅要考虑模型的价值观，也要考虑生成内容和指示的匹配度，有时候生成一些价值观有问题的输出也是可能的。</p>
+</li>
+</ul>
+<h2 id="参考资料"><a class="markdownIt-Anchor" href="#参考资料"></a> 参考资料</h2>
+<p><a target="_blank" rel="noopener" href="https://dongnian.icu/paper_reading/2.5.GPT_GPT-2_GPT-3/index.html">https://dongnian.icu/paper_reading/2.5.GPT_GPT-2_GPT-3/index.html</a></p>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/590311003">https://zhuanlan.zhihu.com/p/590311003</a></p>
 
     </div>
 
@@ -606,14 +694,14 @@
       <i class="fa fa-chart-line"></i>
     </span>
       <span>站点总字数：</span>
-    <span title="站点总字数">75k</span>
+    <span title="站点总字数">197k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span>站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">1:08</span>
+    <span title="站点阅读时长">11:56</span>
   </span>
 </div>
 <div class="busuanzi-count">
@@ -634,8 +722,7 @@
       </span>
     </span>
 </div>
-  <div class="powered-by">
-    <!--由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动 -->
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
   </div>
 
     </div>
@@ -676,6 +763,13 @@
   <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 
 
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">false</script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" integrity="sha256-UF1fgpAiu3tPJN/uCqEUHNe7pnr+QR0SQDNfgglgtcM=" crossorigin="anonymous">
+  <script class="next-config" data-name="katex" type="application/json">{"copy_tex_js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/copy-tex.min.js","integrity":"sha256-Us54+rSGDSTvIhKKUs4kygE2ipA0RXpWWh0/zLqw3bs="}}</script>
+  <script src="/js/third-party/math/katex.js"></script>
 
 
 

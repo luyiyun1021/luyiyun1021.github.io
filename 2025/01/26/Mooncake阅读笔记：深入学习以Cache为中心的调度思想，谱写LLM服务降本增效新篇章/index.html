@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-minimal.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"luyiyun1021.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.22.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="🔗 原文链接：https:&#x2F;&#x2F;zhuanlan.zhihu.com&#x2F;p&#x2F;706097807   这周，清华和Moonshot发了一个技术报告，介绍Kimi背后的LLM服务系统Mooncake，它采用分离式设计，将Prefill和Decode两阶段解耦，构建了一个全局KVCache Pool，实现以Cache为中心的调度。 Moonshot作为MaaS头部厂商，以其过硬的技术产品实力和明星的团队">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Mooncake阅读笔记：深入学习以Cache为中心的调度思想，谱写LLM服务降本增效新篇章">
+<meta property="og:url" content="https://luyiyun1021.github.io/2025/01/26/Mooncake%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0%EF%BC%9A%E6%B7%B1%E5%85%A5%E5%AD%A6%E4%B9%A0%E4%BB%A5Cache%E4%B8%BA%E4%B8%AD%E5%BF%83%E7%9A%84%E8%B0%83%E5%BA%A6%E6%80%9D%E6%83%B3%EF%BC%8C%E8%B0%B1%E5%86%99LLM%E6%9C%8D%E5%8A%A1%E9%99%8D%E6%9C%AC%E5%A2%9E%E6%95%88%E6%96%B0%E7%AF%87%E7%AB%A0/index.html">
+<meta property="og:site_name" content="Ronny Lu&#39;s blog">
+<meta property="og:description" content="🔗 原文链接：https:&#x2F;&#x2F;zhuanlan.zhihu.com&#x2F;p&#x2F;706097807   这周，清华和Moonshot发了一个技术报告，介绍Kimi背后的LLM服务系统Mooncake，它采用分离式设计，将Prefill和Decode两阶段解耦，构建了一个全局KVCache Pool，实现以Cache为中心的调度。 Moonshot作为MaaS头部厂商，以其过硬的技术产品实力和明星的团队">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126170549822.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126170557038.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126170602401.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126170613063.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126170619193.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126170626067.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126170631547.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126170637887.png">
+<meta property="article:published_time" content="2025-01-26T09:27:10.000Z">
+<meta property="article:modified_time" content="2025-01-26T09:34:04.937Z">
+<meta property="article:author" content="Ronny Lu">
+<meta property="article:tag" content="大模型">
+<meta property="article:tag" content="大模型推理">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126170549822.png">
+
+
+<link rel="canonical" href="https://luyiyun1021.github.io/2025/01/26/Mooncake%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0%EF%BC%9A%E6%B7%B1%E5%85%A5%E5%AD%A6%E4%B9%A0%E4%BB%A5Cache%E4%B8%BA%E4%B8%AD%E5%BF%83%E7%9A%84%E8%B0%83%E5%BA%A6%E6%80%9D%E6%83%B3%EF%BC%8C%E8%B0%B1%E5%86%99LLM%E6%9C%8D%E5%8A%A1%E9%99%8D%E6%9C%AC%E5%A2%9E%E6%95%88%E6%96%B0%E7%AF%87%E7%AB%A0/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://luyiyun1021.github.io/2025/01/26/Mooncake%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0%EF%BC%9A%E6%B7%B1%E5%85%A5%E5%AD%A6%E4%B9%A0%E4%BB%A5Cache%E4%B8%BA%E4%B8%AD%E5%BF%83%E7%9A%84%E8%B0%83%E5%BA%A6%E6%80%9D%E6%83%B3%EF%BC%8C%E8%B0%B1%E5%86%99LLM%E6%9C%8D%E5%8A%A1%E9%99%8D%E6%9C%AC%E5%A2%9E%E6%95%88%E6%96%B0%E7%AF%87%E7%AB%A0/","path":"2025/01/26/Mooncake阅读笔记：深入学习以Cache为中心的调度思想，谱写LLM服务降本增效新篇章/","title":"Mooncake阅读笔记：深入学习以Cache为中心的调度思想，谱写LLM服务降本增效新篇章"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Mooncake阅读笔记：深入学习以Cache为中心的调度思想，谱写LLM服务降本增效新篇章 | Ronny Lu's blog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<style>.darkmode--activated{--body-bg-color:#282828;--content-bg-color:#333;--card-bg-color:#555;--text-color:#ccc;--blockquote-color:#bbb;--link-color:#ccc;--link-hover-color:#eee;--brand-color:#ddd;--brand-hover-color:#ddd;--table-row-odd-bg-color:#282828;--table-row-hover-bg-color:#363636;--menu-item-bg-color:#555;--btn-default-bg:#222;--btn-default-color:#ccc;--btn-default-border-color:#555;--btn-default-hover-bg:#666;--btn-default-hover-color:#ccc;--btn-default-hover-border-color:#666;--highlight-background:#282b2e;--highlight-foreground:#a9b7c6;--highlight-gutter-background:#34393d;--highlight-gutter-foreground:#9ca9b6}.darkmode--activated img{opacity:.75}.darkmode--activated img:hover{opacity:.9}.darkmode--activated code{color:#69dbdc;background:0 0}button.darkmode-toggle{z-index:9999}.darkmode-ignore,img{display:flex!important}.beian img{display:inline-block!important}</style></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Ronny Lu's blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#3-overview-of-mooncakes-disaggregated-archtecture"><span class="nav-number">1.</span> <span class="nav-text"> 3 Overview of Mooncake’s Disaggregated Archtecture</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-implementation-of-the-prefill-pool"><span class="nav-number">2.</span> <span class="nav-text"> 4 Implementation of the Prefill Pool</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#42-layer-wise-prefill"><span class="nav-number">2.1.</span> <span class="nav-text"> 4.2 Layer-wise Prefill</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-kvcache-centric-scheduling"><span class="nav-number">3.</span> <span class="nav-text"> 5 KVCache-centric Scheduling</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#51-prefill-global-scheduling"><span class="nav-number">3.1.</span> <span class="nav-text"> 5.1 Prefill Global Scheduling</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#52-cache-load-balancing"><span class="nav-number">3.2.</span> <span class="nav-text"> 5.2 Cache Load Balancing</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-overload-oriented-scheduling"><span class="nav-number">4.</span> <span class="nav-text"> 6 Overload-oriented Scheduling</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">5.</span> <span class="nav-text"> 总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Ronny Lu"
+      src="https://avatars.githubusercontent.com/u/55233584?v=4">
+  <p class="site-author-name" itemprop="name">Ronny Lu</p>
+  <div class="site-description" itemprop="description">Tech notes on LLM, LLM Infra, C++</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">50</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">14</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">14</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/01/26/Mooncake%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0%EF%BC%9A%E6%B7%B1%E5%85%A5%E5%AD%A6%E4%B9%A0%E4%BB%A5Cache%E4%B8%BA%E4%B8%AD%E5%BF%83%E7%9A%84%E8%B0%83%E5%BA%A6%E6%80%9D%E6%83%B3%EF%BC%8C%E8%B0%B1%E5%86%99LLM%E6%9C%8D%E5%8A%A1%E9%99%8D%E6%9C%AC%E5%A2%9E%E6%95%88%E6%96%B0%E7%AF%87%E7%AB%A0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
+      <meta itemprop="name" content="Ronny Lu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ronny Lu's blog">
+      <meta itemprop="description" content="Tech notes on LLM, LLM Infra, C++">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Mooncake阅读笔记：深入学习以Cache为中心的调度思想，谱写LLM服务降本增效新篇章 | Ronny Lu's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Mooncake阅读笔记：深入学习以Cache为中心的调度思想，谱写LLM服务降本增效新篇章
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-01-26 17:27:10 / 修改时间：17:34:04" itemprop="dateCreated datePublished" datetime="2025-01-26T17:27:10+08:00">2025-01-26</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">大模型</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E6%8E%A8%E7%90%86%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index"><span itemprop="name">推理技术</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>4.6k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>17 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><blockquote>
+<p>🔗 原文链接：<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/706097807">https://zhuanlan.zhihu.com/p/706097807</a></p>
+</blockquote>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126170549822.png" alt="image.png" /></p>
+<p>这周，清华和Moonshot发了一个技术报告，介绍Kimi背后的LLM服务系统Mooncake，它采用分离式设计，将Prefill和Decode两阶段解耦，构建了一个全局KVCache Pool，实现以Cache为中心的调度。</p>
+<p>Moonshot作为MaaS头部厂商，以其过硬的技术产品实力和明星的团队阵容闻名于世。和其他大模型公司不一样，他们很少发技术报告或对外做技术分享。这次Mooncake技术报告，让大家得对其技术得以管中窥豹。</p>
+<span id="more"></span>
+<p>论文的通信作者为Moonshot的许欣然与清华大学计算机系的章明星，两位均是重量级大咖，也分别在知乎宣传了Mooncake的工作。许欣然在AISys领域深耕多年，曾执掌MegEngine，工程经验丰富，如今在Moonshot担任工程副总裁一职。章明星过去研究领域是分布式系统、图数据库，其研究成果在2017年成为大陆作者单位在OSDI上的首篇一作论文，还曾经是ACM-ICPC World Finals，如今也开始关注大模型系统领域，大模型正汇聚着各行各业最顶尖人才，共襄盛举。</p>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/705754254">ZHANG Mingxing：Mooncake (1): 在月之暗面做月饼，Kimi 以 KVCache 为中心的分离式推理架构866 赞同 · 147 评论文章</a>﻿<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/705910725">a520 赞同 · 27 评论文章</a></p>
+<p>Mooncake分离式架构动机是Prefill和Decode阶段性质不同，Prefill是计算密集，受限算力带宽用不满，Decode是访存密集性，受限带宽算力用不满，所以用同一种硬件部署两阶段往往顾此失彼，不是最有性价比。因此，最近很多工作对二者进行拆分，和Mooncake最相似的是今年5月份发布的微软和华盛顿大学的工作Splitwise，它里面列出了Prefill和Decode不同的七个Insights值得大家仔细读一下。因为Mooncake开发也需要一段时间，它和Splitwise应该是不谋而合的同期工作。</p>
+<p>拆分Prefill/Decode之后，LLM推理系统就更像一个分布式内存系统+流处理系统，这就是传统计算机系统研究者最擅长的领域。某大佬和我讲的sys三板斧，batch， cache，调度都可以招呼上。比如，Decode可以进一步拆成Attention和非Attention算子分离调度，也是章明星团队近期的一个工作叫Attention Offloading。</p>
+<p>高屋建瓴的分析二位作者的知乎已经讲得很透彻了，本文对技术报告具体系统设计做了一些注释，一方面用费曼学习法帮助自己理解，另一方面也给大家一些参考，方便读者读Mooncake文章时交叉验证。</p>
+<h2 id="3-overview-of-mooncakes-disaggregated-archtecture"><a class="markdownIt-Anchor" href="#3-overview-of-mooncakes-disaggregated-archtecture"></a> 3 Overview of Mooncake’s Disaggregated Archtecture</h2>
+<p>如下面Figure 1所示，Mooncake采用了<strong>分离式</strong>架构。这里分离有两层含义：</p>
+<p>一是，将Prefill与Decode计算资源分开，这与前人工作无异，如splitwise和distserve等；Prefill阶段优化目标是利用request间存在共同前缀的机会，尽可能复用KVCache，同时满足TTFT（Time To First Token） SLO，最大化MFU（论文中似乎笔误成minimum）和KVCache小于CPU内存限制。Decode优化目标为最大化吞吐，满足TBT（Time between tokens ，Decode阶段两个Token之间的时间）SLO和KVCache小于GPU显存限制。</p>
+<p>二是，将KVCache和计算分离开，它将GPU集群的CPU、DRAM、SSD和RDMA资源分组组成Distributed KVCache Pool，KVCache也是分块以Paged方式管理，KVCache Blocks如何在Pool中调度请求和复用KVCache乃本文精髓。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126170557038.png" alt="image.png" /></p>
+<p>我们跟随论文的安排，跟Figure 4先走马观花过一遍Mooncake处理一个request的流程。一个request到达（tokenized之后的），调度程序会选择一对Prefill Instance和Decode Instance，模型参数要在两个Instance都有副本，并启动包含四个步骤的工作流程：</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126170602401.png" alt="image.png" /></p>
+<p>s1）<strong>KVCache Reuse</strong>：Prefill Instance将request分成token blocks，考虑request之间存在共同前缀，需要尽可能将token block调度到Prefix KVCache最长的节点处理，来resuse KVCache。为此作者提出一种以KVCache为中心的调度，将在章节5 KVCache-centric Scheduling中详细介绍。</p>
+<p>s2）<strong>Incremental Prefill</strong>：使用Prefix Cache，Prefill Instance只需要计算Prefix Cache没覆盖的部分。长序列计算需要多卡并行，用TeraPipe方式做流水并行。将在章节5 Implementation of the Prefill Pool中详细介绍。</p>
+<p>s3）<strong>KVCache Transfer</strong>：和Splitwise一样，分离是设计需要将KVCache从Prefill Instance搬运到Decode Instance。Mooncake通过异步传输，与上述Incremental Prefill步骤重叠，将每个模型层生成的KVCache流式传输到目标Decode Instance的CPU内存，以减少等待时间。</p>
+<p>s4）<strong>Decoding</strong>：在Decoding Instance的CPU DRAM中接收到所有KVCache后，请求Continous Batching处理。</p>
+<p>工作流中，s3, s4平平无奇，前人设计如Splitwise、DistServe和vLLM等已经覆盖。s1和s2比较精彩，本文接下来的章节4和章节5来详细介绍。</p>
+<h2 id="4-implementation-of-the-prefill-pool"><a class="markdownIt-Anchor" href="#4-implementation-of-the-prefill-pool"></a> 4 Implementation of the Prefill Pool</h2>
+<p>章明星说原本章叫“Prefill: To Seperate or Not. Is it a Question?” 。这说明分离式设计并不是共识。</p>
+<p>Prefill和Decode的计算性质不同，前者吃计算，后者吃带宽。这会带来很多次生影响，比如Batching方式就不同，Prefill不需要batching，Decode需要大Batching。处理Prefill和Decode有<strong>融合派</strong>和<strong>分离派</strong>两大流派。</p>
+<p>**融合派：**将Prefill放到Decode step间隙或者和某个Decode step一起推理。2022年OSDI的LLM Continous Batching 开山之作Orca将Prefill和Decode Step融合在一个Batching Step做forward，Orca时代还没有Paged Attention，还需要Selective Batching来将Attention解Batching。2023年vLLM做Batching时，prefill和decoding则是独立forward的，一个Batching step要么处理decoding要么处理prefill。prefill直接调用xformers处理计算密集的prefill attn计算；decoding手写CUDA PA处理访存密集的attn计算。后来，以Sarathi和FastGen为代表，将prefill序列拆成chunk，chunk prefilling可以插入到decode phase中，甚至和decode step融合。比如，flash attention的_flash_attn_with_kvcache_函数支持q部分有kvcache（decode）部分没有（prefill）。章明星也提到，对于_短的prefill chunk和decode step融合和纯做decode step延迟可能相同_，这相当于prefill白嫖decode没用满的算力。对这段Continous Batching发展历史感兴趣可以读：<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/676109470">方佳瑞：大模型推理核心技术之Continuous Batching和我的WXG往事</a>。融合派的缺点是，Prefill和Decode在相同设备上，二者并行度被绑定。如果prompt长度有限，prefill阶段占比很小基本不到10%，所以忍一忍也无所谓。不过，对于长序列当Prefill比例升高，其Prefill并行度不够灵活的缺陷就暴露出来。</p>
+<p>**分离派：**考虑Prefill/Decode性质差异，人们开始尝试把Prefill和Decode放到不同的设备来分别处理，比如，Splitwise和DistServe，Mooncake也是对他们的继承和发展。分离派可以给Prefill和Decode设置不同的并行度，二者有更大的灵活性。许欣然提到分离派_允许整个系统往 “算力” 和 “带宽” 的两个方向独立发展，对硬件优化也是更友好的_。在机房里，分离派可以用不同GPU混部来降本，比如H800做Prefill，H20做Decode，二者用RDMA互联。分离派遇到的最大挑战是如何在不同设备之间传输KVCache，集群需要高速网络来互联，而网络成本不容小觑。所以，分离派的硬件往往需求很高端，目前得是是A/H卡，硬件成本高且无法Scale也为人诟病。</p>
+<p>分离派一个优势就是Prefill并行度灵活，为了降低长序列Prefill的TTFT，可以分配多卡甚至多机GPU并行处理Prefill，比如长序列我们就多分配一些GPU，短序列少点。如何做Prefill并行？长序列Prefill的batch size是1，没法用数据并行。张量并行性能不满足，它通信量很大无法扩展出节点，而且GQA的head number也限制了它并行度。那是否可以用序列并行（SP）？Ulysses通信量远低于TP，Ring可以和计算重叠，这里也感恩Mooncake引用了我们的最近的工作USP。但是SP推理需要在每个卡上replicate模型参数的，对大模型不利，如果用ZeRO方式shard参数，通信量都增加了很多；而且，SP每层都要通信，占用宝贵的网络带宽，网络带宽还得留着给KVCache送Decode Instance用。</p>
+<p>Mooncake为Prefill阶段设计了Chunked Pipeline Parallelism (CPP) ，其实就是TeraPipe。TeraPipe正是vLLM核心作者Zhuohan Li的2021年的工作，当时是用在流水线训练里，这里只用它的forward过程即可。TeraPipe将模型沿着Layer切分成N个stage，放在不同设备上，将输入沿着序列维度切分成若干chunk。这样就可以在一个推理任务里，不同chunk流水在不同stage上的计算就可以流水起来起来。如下图所示，切分方式看左图，流水方式看右图一个Forward过程即可。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126170613063.png" alt="image.png" /></p>
+<p>TeraPipe用于训练时不能均分序列，一个token要和之前所有token做计算（因为Causal Attention引起的），位置越靠后计算量越大，均分序列的话Attention计算会负载不均衡，所以越靠后sequence chunk越小才好，所以TeraPipe论文用动态规划来找最佳划分策略。在Mooncake中，章明星说TeraPipe_只有 forward 没有 backword 的话不需要啥动态规划来平衡每个 Chunk 的计算量，只要给每个 Chunk 设置一个最小的值就行_。这点我是有些疑惑的，我觉得forward也需要和训练类似的负载均衡策略，如下图上半部分。对这个问题，我新开了一个文章讨论：<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/706475158">方佳瑞：为Token-level流水并行找PMF：从TeraPipe，Seq1F1B，HPipe到PipeFusion</a></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126170619193.png" alt="image.png" /></p>
+<p>来自TeraPipe论文</p>
+<p>TeraPipe做推理好处 1）它仅在每个stage的边界处需要跨节点通信，这可以很容易地与计算重叠。这导致更好的MFU并且KVCache传输的网络资源争用更少。2）短和长上下文均适用。原文给了解释原因是bringing no significant overhead for short context prefill and avoiding frequent dynamic adjustment of node partitioning。我理解是：layer分布在不同设备不需要改变，长短上下文都TeraPipe，长文相当于用上了多卡资源，尽管有些气泡，相当于并行加速了，可以满足TTFT。短文本来也不用并行TTFT单GPU也可以满足，因为TeraPipe通信少，所以和一个设备做Prefill时间一样，因此和_单个设备做Prefill比_没有明显开销。</p>
+<p>我觉得这里还有一些问题可以深入讨论一下，第一，是流水并行的气泡问题，可以放一些Prefill阶段不同GPU的扩展性。第二，TeraPipe可以和SP组成混合并行，更容易去扩展到多机。第三，TeraPipe方式切分参数会导致Prefill并行度没法变化，切分成8个stage就必须一直做PP=8的并行了，因此，不能弹性改变Prefill的计算资源。当然，Mooncake可能在集群里放置很多Prefill Instance，每个Instance的并行度不同，然后在Instance之间做request-level的load balance。</p>
+<p>这里安利一下我们团队的DiT扩散模型的并行推理工作PipeFusion也用了TeraPipe式的token-level切分的流水并行，因为DiT不是Causal Attention所以更适合TeraPipe方式推理。</p>
+<h3 id="42-layer-wise-prefill"><a class="markdownIt-Anchor" href="#42-layer-wise-prefill"></a> 4.2 Layer-wise Prefill</h3>
+<p>这一节比较晦涩，我理解是在Prefill阶段对KVCache做CPU Offloading（或者传输到Decode Instance？）。这些操作都是异步的，而且是Layer-wise的，也就是一层Prefill一个Layer的KVCache Block算出来，就立刻transfer（发给decode Instance）或dump（cpu offload）来最小化GPU显存占用。</p>
+<p>为何着急忙慌赶人家KVCache走呢？我理解是因为Prefill机器比Decode少，因为Prefill负载占LLM推理的比例低，但是Prefill产生的KVCache和Decode消耗KVCache一样多，所以Decode那边为了把硬件榨干，需要让KVCache刚好用满GPU显存，那Prefill显存肯定不够，必须Offload。这也是Mooncake论文Figure 1中之所以写成“Prefill阶段KVCache &lt; DRAM”，“Decode阶段KVCache &lt; VRAM”的原因。</p>
+<p>Mooncake论文Figure 5试图证明Layer-wise有效果。这个图画的草率了，全文没有提到Serialized是什么意思。我理解他是想说Splitwise论文中Fig. 11（下图），也就是KVCache从Prefill Instance通过Layer-wise方式传输给Decode Instance，这个可以和Prefill计算重叠起来，甚至和Decode第一个step部分计算重叠起来。Splitwise采用异步流式来和Prefill计算重叠，我觉得Mooncake也是类似。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126170626067.png" alt="image.png" /></p>
+<p>Splitwise论文Fig 11，Optimize KVCache transformers</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126170631547.png" alt="image.png" /></p>
+<p>Mooncake论文Figure 5</p>
+<h2 id="5-kvcache-centric-scheduling"><a class="markdownIt-Anchor" href="#5-kvcache-centric-scheduling"></a> 5 KVCache-centric Scheduling</h2>
+<p>这一章开始讲调度了。</p>
+<p>KVCache Pool用Paged方式管理KVCache（本章简称Cache）。如下图所示，黄色是已经有的Prefix Cache Blocks，其他request算了，本request可以复用。粉色是本request自己算的Incremental Cache Blocks。这Pool也会用一些Cache策略来新陈代谢，比如LRU、LFU之类的。</p>
+<p>Prefill节点接收到一个request，它根据prefix cache ID将前prefix cache从远程CPU内存加载到本地GPU内存，以启动request的prefill计算。如果不存在prefix cache，则需要自己Prefill计算了。这种选择平衡了三个目标：尽可能多地重用KVCache（三板斧中Caching）、平衡不同预填充节点的工作负载，并保证TTFT SLO（三板斧中Scheduling）。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126170637887.png" alt="image.png" /></p>
+<h3 id="51-prefill-global-scheduling"><a class="markdownIt-Anchor" href="#51-prefill-global-scheduling"></a> 5.1 Prefill Global Scheduling</h3>
+<p>本节介绍如何给Prefill计算做reuse kvcache blocks和load balance。在Mooncake它将一个request切分成token blocks处理，类似FastGen和Sarathin中的Chunk。路由这些token blocks到哪台机器，要考虑因素很多。MoonShot用户很多，request之间有重叠部分，可以reuse共同前缀，prefix cache hit length越长计算越少。我猜测这个就是Kimi Context Caching能力的来源。但是，都路由到prefix cache hit length最长的机器，机器之间会负载不均衡，为了load balance，还需要考虑distribution of reusable KVCache blocks。本节也callback了KVCache为中心的宗旨，是让request主动去找KVCache。</p>
+<p>先说怎么找到max prefix cache来尽可能reuse kvcache blocks。</p>
+<p>一个token block经过prefill计算产生一个KVCache block，而且一个token block prefill计算需要所有Prefix token blocks的Prefix KVCache blocks。这些KVCache blocks都是在Distributed KVCache Pool中，不一定在本地内存，怎么快速检索到众多前缀KVCache blocks呢？需要建立一个token block -&gt; KVCache block的映射关系，根据映射关系去检索prefix token blocks的KVCache blocks。这个映射关系是一个Hash Table。</p>
+<p>为了快速找到一个token block最大前缀max prefix token blocks，Hash设计有讲究。每个Block的Hash Key是基于前一个Block的Hash Key计算得到，图中B=Hash(A+b)。如果两个Block Hash Key相同，不仅该token block的KVCache block，那么之前所有prefix KVCache也都可以复用。如果不这样设计，你可能要反复遍历所有KVCache Hash，而用这种方式只需要遍历一次，检索代价从多项式降低到线性。这个技巧很巧妙，来自vllm。</p>
+<p>再说怎么做load balance。</p>
+<p>借助上面算出来的max prefix cache length信息，注意每个机器都不一样。可以用request长度+此机器的prefix长度+队列中的等待时间来估计TTFT。将request分配给估计最短TTFT的机器，并相应更新该机器的缓存和队列时间。如果无法实现SLO，直接返回HTTP 429 Too Many Requests。</p>
+<h3 id="52-cache-load-balancing"><a class="markdownIt-Anchor" href="#52-cache-load-balancing"></a> 5.2 Cache Load Balancing</h3>
+<p>本节介绍如何KVCache负载根据使用频率做再平衡。</p>
+<p>在Mooncake集群中，每个Prefill机器管理其自己本地的prefix caches。这些caches的使用频率差异很大。例如，系统提示几乎被每个请求访问，而存储来自本地长文档内容的cache可能只被一个用户使用。我们希望不同机器cache使用频率相近，因此要调整cache在分布式集群的位置。</p>
+<p>因为很难预测一个cache未来使用频率。Mooncake提出了一种基于启发式的自动热点迁移方案。上一节所述，request可能并不总是被定向到具有最长prefix cache length的Prefill机器上。在这种情况下，如果估计的prefill时间短于cache传输时间，因为要排队等待，cache位置和request转发到另一个机器。该机器主动检索KVCache并将其从远端机器拉取到本地。另外，如果远程机器的最佳prefix cache length不长，还可以重计算。</p>
+<p>这两种策略合在一起，不仅减少了prefill时间，还促进了热点缓存的自动复制，使其能够更广泛地分布在多台机器上。</p>
+<h2 id="6-overload-oriented-scheduling"><a class="markdownIt-Anchor" href="#6-overload-oriented-scheduling"></a> 6 Overload-oriented Scheduling</h2>
+<p>现有的LLM服务通常假设所有请求都会被处理，并根据请求吞吐量、TTFT和TBT进行优化。然而，处理每个请求既不经济也不现实，尤其是在请求激增时，集群资源增长跟不上请求增长，导致过载。为了平衡成本和用户体验，系统应在负载达到阈值前尽可能处理请求，之后拒绝或推迟剩余请求。</p>
+<p>本节描述了为Moonshot设计的early rejection policy，应该就是下图氪金之后和Kimi一起登月的背后原理。我没花时间看，就不班门弄斧分析了，但是这一环节对线上服务很重要。当然，作为用户还是希望Kimi不要拒绝服务。</p>
+<h2 id="总结"><a class="markdownIt-Anchor" href="#总结"></a> 总结</h2>
+<p>本文是阅读Mooncake技术报告的学习笔记。通过Mooncake还是学到了很多干货，这里也感谢作者团队能够分享技术。 短短一年内，创业团队能做出Mooncake这种完整的系统工作，并在线上服务海量用户，实打实节约成本，并给社区一些方向层面的输出，是非常了不起的成就。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" rel="tag"># 大模型</a>
+              <a href="/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%8E%A8%E7%90%86/" rel="tag"># 大模型推理</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/01/26/LLM%E4%B8%AD%E7%9A%84%E6%90%9C%E7%B4%A2%E3%80%81%E9%87%87%E6%A0%B7%E7%AE%97%E6%B3%95%EF%BC%9Agreedy%E3%80%81beam-search%E3%80%81top-k%E3%80%81top-p%E3%80%81temperature/" rel="prev" title="LLM中的搜索、采样算法：greedy、beam_search、top_k、top_p、temperature">
+                  <i class="fa fa-angle-left"></i> LLM中的搜索、采样算法：greedy、beam_search、top_k、top_p、temperature
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2025/01/26/PagedAttention/" rel="next" title="PagedAttention">
+                  PagedAttention <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Ronny Lu</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">197k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">11:56</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">false</script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" integrity="sha256-UF1fgpAiu3tPJN/uCqEUHNe7pnr+QR0SQDNfgglgtcM=" crossorigin="anonymous">
+  <script class="next-config" data-name="katex" type="application/json">{"copy_tex_js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/copy-tex.min.js","integrity":"sha256-Us54+rSGDSTvIhKKUs4kygE2ipA0RXpWWh0/zLqw3bs="}}</script>
+  <script src="/js/third-party/math/katex.js"></script>
+
+
+
+</body>
+</html>

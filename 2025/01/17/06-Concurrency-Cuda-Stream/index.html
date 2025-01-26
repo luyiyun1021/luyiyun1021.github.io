@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-minimal.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"luyiyun1021.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.22.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="Concurrency &amp; Motivation  Concurrency 并发性在解锁新的计算能力或新的算法解决方案并没有太多作为。并发性的真正意义主要在于，用系统中存在多个处理器时所提供的机会，最大限度地发挥所有这些处理器的性能。  Motivation 在第一讲中，我们了解到基本的CUDA编程模型，将其称为三步序列。 在串行化的执行中,   我们程序的总执行时间，是第一次 CUDA">
+<meta property="og:type" content="article">
+<meta property="og:title" content="06 Concurrency (Cuda Stream)">
+<meta property="og:url" content="https://luyiyun1021.github.io/2025/01/17/06-Concurrency-Cuda-Stream/index.html">
+<meta property="og:site_name" content="Ronny Lu&#39;s blog">
+<meta property="og:description" content="Concurrency &amp; Motivation  Concurrency 并发性在解锁新的计算能力或新的算法解决方案并没有太多作为。并发性的真正意义主要在于，用系统中存在多个处理器时所提供的机会，最大限度地发挥所有这些处理器的性能。  Motivation 在第一讲中，我们了解到基本的CUDA编程模型，将其称为三步序列。 在串行化的执行中,   我们程序的总执行时间，是第一次 CUDA">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116171213159.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116202912010.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116205125218.png">
+<meta property="article:published_time" content="2025-01-17T02:28:13.000Z">
+<meta property="article:modified_time" content="2025-01-21T12:23:11.084Z">
+<meta property="article:author" content="Ronny Lu">
+<meta property="article:tag" content="cuda">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116171213159.png">
+
+
+<link rel="canonical" href="https://luyiyun1021.github.io/2025/01/17/06-Concurrency-Cuda-Stream/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://luyiyun1021.github.io/2025/01/17/06-Concurrency-Cuda-Stream/","path":"2025/01/17/06-Concurrency-Cuda-Stream/","title":"06 Concurrency (Cuda Stream)"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>06 Concurrency (Cuda Stream) | Ronny Lu's blog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<style>.darkmode--activated{--body-bg-color:#282828;--content-bg-color:#333;--card-bg-color:#555;--text-color:#ccc;--blockquote-color:#bbb;--link-color:#ccc;--link-hover-color:#eee;--brand-color:#ddd;--brand-hover-color:#ddd;--table-row-odd-bg-color:#282828;--table-row-hover-bg-color:#363636;--menu-item-bg-color:#555;--btn-default-bg:#222;--btn-default-color:#ccc;--btn-default-border-color:#555;--btn-default-hover-bg:#666;--btn-default-hover-color:#ccc;--btn-default-hover-border-color:#666;--highlight-background:#282b2e;--highlight-foreground:#a9b7c6;--highlight-gutter-background:#34393d;--highlight-gutter-foreground:#9ca9b6}.darkmode--activated img{opacity:.75}.darkmode--activated img:hover{opacity:.9}.darkmode--activated code{color:#69dbdc;background:0 0}button.darkmode-toggle{z-index:9999}.darkmode-ignore,img{display:flex!important}.beian img{display:inline-block!important}</style></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Ronny Lu's blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#concurrency-motivation"><span class="nav-number">1.</span> <span class="nav-text"> Concurrency &amp; Motivation</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#concurrency"><span class="nav-number">1.1.</span> <span class="nav-text"> Concurrency</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#motivation"><span class="nav-number">1.2.</span> <span class="nav-text"> Motivation</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#pinned-non-pageable-memory"><span class="nav-number">2.</span> <span class="nav-text"> PINNED (NON-PAGEABLE) MEMORY</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#pinned-memory-enables"><span class="nav-number">2.1.</span> <span class="nav-text"> Pinned memory enables:</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#usage"><span class="nav-number">2.2.</span> <span class="nav-text"> Usage</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#implication"><span class="nav-number">2.3.</span> <span class="nav-text"> Implication:</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#cuda-streams"><span class="nav-number">3.</span> <span class="nav-text"> CUDA STREAMS</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#streams-and-async-api-overview"><span class="nav-number">3.1.</span> <span class="nav-text"> STREAMS AND ASYNC API OVERVIEW</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#default-api"><span class="nav-number">3.1.1.</span> <span class="nav-text"> Default API:</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#streams-and-async-functions-provide"><span class="nav-number">3.1.2.</span> <span class="nav-text"> Streams and async functions provide:</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#stream-sequence-of-operations-that-execute-in-issue-order-on-gpu"><span class="nav-number">3.1.3.</span> <span class="nav-text"> Stream &#x3D; sequence of operations that execute in issue-order on GPU</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#stream-semantics"><span class="nav-number">3.2.</span> <span class="nav-text"> STREAM SEMANTICS</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#stream-creation-and-copycompute-overlap"><span class="nav-number">3.3.</span> <span class="nav-text"> STREAM CREATION AND COPY&#x2F;COMPUTE OVERLAP</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#example-stream-behavior-for-vector-math"><span class="nav-number">3.4.</span> <span class="nav-text"> EXAMPLE STREAM BEHAVIOR FOR VECTOR MATH</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#default-stream"><span class="nav-number">3.5.</span> <span class="nav-text"> DEFAULT STREAM</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#cudalaunchhostfunc-stream-callbacks"><span class="nav-number">3.6.</span> <span class="nav-text"> CudaLaunchHostFunc() (STREAM “CALLBACKS”)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#cudaevent"><span class="nav-number">3.7.</span> <span class="nav-text"> CUDAEVENT</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#multi-gpu"><span class="nav-number">4.</span> <span class="nav-text"> MULTI -GPU</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#device-management"><span class="nav-number">4.1.</span> <span class="nav-text"> DEVICE MANAGEMENT</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#streams"><span class="nav-number">4.2.</span> <span class="nav-text"> STREAMS</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#device-to-device-data-copying"><span class="nav-number">4.3.</span> <span class="nav-text"> DEVICE-TO-DEVICE DATA COPYING</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#other-concurrency-scenarios"><span class="nav-number">4.4.</span> <span class="nav-text"> OTHER CONCURRENCY SCENARIOS</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#stream-priority"><span class="nav-number">4.5.</span> <span class="nav-text"> STREAM PRIORITY</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Ronny Lu"
+      src="https://avatars.githubusercontent.com/u/55233584?v=4">
+  <p class="site-author-name" itemprop="name">Ronny Lu</p>
+  <div class="site-description" itemprop="description">Tech notes on LLM, LLM Infra, C++</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">50</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">14</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">14</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/01/17/06-Concurrency-Cuda-Stream/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
+      <meta itemprop="name" content="Ronny Lu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ronny Lu's blog">
+      <meta itemprop="description" content="Tech notes on LLM, LLM Infra, C++">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="06 Concurrency (Cuda Stream) | Ronny Lu's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          06 Concurrency (Cuda Stream)
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2025-01-17 10:28:13" itemprop="dateCreated datePublished" datetime="2025-01-17T10:28:13+08:00">2025-01-17</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2025-01-21 20:23:11" itemprop="dateModified" datetime="2025-01-21T20:23:11+08:00">2025-01-21</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/cuda/" itemprop="url" rel="index"><span itemprop="name">cuda</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>2.8k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>10 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h1 id="concurrency-motivation"><a class="markdownIt-Anchor" href="#concurrency-motivation"></a> Concurrency &amp; Motivation</h1>
+<h2 id="concurrency"><a class="markdownIt-Anchor" href="#concurrency"></a> Concurrency</h2>
+<p>并发性在解锁新的计算能力或新的算法解决方案并没有太多作为。<strong>并发性的真正意义主要在于，用系统中存在多个处理器时所提供的机会，最大限度地发挥所有这些处理器的性能。</strong></p>
+<h2 id="motivation"><a class="markdownIt-Anchor" href="#motivation"></a> Motivation</h2>
+<p>在第一讲中，我们了解到基本的CUDA编程模型，将其称为三步序列。<br />
+在串行化的执行中,   我们程序的总执行时间，是第一次 CUDA内存复制操作、内核持续时间以及第二次CUDA内存复制操作之和<br />
+于是Motivation显而易见了, 我们希望将这些操作重叠起来<br />
+<img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116171213159.png" alt="image.png" /></p>
+<span id="more"></span>
+<h1 id="pinned-non-pageable-memory"><a class="markdownIt-Anchor" href="#pinned-non-pageable-memory"></a> PINNED (NON-PAGEABLE) MEMORY</h1>
+<h2 id="pinned-memory-enables"><a class="markdownIt-Anchor" href="#pinned-memory-enables"></a> Pinned memory enables:</h2>
+<ul>
+<li>Faster Host ↔ Device copies</li>
+<li>Memcopies asynchronous with CPU</li>
+<li>Memcopies asynchronous with GPU</li>
+</ul>
+<p>现代操作系统如Linux或Windows 会将虚拟内存空间的概念与物理内存（即系统RAM,用于存储程序或系统正在使用的数据）分离. 这种空间的划分通常会引入一种称为分页的机制，它实质上就是将<br />
+各自的区域: 虚拟地址空间和物理RAM一一分割成固定大小的块，通常是固定大小，如4K字节。</p>
+<p>这种方法的一个缺点是，当尝试访问数据时，这些数据可能并不一定实际存在于RAM中。操作系统必须介入并执行一系列操作，最终将数据引入RAM, 此时程序方能继续执行, 这可能成为性能瓶颈。</p>
+<p>在探讨GPU或CUDA中的并发性时，我们希望同时进行的主要操作，即希望允许同时发生的操作，包括内存复制(MemCopy）操作和内核（kernel）操作。</p>
+<p>我们将启用名为复制引擎的功能，使其能够异步独立运行，实现数据从一处到另一处的转移。他们要求数据必须实际存在于物理主机的RAM内存中。因此，我们不能采用这种分页系统，让部分数据被“分页”出去。</p>
+<hr />
+<h2 id="usage"><a class="markdownIt-Anchor" href="#usage"></a> Usage</h2>
+<ul>
+<li><strong><code>cudaHostAlloc</code></strong> / <strong><code>cudaFreeHost</code></strong>
+<ul>
+<li>Instead of <code>malloc</code> / <code>free</code> or <code>new</code> / <code>delete</code></li>
+</ul>
+</li>
+<li><strong><code>cudaHostRegister</code></strong> / <strong><code>cudaHostUnregister</code></strong>
+<ul>
+<li>Pin regular memory (e.g. allocated with <code>malloc</code>) after allocation</li>
+</ul>
+</li>
+</ul>
+<p>这个功能由 CUDA API <code>cudaHostAlloc</code>实现, 将以类似 malloc 的方式工作, 获取分配的指针将指向固定内存，固定意味着分配的页面在物理上驻留在RAM中的CPU主机内存里，并且它们不会移动。</p>
+<p>这种内存固定操作的一个缺点，也是我们并非始终使用它 的原因，在于它会干扰分页虚拟内存系统</p>
+<p>另一个 CUDA API <code>cudaHostRegister</code> 可以对由诸如<code>mallac</code>分配的可分页分配的内存进行固定</p>
+<hr />
+<h2 id="implication"><a class="markdownIt-Anchor" href="#implication"></a> Implication:</h2>
+<ul>
+<li>Pinned memory is essentially removed from host virtual (pageable) memory</li>
+</ul>
+<h1 id="cuda-streams"><a class="markdownIt-Anchor" href="#cuda-streams"></a> CUDA STREAMS</h1>
+<h2 id="streams-and-async-api-overview"><a class="markdownIt-Anchor" href="#streams-and-async-api-overview"></a> STREAMS AND ASYNC API OVERVIEW</h2>
+<h3 id="default-api"><a class="markdownIt-Anchor" href="#default-api"></a> Default API:</h3>
+<ul>
+<li>Kernel launches are asynchronous with CPU</li>
+<li><code>cudaMemcpy</code> (D2H, H2D) block CPU thread</li>
+<li>CUDA calls are serialized by the driver (legacy default stream)</li>
+</ul>
+<p><strong>Stream 是CUDA内部的一种机制、API,或一系列API, 用于组织并发性。它使我们能够向CUDA运行时指定我们希望按照什么顺序执行哪些操作。</strong></p>
+<p>正如我们之前几节课中所学，<strong>内核启动是异步于CPU执行的</strong>。这意味着CPU线程在启动内核时，并不会等待内核完成执行。然而，<strong>CUDA内存拷贝操作是阻塞式的</strong>。当CPU线程遇到CUDA内存复制操作时，语义上要求所有先前发出的CUDA活动必须完成，然后该CUDA内存复制操作才会开始, 同时, 在CPU线程从CUDA内存复制操作中释放之前，该CUDA内存复制操作必须完成。</p>
+<h3 id="streams-and-async-functions-provide"><a class="markdownIt-Anchor" href="#streams-and-async-functions-provide"></a> Streams and async functions provide:</h3>
+<ul>
+<li><code>cudaMemcpyAsync</code> (D2H, H2D) asynchronous with CPU</li>
+<li>Ability to concurrently execute a kernel and a memcpy</li>
+<li>Concurrent copies in both directions (D2H, H2D) possible on most GPUs</li>
+</ul>
+<p>CUDA API <code>cudaMemcpyAsync</code>这个操作与CUDA <code>cudaMemcpy</code> 功能相同，只是它额外接收了一个流参数。通过这种方式，它使得内存拷贝得以异步执行</p>
+<p>当我们讨论两个 CUDA memcopy异步操作时，要在时间线上同时执行它们，通常在GPU上唯一可能的方式是，一个操作的方向与另一个相反。同向并发是一个更为晦涩的主题，目前我们对此并不十分关注。</p>
+<h3 id="stream-sequence-of-operations-that-execute-in-issue-order-on-gpu"><a class="markdownIt-Anchor" href="#stream-sequence-of-operations-that-execute-in-issue-order-on-gpu"></a> Stream = sequence of operations that execute in issue-order on GPU</h3>
+<ul>
+<li>Operations from different streams may be interleaved</li>
+<li>A kernel and memcpy from different streams can be overlapped</li>
+</ul>
+<p>流是在GPU上按发出顺序执行的一系列操作。因此，为了实现重叠，我们不能将两个操作同时发送到同一个流中。</p>
+<h2 id="stream-semantics"><a class="markdownIt-Anchor" href="#stream-semantics"></a> STREAM SEMANTICS</h2>
+<ol>
+<li><strong>向同一流发出的两个操作将按照发出顺序执行。</strong> 若操作A在B之前被发出，即在代码中出现在B的发出之前，那么当A和B被发送到同一流中时，它们将按照发出顺序执行。A保证会在B开始之前完成。</li>
+<li><strong>向两个不同流发出的操作之间并无预设的顺序关系。</strong></li>
+</ol>
+<h2 id="stream-creation-and-copycompute-overlap"><a class="markdownIt-Anchor" href="#stream-creation-and-copycompute-overlap"></a> STREAM CREATION AND COPY/COMPUTE OVERLAP</h2>
+<p>前提条件:</p>
+<ol>
+<li>若希望进行一项可重叠的CUDA内存异步复制操作，该操作能与另一操作同时调度并行运行。其中指向主机内存的指针必须指向 pinned memory</li>
+<li>这两个操作，假设是一个内核和一个内存复制，必须分别在不同的非零流中发出。</li>
+</ol>
+<p>代码示例</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">cudaStream_t stream1, stream2;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 声明流之后我们需要创建流, 这本质上是在向CUDA运行时发出信号，它类似于管理GPU的操作系统。</span></span><br><span class="line"><span class="built_in">cudaStreamCreate</span>(&amp;stream1); </span><br><span class="line"><span class="built_in">cudaStreamCreate</span>(&amp;stream2);</span><br><span class="line"></span><br><span class="line"><span class="comment">// potentially overlapped with kernel</span></span><br><span class="line"><span class="built_in">cudaMemcpyAsync</span>( dst, src, size, dir, stream1 ); </span><br><span class="line"></span><br><span class="line"><span class="comment">// 对于尖括号里的stream参数, 如果我们省略该参数，正如我们一直所做的那样，它会将内核启动到空流/stream 0</span></span><br><span class="line">kernel&lt;&lt;&lt;grid, block, <span class="number">0</span>, stream2&gt;&gt;&gt;(..); </span><br><span class="line"></span><br><span class="line"><span class="comment">// test if stream is idle</span></span><br><span class="line"><span class="built_in">cudastreamQuery</span>(stream1);    </span><br><span class="line"></span><br><span class="line"><span class="comment">// force CPU thread to wait. 它表示需等待此流中发出的所有CUDA活动完成为止。</span></span><br><span class="line"><span class="built_in">cudastreamsynchronize</span>(stream2); </span><br><span class="line"></span><br><span class="line"><span class="built_in">cudastreamDestroy</span>(stream2);</span><br></pre></td></tr></table></figure>
+<h2 id="example-stream-behavior-for-vector-math"><a class="markdownIt-Anchor" href="#example-stream-behavior-for-vector-math"></a> EXAMPLE STREAM BEHAVIOR FOR VECTOR MATH</h2>
+<p>假设我们针对一个长向量执行一种可分离的数学运算。比方说, 我可以对向量元素1至10进行操作，而不涉及向量元素11至20或其他任何元素。<br />
+<strong>核心思路</strong><br />
+我们将把向量运算分解成多个小块，逐块传输，并在传输完每一块后，启动一个较小的内核进行处理。它仅对数据的一小部分进行操作。然后，我们将把那部分的结果复制回来。<br />
+我们希望实现的是利用流，使得大量绿色操作能与大量橙色操作重叠，同时也能与大量蓝色操作重叠。<br />
+<img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116202912010.png" alt="image.png" /></p>
+<h2 id="default-stream"><a class="markdownIt-Anchor" href="#default-stream"></a> DEFAULT STREAM</h2>
+<p>存在一个默认流，当你未使用显式流或创建的流时，即在使用默认流</p>
+<p>默认流将同步执行，这意味着它会强制所有先前发出的CUDA活动（无论其在哪个流中发出）完成，然后默认流发出的项才会开始执行。<br />
+<img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116205125218.png" alt="image.png" /></p>
+<h2 id="cudalaunchhostfunc-stream-callbacks"><a class="markdownIt-Anchor" href="#cudalaunchhostfunc-stream-callbacks"></a> CudaLaunchHostFunc() (STREAM “CALLBACKS”)</h2>
+<ul>
+<li>
+<p>允许定义一个将在 CUDA 流中执行的主机代码函数。</p>
+</li>
+<li>
+<p>遵循流语义：函数将在流的执行到达该点时才会被调用。</p>
+</li>
+<li>
+<p>使用由 GPU 驱动程序生成的线程来执行工作。</p>
+</li>
+<li>
+<p>有一定限制：不要在函数中使用任何 CUDA 运行时 API 调用（或内核启动）。</p>
+</li>
+<li>
+<p>适用于延迟 CPU 工作直到 GPU 结果准备就绪的场景。</p>
+</li>
+</ul>
+<h2 id="cudaevent"><a class="markdownIt-Anchor" href="#cudaevent"></a> CUDAEVENT</h2>
+<p><strong>cudaEvent</strong> 可以作为一种流中的“标记”</p>
+<ul>
+<li>当一个 <strong>cudaEvent</strong> 被发出时，被称为已“记录”（<code>recorded</code>）。</li>
+<li>当流执行到达其被记录的位置时，<strong>cudaEvent</strong> 被称为已“完成”（<code>completed</code>）。</li>
+</ul>
+<p><strong>最常见用途：</strong> 用于计时。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">cudaEvent_t start, stop;                   <span class="comment">// cudaEvent 有自己特定的类型</span></span><br><span class="line"><span class="built_in">cudaEventCreate</span>(&amp;start);                   <span class="comment">// 必须在使用前创建</span></span><br><span class="line"><span class="built_in">cudaEventCreate</span>(&amp;stop);                    <span class="comment">// 同样为停止事件创建</span></span><br><span class="line"><span class="built_in">cudaEventRecord</span>(start);                    <span class="comment">// 将 “记录” (发出) 放入默认流</span></span><br><span class="line">Kernel&lt;&lt;&lt;b, t&gt;&gt;&gt;(...);                     <span class="comment">// 可用于任何 CUDA 设备上的活动</span></span><br><span class="line"><span class="built_in">cudaEventRecord</span>(stop);                     <span class="comment">// 将停止事件记录到流中</span></span><br><span class="line"><span class="built_in">cudaEventSynchronize</span>(stop);                <span class="comment">// 等待流执行到达 &quot;stop&quot; 事件</span></span><br><span class="line"><span class="built_in">cudaEventElapsedTime</span>(&amp;float_var, start, stop);  <span class="comment">// 计算 kernel 持续时间</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p><strong>cudaEvent</strong> 也可用于安排复杂的并发场景。</p>
+<p>基于事件的计时可能会对主机活动或复杂并发场景产生意外结果。</p>
+<h1 id="multi-gpu"><a class="markdownIt-Anchor" href="#multi-gpu"></a> MULTI -GPU</h1>
+<h2 id="device-management"><a class="markdownIt-Anchor" href="#device-management"></a> DEVICE MANAGEMENT</h2>
+<ul>
+<li>
+<p><strong>不是</strong> OpenMP、MPI 等的替代品。</p>
+</li>
+<li>
+<p><strong>应用程序可以查询和选择 GPU：</strong></p>
+</li>
+</ul>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cudaGetDeviceCount</span>(<span class="type">int</span> *count);  <span class="comment">// 获取可用 GPU 数量</span></span><br><span class="line"><span class="built_in">cudaSetDevice</span>(<span class="type">int</span> device);       <span class="comment">// 设置当前使用的 GPU</span></span><br><span class="line"><span class="built_in">cudaGetDevice</span>(<span class="type">int</span> *device);      <span class="comment">// 获取当前正在使用的 GPU</span></span><br><span class="line"><span class="built_in">cudaGetDeviceProperties</span>(cudaDeviceProp *prop, <span class="type">int</span> device);  <span class="comment">// 获取指定 GPU 的属性</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>
+<p><strong>多个主机线程可以共享一个设备（GPU）。</strong></p>
+</li>
+<li>
+<p><strong>一个主机线程可以管理多个设备：</strong></p>
+</li>
+</ul>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cudaSetDevice</span>(i); <span class="comment">// 选择当前设备 </span></span><br><span class="line"><span class="built_in">cudaMemcpyPeerAsync</span>(...); <span class="comment">// 用于设备间的点对点内存拷贝	</span></span><br></pre></td></tr></table></figure>
+<h2 id="streams"><a class="markdownIt-Anchor" href="#streams"></a> STREAMS</h2>
+<p><strong>流（Streams）和 cudaEvent 具有隐式/自动的设备关联：</strong></p>
+<ul>
+<li>每个设备也都有其独特的默认流。</li>
+<li>如果内核启动被发往一个未与当前设备关联的流中，则会失败。</li>
+<li><code>cudaStreamWaitEvent()</code> 可用于同步属于不同设备的流；<code>cudaEventQuery()</code> 可测试某个事件是否已“完成”。</li>
+</ul>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cudaSetDevice</span>(<span class="number">0</span>);                     <span class="comment">// 设置为设备 0</span></span><br><span class="line"><span class="built_in">cudaStreamCreate</span>(&amp;stream0);           <span class="comment">// 创建与设备 0 关联的流</span></span><br><span class="line"><span class="built_in">cudaSetDevice</span>(<span class="number">1</span>);                     <span class="comment">// 设置为设备 1</span></span><br><span class="line"><span class="built_in">cudaStreamCreate</span>(&amp;stream1);           <span class="comment">// 创建与设备 1 关联的流</span></span><br><span class="line">Kernel&lt;&lt;&lt;b, t, <span class="number">0</span>, stream1&gt;&gt;&gt;(…);      <span class="comment">// 在设备 1 上执行内核</span></span><br><span class="line"><span class="built_in">cudaSetDevice</span>(<span class="number">0</span>);                     <span class="comment">// 再次切换到设备 0</span></span><br><span class="line">Kernel&lt;&lt;&lt;b, t, <span class="number">0</span>, stream0&gt;&gt;&gt;(…);      <span class="comment">// 在设备 0 上执行内核</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<h2 id="device-to-device-data-copying"><a class="markdownIt-Anchor" href="#device-to-device-data-copying"></a> DEVICE-TO-DEVICE DATA COPYING</h2>
+<ul>
+<li>
+<p>如果系统拓扑支持，可以通过高速互联（如 PCIe 或 NVLink）直接将数据从一个设备复制到另一个设备。</p>
+</li>
+<li>
+<p>必须先显式地将设备放入对等关系（“clique”）。</p>
+</li>
+<li>
+<p>如果需要，必须为数据传输的双向操作启用“对等访问（peering）”。</p>
+</li>
+<li>
+<p>此后，这些设备之间的内存拷贝将不会通过系统内存缓冲区（利用 GPUDirect 的 P2P 传输）。</p>
+</li>
+</ul>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cudaSetDevice</span>(<span class="number">0</span>);</span><br><span class="line"><span class="built_in">cudaDeviceCanAccessPeer</span>(&amp;canPeer, <span class="number">0</span>, <span class="number">1</span>);         <span class="comment">// 检查设备 0 和设备 1 是否支持对等访问</span></span><br><span class="line"><span class="built_in">cudaDeviceEnablePeerAccess</span>(<span class="number">1</span>, <span class="number">0</span>);               <span class="comment">// 设备 0 将设备 1 视为“对等”</span></span><br><span class="line"><span class="built_in">cudaSetDevice</span>(<span class="number">1</span>);</span><br><span class="line"><span class="built_in">cudaDeviceEnablePeerAccess</span>(<span class="number">0</span>, <span class="number">0</span>);               <span class="comment">// 设备 1 将设备 0 视为“对等”</span></span><br><span class="line"><span class="built_in">cudaMemcpyPeerAsync</span>(dst_ptr, <span class="number">0</span>, src_ptr, <span class="number">1</span>, size, stream0);  <span class="comment">// 从设备 1 到设备 0 的拷贝</span></span><br><span class="line"><span class="built_in">cudaDeviceDisablePeerAccess</span>(<span class="number">0</span>);                 <span class="comment">// 设备 0 不再是设备 1 的对等设备</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<h2 id="other-concurrency-scenarios"><a class="markdownIt-Anchor" href="#other-concurrency-scenarios"></a> OTHER CONCURRENCY SCENARIOS</h2>
+<p><strong>主机/设备并发执行：</strong></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Kernel&lt;&lt;&lt;b, t&gt;&gt;&gt;(…);    <span class="comment">// 此内核执行可以与以下主机代码重叠</span></span><br><span class="line"><span class="built_in">cpuFunction</span>(…);          <span class="comment">// 此主机代码</span></span><br></pre></td></tr></table></figure>
+<p><strong>并发内核：</strong></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Kernel&lt;&lt;&lt;b, t, <span class="number">0</span>, streamA&gt;&gt;&gt;(…);    <span class="comment">// 这些内核有可能并发执行</span></span><br><span class="line">Kernel&lt;&lt;&lt;b, t, <span class="number">0</span>, streamB&gt;&gt;&gt;(…);</span><br></pre></td></tr></table></figure>
+<p><strong>说明：</strong></p>
+<ul>
+<li><strong>在实际中，同一设备上的并发内核执行较难实现</strong>。</li>
+<li>需要内核具备相对较低的资源使用率和相对较长的执行时间。</li>
+<li>每个设备的并发内核数量存在硬件限制。</li>
+<li>与利用单个内核完全占满设备相比，并发内核执行效率较低。</li>
+</ul>
+<h2 id="stream-priority"><a class="markdownIt-Anchor" href="#stream-priority"></a> STREAM PRIORITY</h2>
+<ul>
+<li>
+<p><strong>CUDA 流</strong>允许定义可选的优先级（<code>priority</code>）。</p>
+</li>
+<li>
+<p>这仅影响<strong>并发内核</strong>的执行。</p>
+</li>
+<li>
+<p><strong>GPU 块调度器</strong>会尝试优先调度高优先级流（<code>stream</code>）内核的块，而不是低优先级流内核的块。</p>
+</li>
+<li>
+<p>当前实现中只有<strong>两个优先级</strong>。</p>
+</li>
+<li>
+<p>当前实现<strong>不会导致块的抢占（preemption）</strong>。</p>
+</li>
+</ul>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 获取当前设备支持的流优先级范围</span></span><br><span class="line"><span class="type">int</span> priority_high, priority_low;</span><br><span class="line"><span class="built_in">cudaDeviceGetStreamPriorityRange</span>(&amp;priority_low, &amp;priority_high);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 创建具有最高和最低优先级的流</span></span><br><span class="line">cudaStream_t st_high, st_low;</span><br><span class="line"><span class="built_in">cudaStreamCreateWithPriority</span>(&amp;st_high, cudaStreamNonBlocking, priority_high);</span><br><span class="line"><span class="built_in">cudaStreamCreateWithPriority</span>(&amp;st_low, cudaStreamNonBlocking, priority_low);</span><br></pre></td></tr></table></figure>
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/cuda/" rel="tag"># cuda</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/01/16/05-Atomics-Reductions-and-Warp-Shuffle/" rel="prev" title="05 Atomics, Reductions, and Warp Shuffle">
+                  <i class="fa fa-angle-left"></i> 05 Atomics, Reductions, and Warp Shuffle
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2025/01/24/07-CUDA-Graphs/" rel="next" title="07 CUDA Graphs">
+                  07 CUDA Graphs <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Ronny Lu</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">197k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">11:56</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">false</script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" integrity="sha256-UF1fgpAiu3tPJN/uCqEUHNe7pnr+QR0SQDNfgglgtcM=" crossorigin="anonymous">
+  <script class="next-config" data-name="katex" type="application/json">{"copy_tex_js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/copy-tex.min.js","integrity":"sha256-Us54+rSGDSTvIhKKUs4kygE2ipA0RXpWWh0/zLqw3bs="}}</script>
+  <script src="/js/third-party/math/katex.js"></script>
+
+
+
+</body>
+</html>

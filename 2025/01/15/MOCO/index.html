@@ -15,19 +15,19 @@
 
 
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha256-5eIC48iZUHmSlSUz9XtjRyK2mzQkHScZY1WdMaoz74E=" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-minimal.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
 
-<script class="next-config" data-name="main" type="application/json">{"hostname":"luyiyun1021.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.21.1","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+<script class="next-config" data-name="main" type="application/json">{"hostname":"luyiyun1021.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.22.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
 
-    <meta name="description" content="论文地址 : https:&#x2F;&#x2F;arxiv.org&#x2F;abs&#x2F;1911.05722﻿ 论文代码(官方) : https:&#x2F;&#x2F;github.com&#x2F;facebookresearch&#x2F;moco﻿ 视频解读 : MoCo 论文逐段精读【论文精读】_哔哩哔哩_bilibili">
+    <meta name="description" content="论文地址 : https:&#x2F;&#x2F;arxiv.org&#x2F;abs&#x2F;1911.05722 论文代码(官方) : https:&#x2F;&#x2F;github.com&#x2F;facebookresearch&#x2F;moco 视频解读 : MoCo 论文逐段精读【论文精读】_哔哩哔哩_bilibili">
 <meta property="og:type" content="article">
 <meta property="og:title" content="MOCO">
 <meta property="og:url" content="https://luyiyun1021.github.io/2025/01/15/MOCO/index.html">
 <meta property="og:site_name" content="Ronny Lu&#39;s blog">
-<meta property="og:description" content="论文地址 : https:&#x2F;&#x2F;arxiv.org&#x2F;abs&#x2F;1911.05722﻿ 论文代码(官方) : https:&#x2F;&#x2F;github.com&#x2F;facebookresearch&#x2F;moco﻿ 视频解读 : MoCo 论文逐段精读【论文精读】_哔哩哔哩_bilibili">
+<meta property="og:description" content="论文地址 : https:&#x2F;&#x2F;arxiv.org&#x2F;abs&#x2F;1911.05722 论文代码(官方) : https:&#x2F;&#x2F;github.com&#x2F;facebookresearch&#x2F;moco 视频解读 : MoCo 论文逐段精读【论文精读】_哔哩哔哩_bilibili">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250115201923281.png">
 <meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250115201931470.png">
@@ -146,14 +146,14 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0"><span class="nav-number">1.</span> <span class="nav-text">对比学习</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#MoCo%E5%AE%9E%E7%8E%B0%E6%80%9D%E8%B7%AF"><span class="nav-number">2.</span> <span class="nav-text">MoCo实现思路</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#MoCo%E6%9E%B6%E6%9E%84"><span class="nav-number">3.</span> <span class="nav-text">MoCo架构</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#MOCO%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0"><span class="nav-number">4.</span> <span class="nav-text">MOCO代码实现</span></a></li></ol></div>
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0"><span class="nav-number">1.</span> <span class="nav-text"> 对比学习</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#moco%E5%AE%9E%E7%8E%B0%E6%80%9D%E8%B7%AF"><span class="nav-number">2.</span> <span class="nav-text"> MoCo实现思路</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#moco%E6%9E%B6%E6%9E%84"><span class="nav-number">3.</span> <span class="nav-text"> MoCo架构</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#moco%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0"><span class="nav-number">4.</span> <span class="nav-text"> MOCO代码实现</span></a></li></ol></div>
         </div>
         <!--/noindex-->
 
         <div class="site-overview-wrap sidebar-panel">
           <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
     <img class="site-author-image" itemprop="image" alt="Ronny Lu"
-      src="/images/avatar.jpeg">
+      src="https://avatars.githubusercontent.com/u/55233584?v=4">
   <p class="site-author-name" itemprop="name">Ronny Lu</p>
   <div class="site-description" itemprop="description">Tech notes on LLM, LLM Infra, C++</div>
 </div>
@@ -161,18 +161,18 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">29</span>
+          <span class="site-state-item-count">50</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
           <a href="/categories/">
-        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-count">14</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-count">14</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -202,7 +202,7 @@
     <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/01/15/MOCO/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpeg">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
       <meta itemprop="name" content="Ronny Lu">
     </span>
 
@@ -276,7 +276,7 @@
         <i class="far fa-clock"></i>
       </span>
       <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>1 分钟</span>
+      <span>6 分钟</span>
     </span>
 </div>
 
@@ -286,78 +286,101 @@
     
     
     
-    <div class="post-body" itemprop="articleBody"><p>论文地址 : <a target="_blank" rel="noopener" href="https://arxiv.org/abs/1911.05722">https://arxiv.org/abs/1911.05722</a>﻿</p>
-<p>论文代码(官方) : <a target="_blank" rel="noopener" href="https://github.com/facebookresearch/moco">https://github.com/facebookresearch/moco</a>﻿</p>
-<p>视频解读 : <a target="_blank" rel="noopener" href="https://www.bilibili.com/video/av422340209">MoCo 论文逐段精读【论文精读】_哔哩哔哩_bilibili</a>﻿</p>
+    <div class="post-body" itemprop="articleBody"><p>论文地址 : <a target="_blank" rel="noopener" href="https://arxiv.org/abs/1911.05722">https://arxiv.org/abs/1911.05722</a></p>
+<p>论文代码(官方) : <a target="_blank" rel="noopener" href="https://github.com/facebookresearch/moco">https://github.com/facebookresearch/moco</a></p>
+<p>视频解读 : <a target="_blank" rel="noopener" href="https://www.bilibili.com/video/av422340209">MoCo 论文逐段精读【论文精读】_哔哩哔哩_bilibili</a></p>
 <span id="more"></span>
-
-<h1 id="对比学习"><a href="#对比学习" class="headerlink" title="对比学习"></a>对比学习</h1><p>参考 CLIP 对比学习章节</p>
-<h1 id="MoCo实现思路"><a href="#MoCo实现思路" class="headerlink" title="MoCo实现思路"></a>MoCo实现思路</h1><p>传统的对比学习可以归纳成一种任务：给定一个query和若干keys，找出这个query和以下那个key相似。</p>
+<h1 id="对比学习"><a class="markdownIt-Anchor" href="#对比学习"></a> 对比学习</h1>
+<p>参考 CLIP 对比学习章节</p>
+<h1 id="moco实现思路"><a class="markdownIt-Anchor" href="#moco实现思路"></a> MoCo实现思路</h1>
+<p>传统的对比学习可以归纳成一种任务：给定一个query和若干keys，找出这个query和以下那个key相似。</p>
 <p>如图所示：</p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250115201923281.png" alt="image.png"></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250115201923281.png" alt="image.png" /></p>
 <p>其中keys集合的大小就是Batch Size的大小。（Keys集合也称为“字典”）</p>
 <p>如果想要训练出好的模型，那我们就需要如下两点：</p>
 <ul>
-<li><p>字典越大越好</p>
+<li>
+<p>字典越大越好</p>
 </li>
-<li><p>字典中的key的特征要保持一致性。换句话说：这些正负样本要保证是从一个Encoder中提取的特征。即使不是从一个Encoder提取的，也要是从相似的Encoder中提取的。</p>
+<li>
+<p>字典中的key的特征要保持一致性。换句话说：这些正负样本要保证是从一个Encoder中提取的特征。即使不是从一个Encoder提取的，也要是从相似的Encoder中提取的。</p>
 </li>
 </ul>
 <p>而之前的对比学习方法对于这两点没有办法做到兼容。例如对于上述提到的SimCLR的字典大小就是Batch Size大小，所以受限于显卡内存无法做到太大。 而一些其他论文虽然构建了一个大词典，但是词典中的特征向量都是来自不同阶段的Encoder，所以一致性不高。（不同阶段是指在训练过程中，Encoder参数是不断变化的）</p>
 <blockquote>
 <p>与之前对比学习论文不同，在MoCo中，锚点称为query，而正负样本称为Key。</p>
 </blockquote>
-<h1 id="MoCo架构"><a href="#MoCo架构" class="headerlink" title="MoCo架构"></a>MoCo架构</h1><p>MoCo主要就是解决了两个问题：</p>
+<h1 id="moco架构"><a class="markdownIt-Anchor" href="#moco架构"></a> MoCo架构</h1>
+<p>MoCo主要就是解决了两个问题：</p>
 <ol>
-<li><p>字典可以搞的很大</p>
+<li>
+<p>字典可以搞的很大</p>
 </li>
-<li><p>字典中的key的一致性很高。</p>
+<li>
+<p>字典中的key的一致性很高。</p>
 </li>
 </ol>
 <p>MoCo的架构如下:</p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250115201931470.png" alt="image.png"></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250115201931470.png" alt="image.png" /></p>
 <p>MoCo架构与之前对比学习类似，query和keys（就是锚点和正负样本）分别经过两个不同的Encoder，然后再计算相似度，最终预测字典中哪个key和query是一对儿。</p>
 <p>MoCo与之前对比学习方法的区别主要在keys这边，主要有两点：</p>
 <ul>
-<li><p><strong>Queue</strong>: MoCo维护了一个先进先出队列(FIFO queue)，这个队列就是字典，里面存储的是图片的特征向量，所以可以很大。而队列的维护方式就是每次入队最新一批图片的特征向量，出队最早一批图片的特征向量。</p>
+<li>
+<p><strong>Queue</strong>: MoCo维护了一个先进先出队列(FIFO queue)，这个队列就是字典，里面存储的是图片的特征向量，所以可以很大。而队列的维护方式就是每次入队最新一批图片的特征向量，出队最早一批图片的特征向量。</p>
 </li>
-<li><p><strong>Momentum Encoder</strong>：为了保证queue中key的一致性，字典这边的encoder必须要缓慢的更新。所以作者采用了动量的方式。简单来说，就是Momentum Encoder &#x3D; 0.99 * Momentum Encoder + 0.01 * Encoder。每次Encoder更新后，只拿它参数的0.01来更新Momentum Encoder，这样就可以保证Momentum Encoder更新缓慢了。</p>
+<li>
+<p><strong>Momentum Encoder</strong>：为了保证queue中key的一致性，字典这边的encoder必须要缓慢的更新。所以作者采用了动量的方式。简单来说，就是Momentum Encoder = 0.99 * Momentum Encoder + 0.01 * Encoder。每次Encoder更新后，只拿它参数的0.01来更新Momentum Encoder，这样就可以保证Momentum Encoder更新缓慢了。</p>
 </li>
 </ul>
 <p>举个例子来描述整个过程：假设字典(队列)大小为65536, batch size为128, Encoder编码的特征向量大小为256.</p>
 <ol>
-<li><p>初始化Encoder：首先初始化两个Encoder，一个作为Encoder，一个作为Momentum Encoder。然后让两个Encoder的参数保持一致。</p>
+<li>
+<p>初始化Encoder：首先初始化两个Encoder，一个作为Encoder，一个作为Momentum Encoder。然后让两个Encoder的参数保持一致。</p>
 </li>
-<li><p>初始化队列：拿65536张图片通过Momentum Encoder进行特征提取，然后放入队列。其中每个图片的特征为256.</p>
+<li>
+<p>初始化队列：拿65536张图片通过Momentum Encoder进行特征提取，然后放入队列。其中每个图片的特征为256.</p>
 </li>
-<li><p>接下来开始训练：</p>
+<li>
+<p>接下来开始训练：</p>
 <ol>
-<li><p>从数据集中随机采样128张图片</p>
+<li>
+<p>从数据集中随机采样128张图片</p>
 </li>
-<li><p>将这128张图片进行随机数据增强后送给Encoder，计算出其特征向量。</p>
+<li>
+<p>将这128张图片进行随机数据增强后送给Encoder，计算出其特征向量。</p>
 </li>
-<li><p>将这128张图片再次随机数据增强后送给Momentum Encoder，计算其特征向量。此时我们就得到了两组特征向量，每组都有128个256维的特征向量。我们这里将其命名为$x_q$和$x_k$﻿</p>
+<li>
+<p>将这128张图片再次随机数据增强后送给Momentum Encoder，计算其特征向量。此时我们就得到了两组特征向量，每组都有128个256维的特征向量。我们这里将其命名为<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>x</mi><mi>q</mi></msub></mrow><annotation encoding="application/x-tex">x_q</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.716668em;vertical-align:-0.286108em;"></span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.15139200000000003em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.03588em;">q</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.286108em;"><span></span></span></span></span></span></span></span></span></span>和<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>x</mi><mi>k</mi></msub></mrow><annotation encoding="application/x-tex">x_k</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.33610799999999996em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.03148em;">k</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span></p>
 </li>
-<li><p>将$x_q$和$x_k$中元素“对应相乘”，得到128个数值。也就是得到了128个锚点与其对应的正样本的内积（相当于将向量内积作为相似度）</p>
+<li>
+<p>将<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>x</mi><mi>q</mi></msub></mrow><annotation encoding="application/x-tex">x_q</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.716668em;vertical-align:-0.286108em;"></span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.15139200000000003em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.03588em;">q</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.286108em;"><span></span></span></span></span></span></span></span></span></span>和<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>x</mi><mi>k</mi></msub></mrow><annotation encoding="application/x-tex">x_k</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.33610799999999996em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.03148em;">k</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span>中元素“对应相乘”，得到128个数值。也就是得到了128个锚点与其对应的正样本的内积（相当于将向量内积作为相似度）</p>
 </li>
-<li><p>将$x_q$和队列中的向量“两两相乘”，得到128x65536个数值。也就是128个锚点和队列中所有负样本的内积。</p>
+<li>
+<p>将<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>x</mi><mi>q</mi></msub></mrow><annotation encoding="application/x-tex">x_q</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.716668em;vertical-align:-0.286108em;"></span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.15139200000000003em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.03588em;">q</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.286108em;"><span></span></span></span></span></span></span></span></span></span>和队列中的向量“两两相乘”，得到128x65536个数值。也就是128个锚点和队列中所有负样本的内积。</p>
 </li>
-<li><p>将锚点和与正样本的内积和与负样本的内积concat到一起，得到128x(1+65536)个内积。</p>
+<li>
+<p>将锚点和与正样本的内积和与负样本的内积concat到一起，得到128x(1+65536)个内积。</p>
 </li>
-<li><p>使用CrossEntropyLoss求出锚点与正样本对应的loss。即锚点与正样本越接近loss越小，锚点与负样本远离loss越大。</p>
+<li>
+<p>使用CrossEntropyLoss求出锚点与正样本对应的loss。即锚点与正样本越接近loss越小，锚点与负样本远离loss越大。</p>
 </li>
-<li><p>反向传播更新encoder参数</p>
+<li>
+<p>反向传播更新encoder参数</p>
 </li>
-<li><p>使用momentum机制更新Momentum Encoder，即Momentum Encoder &#x3D; 0.99 * Momentum Encoder + 0.01 * Encoder</p>
+<li>
+<p>使用momentum机制更新Momentum Encoder，即Momentum Encoder = 0.99 * Momentum Encoder + 0.01 * Encoder</p>
 </li>
-<li><p>将$x_k$入队，响应的最早的一批128个特征向量出队。</p>
+<li>
+<p>将<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>x</mi><mi>k</mi></msub></mrow><annotation encoding="application/x-tex">x_k</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.33610799999999996em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.03148em;">k</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span>入队，响应的最早的一批128个特征向量出队。</p>
 </li>
 </ol>
 </li>
-<li><p>重复3的训练过程</p>
+<li>
+<p>重复3的训练过程</p>
 </li>
 </ol>
-<h1 id="MOCO代码实现"><a href="#MOCO代码实现" class="headerlink" title="MOCO代码实现"></a>MOCO代码实现</h1><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 首先假设存在这么几个对象</span></span><br><span class="line"><span class="comment"># f_q, f_k: query和key的Encoder，也就是Encoder和Momentum Encoder</span></span><br><span class="line"><span class="comment"># queue: 字典队列。为一个Shape为CxK的Tensor。其中C为特征向量的维度，K为词典的大小。例如：256x65536</span></span><br><span class="line"><span class="comment"># m: momentum超参。例如 0.99</span></span><br><span class="line"><span class="comment"># t: temperature。温度超参。例如：0.05</span></span><br><span class="line"></span><br><span class="line">f_k.params = f_q.params <span class="comment"># 初始f_k的参数和f_q保持一致</span></span><br><span class="line"><span class="keyword">for</span> x <span class="keyword">in</span> loader: <span class="comment"># 从dataloader中拿出 N 个数据。x为一个batch的图片，例如x的shape为(128, 3, 224, 224)</span></span><br><span class="line">	x_q = aug(x) <span class="comment"># 对 x 进行随机的数据增强</span></span><br><span class="line">	x_k = aug(x) <span class="comment"># 对 x 进行另一种随机的数据增强</span></span><br><span class="line">	</span><br><span class="line">	q = f_q.forward(x_q) <span class="comment"># 使用Encoder提取x_q的特征。q的shape为 NxC。 例如128x256, 即128张图片，每张图片的特征向量为256维</span></span><br><span class="line">	k = f_k.forward(x_k) <span class="comment"># 使用Momentum Encoder提取x_k的特征，q的shape也为 NxC</span></span><br><span class="line">	k = k.detach() <span class="comment"># Momentum Encoder不计算梯度</span></span><br><span class="line">	</span><br><span class="line">	<span class="comment"># 求出锚点与正样本的内积。l_pos的shape为 Nx1。即每个锚点和对应正样本的向量内积（两两相乘）。例如 shape为128x1</span></span><br><span class="line">	l_pos = bmm(q.view(N,<span class="number">1</span>,C), k.view(N,C,<span class="number">1</span>))</span><br><span class="line"></span><br><span class="line">	<span class="comment"># 让锚点和队列中所有的负样本计算内积。l_neg的shape为 NxK。例如 shape为128x65536</span></span><br><span class="line">	l_neg = mm(q.view(N,C), queue.view(C,K))</span><br><span class="line"></span><br><span class="line">	<span class="comment"># 将正样本和负样本concat到一起，正样本放在最前面。logits的shape为 Nx(K+1)。例如 128x(65536+1)</span></span><br><span class="line">	logits = cat([l_pos, l_neg], dim=<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">	labels = zeros(N) <span class="comment"># 构造Label，因为正样本都是在0这个位置，所以构造N个0就行了。</span></span><br><span class="line">	</span><br><span class="line">	<span class="comment"># 使用CrossEntropyLoss计算损失，这里需要除以温度</span></span><br><span class="line">	loss = CrossEntropyLoss(logits/t, labels)</span><br><span class="line">	</span><br><span class="line">	<span class="comment"># 反向传播并更新f_q的参数。</span></span><br><span class="line">	loss.backward()</span><br><span class="line">	update(f_q.params)</span><br><span class="line"></span><br><span class="line">	<span class="comment"># 使用momentum的方式更新f_k</span></span><br><span class="line">	f_k.params = m*f_k.params+(<span class="number">1</span>-m)*f_q.params</span><br><span class="line">	</span><br><span class="line">	<span class="comment"># 更新字典</span></span><br><span class="line">	enqueue(queue, k) <span class="comment"># 将当前的 N 个样本的特征向量入队。</span></span><br><span class="line">	dequeue(queue) <span class="comment"># 同时再将最早的 N 个样本出队</span></span><br></pre></td></tr></table></figure>
+<h1 id="moco代码实现"><a class="markdownIt-Anchor" href="#moco代码实现"></a> MOCO代码实现</h1>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 首先假设存在这么几个对象</span></span><br><span class="line"><span class="comment"># f_q, f_k: query和key的Encoder，也就是Encoder和Momentum Encoder</span></span><br><span class="line"><span class="comment"># queue: 字典队列。为一个Shape为CxK的Tensor。其中C为特征向量的维度，K为词典的大小。例如：256x65536</span></span><br><span class="line"><span class="comment"># m: momentum超参。例如 0.99</span></span><br><span class="line"><span class="comment"># t: temperature。温度超参。例如：0.05</span></span><br><span class="line"></span><br><span class="line">f_k.params = f_q.params <span class="comment"># 初始f_k的参数和f_q保持一致</span></span><br><span class="line"><span class="keyword">for</span> x <span class="keyword">in</span> loader: <span class="comment"># 从dataloader中拿出 N 个数据。x为一个batch的图片，例如x的shape为(128, 3, 224, 224)</span></span><br><span class="line">	x_q = aug(x) <span class="comment"># 对 x 进行随机的数据增强</span></span><br><span class="line">	x_k = aug(x) <span class="comment"># 对 x 进行另一种随机的数据增强</span></span><br><span class="line">	</span><br><span class="line">	q = f_q.forward(x_q) <span class="comment"># 使用Encoder提取x_q的特征。q的shape为 NxC。 例如128x256, 即128张图片，每张图片的特征向量为256维</span></span><br><span class="line">	k = f_k.forward(x_k) <span class="comment"># 使用Momentum Encoder提取x_k的特征，q的shape也为 NxC</span></span><br><span class="line">	k = k.detach() <span class="comment"># Momentum Encoder不计算梯度</span></span><br><span class="line">	</span><br><span class="line">	<span class="comment"># 求出锚点与正样本的内积。l_pos的shape为 Nx1。即每个锚点和对应正样本的向量内积（两两相乘）。例如 shape为128x1</span></span><br><span class="line">	l_pos = bmm(q.view(N,<span class="number">1</span>,C), k.view(N,C,<span class="number">1</span>))</span><br><span class="line"></span><br><span class="line">	<span class="comment"># 让锚点和队列中所有的负样本计算内积。l_neg的shape为 NxK。例如 shape为128x65536</span></span><br><span class="line">	l_neg = mm(q.view(N,C), queue.view(C,K))</span><br><span class="line"></span><br><span class="line">	<span class="comment"># 将正样本和负样本concat到一起，正样本放在最前面。logits的shape为 Nx(K+1)。例如 128x(65536+1)</span></span><br><span class="line">	logits = cat([l_pos, l_neg], dim=<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">	labels = zeros(N) <span class="comment"># 构造Label，因为正样本都是在0这个位置，所以构造N个0就行了。</span></span><br><span class="line">	</span><br><span class="line">	<span class="comment"># 使用CrossEntropyLoss计算损失，这里需要除以温度</span></span><br><span class="line">	loss = CrossEntropyLoss(logits/t, labels)</span><br><span class="line">	</span><br><span class="line">	<span class="comment"># 反向传播并更新f_q的参数。</span></span><br><span class="line">	loss.backward()</span><br><span class="line">	update(f_q.params)</span><br><span class="line"></span><br><span class="line">	<span class="comment"># 使用momentum的方式更新f_k</span></span><br><span class="line">	f_k.params = m*f_k.params+(<span class="number">1</span>-m)*f_q.params</span><br><span class="line">	</span><br><span class="line">	<span class="comment"># 更新字典</span></span><br><span class="line">	enqueue(queue, k) <span class="comment"># 将当前的 N 个样本的特征向量入队。</span></span><br><span class="line">	dequeue(queue) <span class="comment"># 同时再将最早的 N 个样本出队</span></span><br></pre></td></tr></table></figure>
     </div>
 
     
@@ -414,14 +437,14 @@
       <i class="fa fa-chart-line"></i>
     </span>
       <span>站点总字数：</span>
-    <span title="站点总字数">75k</span>
+    <span title="站点总字数">197k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span>站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">1:08</span>
+    <span title="站点阅读时长">11:56</span>
   </span>
 </div>
 <div class="busuanzi-count">
@@ -442,8 +465,7 @@
       </span>
     </span>
 </div>
-  <div class="powered-by">
-    <!--由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动 -->
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
   </div>
 
     </div>
@@ -484,6 +506,13 @@
   <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 
 
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">false</script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" integrity="sha256-UF1fgpAiu3tPJN/uCqEUHNe7pnr+QR0SQDNfgglgtcM=" crossorigin="anonymous">
+  <script class="next-config" data-name="katex" type="application/json">{"copy_tex_js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/copy-tex.min.js","integrity":"sha256-Us54+rSGDSTvIhKKUs4kygE2ipA0RXpWWh0/zLqw3bs="}}</script>
+  <script src="/js/third-party/math/katex.js"></script>
 
 
 

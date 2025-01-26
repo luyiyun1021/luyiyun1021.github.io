@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-minimal.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"luyiyun1021.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.22.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="课程链接: 吴恩达《深入模型量化|Quantization in Depth》中英字幕_哔哩哔哩_bilibili 参考资料:   https:&#x2F;&#x2F;zhuanlan.zhihu.com&#x2F;p&#x2F;646210009   https:&#x2F;&#x2F;zhuanlan.zhihu.com&#x2F;p&#x2F;704280420   https:&#x2F;&#x2F;zhuanlan.zhihu.com&#x2F;p&#x2F;675701614    基本概念  模型量化">
+<meta property="og:type" content="article">
+<meta property="og:title" content="量化基础 &amp; 主流量化技术 (QLoRA, LLM.int8, GPTQ, AWQ, SmoothQuant, FP8)">
+<meta property="og:url" content="https://luyiyun1021.github.io/2025/01/26/%E9%87%8F%E5%8C%96%E5%9F%BA%E7%A1%80-%E4%B8%BB%E6%B5%81%E9%87%8F%E5%8C%96%E6%8A%80%E6%9C%AF-QLoRA-LLM-int8-GPTQ-AWQ-SmoothQuant-FP8/index.html">
+<meta property="og:site_name" content="Ronny Lu&#39;s blog">
+<meta property="og:description" content="课程链接: 吴恩达《深入模型量化|Quantization in Depth》中英字幕_哔哩哔哩_bilibili 参考资料:   https:&#x2F;&#x2F;zhuanlan.zhihu.com&#x2F;p&#x2F;646210009   https:&#x2F;&#x2F;zhuanlan.zhihu.com&#x2F;p&#x2F;704280420   https:&#x2F;&#x2F;zhuanlan.zhihu.com&#x2F;p&#x2F;675701614    基本概念  模型量化">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126142805147.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126142813497.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126143810731.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126143824208.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126143907400.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126143916406.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144209069.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144226363.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144244892.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144250427.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144259759.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144306095.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144331146.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144337796.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144344138.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144350030.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144356075.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144402474.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144409513.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144427459.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144433283.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144441368.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144448068.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144453615.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144501403.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144506969.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144514597.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144520635.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144526413.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144532158.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144539470.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144547807.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144555839.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144601136.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144609843.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144619245.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144627138.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144859989.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144905905.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144913253.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144920847.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144934316.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144940435.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144947414.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144953513.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144959259.png">
+<meta property="article:published_time" content="2025-01-26T09:13:24.000Z">
+<meta property="article:modified_time" content="2025-01-26T09:14:33.483Z">
+<meta property="article:author" content="Ronny Lu">
+<meta property="article:tag" content="大模型">
+<meta property="article:tag" content="大模型推理">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126142805147.png">
+
+
+<link rel="canonical" href="https://luyiyun1021.github.io/2025/01/26/%E9%87%8F%E5%8C%96%E5%9F%BA%E7%A1%80-%E4%B8%BB%E6%B5%81%E9%87%8F%E5%8C%96%E6%8A%80%E6%9C%AF-QLoRA-LLM-int8-GPTQ-AWQ-SmoothQuant-FP8/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://luyiyun1021.github.io/2025/01/26/%E9%87%8F%E5%8C%96%E5%9F%BA%E7%A1%80-%E4%B8%BB%E6%B5%81%E9%87%8F%E5%8C%96%E6%8A%80%E6%9C%AF-QLoRA-LLM-int8-GPTQ-AWQ-SmoothQuant-FP8/","path":"2025/01/26/量化基础-主流量化技术-QLoRA-LLM-int8-GPTQ-AWQ-SmoothQuant-FP8/","title":"量化基础 & 主流量化技术 (QLoRA, LLM.int8, GPTQ, AWQ, SmoothQuant, FP8)"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>量化基础 & 主流量化技术 (QLoRA, LLM.int8, GPTQ, AWQ, SmoothQuant, FP8) | Ronny Lu's blog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<style>.darkmode--activated{--body-bg-color:#282828;--content-bg-color:#333;--card-bg-color:#555;--text-color:#ccc;--blockquote-color:#bbb;--link-color:#ccc;--link-hover-color:#eee;--brand-color:#ddd;--brand-hover-color:#ddd;--table-row-odd-bg-color:#282828;--table-row-hover-bg-color:#363636;--menu-item-bg-color:#555;--btn-default-bg:#222;--btn-default-color:#ccc;--btn-default-border-color:#555;--btn-default-hover-bg:#666;--btn-default-hover-color:#ccc;--btn-default-hover-border-color:#666;--highlight-background:#282b2e;--highlight-foreground:#a9b7c6;--highlight-gutter-background:#34393d;--highlight-gutter-foreground:#9ca9b6}.darkmode--activated img{opacity:.75}.darkmode--activated img:hover{opacity:.9}.darkmode--activated code{color:#69dbdc;background:0 0}button.darkmode-toggle{z-index:9999}.darkmode-ignore,img{display:flex!important}.beian img{display:inline-block!important}</style></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Ronny Lu's blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5"><span class="nav-number">1.</span> <span class="nav-text"> 基本概念</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A8%A1%E5%9E%8B%E9%87%8F%E5%8C%96%E6%98%AF%E5%81%9A%E4%BB%80%E4%B9%88%E7%9A%84"><span class="nav-number">1.1.</span> <span class="nav-text"> 模型量化是做什么的</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E5%8F%AF%E4%BB%A5%E9%87%8F%E5%8C%96"><span class="nav-number">1.2.</span> <span class="nav-text"> 什么可以量化</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%87%8F%E5%8C%96%E7%9A%84%E4%BC%98%E5%8A%BF"><span class="nav-number">1.3.</span> <span class="nav-text"> 量化的优势</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%87%8F%E5%8C%96%E7%9A%84%E6%8C%91%E6%88%98"><span class="nav-number">1.4.</span> <span class="nav-text"> 量化的挑战</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BA%BF%E6%80%A7%E9%87%8F%E5%8C%96"><span class="nav-number">1.5.</span> <span class="nav-text"> 线性量化</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%87%8F%E5%8C%96%E7%B2%BE%E7%BB%86%E5%BA%A6-granularity"><span class="nav-number">1.6.</span> <span class="nav-text"> 量化精细度 (granularity)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8E%A8%E7%90%86%E7%BA%BF%E6%80%A7%E9%87%8F%E5%8C%96"><span class="nav-number">1.7.</span> <span class="nav-text"> 推理：线性量化</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%8E%E6%AF%94%E7%89%B9%E9%87%8F%E5%8C%96-2-bit-4-bit-%E4%B8%AD%E7%9A%84%E7%9A%84-weight-packing"><span class="nav-number">1.8.</span> <span class="nav-text"> 低比特量化 (2 bit, 4 bit) 中的的 Weight Packing</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#packing%E6%98%AF%E5%A6%82%E4%BD%95%E5%B7%A5%E4%BD%9C%E7%9A%84"><span class="nav-number">1.8.1.</span> <span class="nav-text"> Packing是如何工作的？</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%BB%E6%B5%81%E9%87%8F%E5%8C%96%E6%96%B9%E6%B3%95"><span class="nav-number">2.</span> <span class="nav-text"> 主流量化方法</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#qlora"><span class="nav-number">2.1.</span> <span class="nav-text"> QLoRA</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#nf4-%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B"><span class="nav-number">2.1.1.</span> <span class="nav-text"> NF4 数据类型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#double-quant"><span class="nav-number">2.1.2.</span> <span class="nav-text"> Double Quant</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9E%E9%AA%8C%E6%95%88%E6%9E%9C"><span class="nav-number">2.1.3.</span> <span class="nav-text"> 实验效果</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#llmint8"><span class="nav-number">2.2.</span> <span class="nav-text"> LLM.int8()</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#gptq"><span class="nav-number">2.3.</span> <span class="nav-text"> GPTQ</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A0%B8%E5%BF%83%E6%80%9D%E6%83%B3"><span class="nav-number">2.3.1.</span> <span class="nav-text"> 核心思想</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BC%98%E7%82%B9"><span class="nav-number">2.3.2.</span> <span class="nav-text"> 优点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BC%BA%E7%82%B9"><span class="nav-number">2.3.3.</span> <span class="nav-text"> 缺点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8E%9F%E7%90%86"><span class="nav-number">2.3.4.</span> <span class="nav-text"> 原理</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#awq"><span class="nav-number">2.4.</span> <span class="nav-text"> AWQ</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%80%9A%E8%BF%87%E4%BF%9D%E7%95%991%E7%9A%84%E6%98%BE%E8%91%97%E6%9D%83%E9%87%8D%E6%9D%A5%E6%94%B9%E8%BF%9Bllm%E9%87%8F%E5%8C%96"><span class="nav-number">2.4.1.</span> <span class="nav-text"> 通过保留1%的显著权重来改进LLM量化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%80%9A%E8%BF%87%E6%BF%80%E6%B4%BB%E6%84%9F%E7%9F%A5%E7%BC%A9%E6%94%BE%E4%BF%9D%E6%8A%A4%E6%98%BE%E8%91%97%E6%9D%83%E9%87%8D"><span class="nav-number">2.4.2.</span> <span class="nav-text"> 通过激活感知缩放保护显著权重</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9E%E9%AA%8C"><span class="nav-number">2.4.3.</span> <span class="nav-text"> 实验</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#smoothquant"><span class="nav-number">2.5.</span> <span class="nav-text"> SmoothQuant</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A0%B8%E5%BF%83%E6%80%9D%E6%83%B3-2"><span class="nav-number">2.5.1.</span> <span class="nav-text"> 核心思想</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%87%8F%E5%8C%96%E9%9A%BE%E7%82%B9"><span class="nav-number">2.5.2.</span> <span class="nav-text"> 量化难点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#smoothquant-%E6%96%B9%E6%B3%95%E5%BA%94%E7%94%A8%E4%BA%8E-transformer%E5%9D%97"><span class="nav-number">2.5.3.</span> <span class="nav-text"> SmoothQuant 方法应用于 Transformer块</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9E%E9%AA%8C-2"><span class="nav-number">2.5.4.</span> <span class="nav-text"> 实验</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#fp8"><span class="nav-number">2.6.</span> <span class="nav-text"> FP8</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#background"><span class="nav-number">2.6.1.</span> <span class="nav-text"> Background</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%A1%AC%E4%BB%B6%E7%9A%84%E6%94%AF%E6%8C%81"><span class="nav-number">2.6.1.1.</span> <span class="nav-text"> 硬件的支持</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#fp8-%E5%A5%BD%E5%A4%84"><span class="nav-number">2.6.1.2.</span> <span class="nav-text"> FP8 好处</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-fp8-types"><span class="nav-number">2.6.2.</span> <span class="nav-text"> 2. FP8 TYPES</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#ieee-754"><span class="nav-number">2.6.2.1.</span> <span class="nav-text"> IEEE 754</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#e5m2"><span class="nav-number">2.6.2.2.</span> <span class="nav-text"> E5M2</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#e4m3"><span class="nav-number">2.6.2.3.</span> <span class="nav-text"> E4M3</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-convert-to-fp8"><span class="nav-number">2.6.3.</span> <span class="nav-text"> 3. Convert to FP8</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AF%BB%E6%89%BE-scaling-factor"><span class="nav-number">2.6.3.1.</span> <span class="nav-text"> 寻找 scaling factor</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-example-of-fp8-gemm"><span class="nav-number">2.6.4.</span> <span class="nav-text"> 4. Example of FP8 GEMM</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-fp8-performance"><span class="nav-number">2.6.5.</span> <span class="nav-text"> 5. FP8 Performance</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#gemm-performance"><span class="nav-number">2.6.5.1.</span> <span class="nav-text"> GEMM Performance</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#dl-training-performance"><span class="nav-number">2.6.5.2.</span> <span class="nav-text"> DL TRAINING PERFORMANCE</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BC%80%E6%BA%90%E5%B7%A5%E5%85%B7"><span class="nav-number">2.7.</span> <span class="nav-text"> 开源工具</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#autoawq"><span class="nav-number">2.7.1.</span> <span class="nav-text"> AutoAWQ</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#autogptq"><span class="nav-number">2.7.2.</span> <span class="nav-text"> AutoGPTQ</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#auto-fp8"><span class="nav-number">2.7.3.</span> <span class="nav-text"> Auto-FP8</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#tensorrt-llm"><span class="nav-number">2.7.4.</span> <span class="nav-text"> TensorRT-LLM</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#nvidia-benchmark-%E5%8F%82%E8%80%83%E6%95%B0%E6%8D%AE"><span class="nav-number">2.8.</span> <span class="nav-text"> Nvidia Benchmark 参考数据</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Ronny Lu"
+      src="https://avatars.githubusercontent.com/u/55233584?v=4">
+  <p class="site-author-name" itemprop="name">Ronny Lu</p>
+  <div class="site-description" itemprop="description">Tech notes on LLM, LLM Infra, C++</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">50</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">14</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">14</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/01/26/%E9%87%8F%E5%8C%96%E5%9F%BA%E7%A1%80-%E4%B8%BB%E6%B5%81%E9%87%8F%E5%8C%96%E6%8A%80%E6%9C%AF-QLoRA-LLM-int8-GPTQ-AWQ-SmoothQuant-FP8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
+      <meta itemprop="name" content="Ronny Lu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ronny Lu's blog">
+      <meta itemprop="description" content="Tech notes on LLM, LLM Infra, C++">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="量化基础 & 主流量化技术 (QLoRA, LLM.int8, GPTQ, AWQ, SmoothQuant, FP8) | Ronny Lu's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          量化基础 & 主流量化技术 (QLoRA, LLM.int8, GPTQ, AWQ, SmoothQuant, FP8)
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-01-26 17:13:24 / 修改时间：17:14:33" itemprop="dateCreated datePublished" datetime="2025-01-26T17:13:24+08:00">2025-01-26</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">大模型</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E6%8E%A8%E7%90%86%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index"><span itemprop="name">推理技术</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>11k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>39 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>课程链接: <a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1kw4m1X7Bi">吴恩达《深入模型量化|Quantization in Depth》中英字幕_哔哩哔哩_bilibili</a></p>
+<p>参考资料:</p>
+<ul>
+<li>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/646210009">https://zhuanlan.zhihu.com/p/646210009</a></p>
+</li>
+<li>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/704280420">https://zhuanlan.zhihu.com/p/704280420</a></p>
+</li>
+<li>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/675701614">https://zhuanlan.zhihu.com/p/675701614</a></p>
+</li>
+</ul>
+<h1 id="基本概念"><a class="markdownIt-Anchor" href="#基本概念"></a> 基本概念</h1>
+<h2 id="模型量化是做什么的"><a class="markdownIt-Anchor" href="#模型量化是做什么的"></a> <strong>模型量化是做什么的</strong></h2>
+<p><strong>模型量化是将浮点数值转化为定点数值，同时尽可能减少计算精度损失的方法。</strong></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126142805147.png" alt="image.png" /></p>
+<p>具体而言，模型量化是一种压缩网络参数的方式，它将神经网络的参数（weight）、激活（activation）等原本用浮点表示的量值换用定点（整型）表示，在计算过程中，再将定点数据反量化回浮点数据，得到结果。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126142813497.png" alt="image.png" /></p>
+<span id="more"></span>
+<p><strong>模型量化实现建立在深度网络对噪声具有一定的容忍性上</strong>，模型量化相当于对深度网络增加了一定的噪声（量化误差），如果量化位数合适，模型量化基本不会造成较大的精度损失。</p>
+<h2 id="什么可以量化"><a class="markdownIt-Anchor" href="#什么可以量化"></a> <strong>什么可以量化</strong></h2>
+<ul>
+<li>
+<p><strong>权重</strong>: 神经网络的参数</p>
+</li>
+<li>
+<p><strong>激活</strong>: 在神经网络层与层之间传播的值</p>
+</li>
+</ul>
+<h2 id="量化的优势"><a class="markdownIt-Anchor" href="#量化的优势"></a> <strong>量化的优势</strong></h2>
+<p><strong>模型量化既能减少资源消耗，也能提高运行速度，使大规模推理服务的性能提升。</strong></p>
+<p>模型量化的好处主要有：</p>
+<ol>
+<li>可以减少内存和显存占用，给模型瘦身，降低大模型的使用门槛和资源消耗；</li>
+</ol>
+<p>如果将<strong>16B</strong>参数的 MOSS 模型做<strong>int4</strong>量化，加载模型所需显存就可以从 32GB 降低到<strong>10GB</strong>，使得 MOSS 能在普通的消费级显卡上跑推理。</p>
+<ol start="2">
+<li>能够提高运行速度，这可以从两方面理解：</li>
+</ol>
+<ul>
+<li>
+<p>在适配低精度的硬件下，量化模型的运算能直接用 int8 GEMM kernel 计算；</p>
+</li>
+<li>
+<p>量化减少了单位数据的 bit 数，因而可以减少计算过程中的 IO 通信量。</p>
+</li>
+</ul>
+<ol start="3">
+<li>由于以上两点，我们做模型推理时，可以增加更多的 batch size，同时也能加快计算速度，因此规模化的模型推理就能既快速又高效。</li>
+</ol>
+<h2 id="量化的挑战"><a class="markdownIt-Anchor" href="#量化的挑战"></a> <strong>量化的挑战</strong></h2>
+<ul>
+<li>
+<p>量化误差</p>
+</li>
+<li>
+<p>重新训练（量化感知训练，Quantization Aware Training）</p>
+</li>
+<li>
+<p>硬件支持有限</p>
+</li>
+<li>
+<p>需要校准数据集</p>
+</li>
+<li>
+<p>打包/解包的开销</p>
+</li>
+</ul>
+<h2 id="线性量化"><a class="markdownIt-Anchor" href="#线性量化"></a> <strong>线性量化</strong></h2>
+<p>我们这里主要讨论线性量化。</p>
+<p><strong>根据量化方案的不同，可以分为量化感知训练（QAT）和后训练量化（PTQ）。</strong></p>
+<ul>
+<li>
+<p>QAT（Quant-Aware Training） 也可以称为<strong>在线量化（On Quantization）</strong>。它需要利用额外的训练数据，在量化的同时结合反向传播对模型权重进行调整，意在确保量化模型的精度不掉点。</p>
+</li>
+<li>
+<p>PTQ （Post Training Quantization）也可以称为<strong>离线量化（Off Quantization）</strong>。它是在已训练的模型上，使用少量或不使用额外数据，对模型量化过程进行校准，可能伴有模型权重的缩放。其中：</p>
+<ul>
+<li>
+<p><strong>训练后动态量化（PostDynamic Quantization）</strong> 不使用校准数据集，直接对每一层 layer 通过量化公式进行转换。<strong>QLoRA 就是采用这种方法。</strong></p>
+</li>
+<li>
+<p><strong>训练后校正量化（Post Calibration Quantization）</strong> 需要输入<strong>有代表性</strong>的数据集，根据模型每一层 layer 的输入输出调整量化权重。<strong>GPTQ 就是采用这种方法。</strong></p>
+</li>
+</ul>
+</li>
+</ul>
+<p><strong>根据量化公式的不同，可以分为对称量化和非对称量化</strong>。**`</p>
+<ol>
+<li><strong>非对称量化 (Asymmetric)</strong>：我们将区间<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false">[</mo><msub><mi>r</mi><mtext>min</mtext></msub><mo separator="true">,</mo><msub><mi>r</mi><mtext>max</mtext></msub><mo stretchy="false">]</mo></mrow><annotation encoding="application/x-tex">[r_{\text{min}}, r_{\text{max}}]</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">[</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.02778em;">r</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.31750199999999995em;"><span style="top:-2.5500000000000003em;margin-left:-0.02778em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord mtight">min</span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.02778em;">r</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.151392em;"><span style="top:-2.5500000000000003em;margin-left:-0.02778em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord mtight">max</span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">]</span></span></span></span> 映射到 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false">[</mo><msub><mi>q</mi><mtext>min</mtext></msub><mo separator="true">,</mo><msub><mi>q</mi><mtext>max</mtext></msub><mo stretchy="false">]</mo></mrow><annotation encoding="application/x-tex">[q_{\text{min}}, q_{\text{max}}]</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">[</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.03588em;">q</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.31750199999999995em;"><span style="top:-2.5500000000000003em;margin-left:-0.03588em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord mtight">min</span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.03588em;">q</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.151392em;"><span style="top:-2.5500000000000003em;margin-left:-0.03588em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord mtight">max</span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">]</span></span></span></span>。</li>
+</ol>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126143810731.png" alt="image.png" /></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126143824208.png" alt="image.png" /></p>
+<ul>
+<li>
+<ul>
+<li>
+<p><strong>量化公式</strong>: <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>q</mi><mo>=</mo><mtext>int</mtext><mrow><mo fence="true">(</mo><mtext>round</mtext><mrow><mo fence="true">(</mo><mfrac><mi>r</mi><mi>s</mi></mfrac><mo>+</mo><mi>z</mi><mo fence="true">)</mo></mrow><mo fence="true">)</mo></mrow></mrow><annotation encoding="application/x-tex">q = \text{int} \left( \text{round} \left( \frac{r}{s} + z \right) \right)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.625em;vertical-align:-0.19444em;"></span><span class="mord mathnormal" style="margin-right:0.03588em;">q</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1.20001em;vertical-align:-0.35001em;"></span><span class="mord text"><span class="mord">int</span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="minner"><span class="mopen delimcenter" style="top:0em;"><span class="delimsizing size1">(</span></span><span class="mord text"><span class="mord">round</span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="minner"><span class="mopen delimcenter" style="top:0em;"><span class="delimsizing size1">(</span></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.695392em;"><span style="top:-2.6550000000000002em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">s</span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.394em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.02778em;">r</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.345em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mord mathnormal" style="margin-right:0.04398em;">z</span><span class="mclose delimcenter" style="top:0em;"><span class="delimsizing size1">)</span></span></span><span class="mclose delimcenter" style="top:0em;"><span class="delimsizing size1">)</span></span></span></span></span></span></p>
+<ul>
+<li>
+<p><strong>反量化公式</strong>: <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>r</mi><mo>≈</mo><mo stretchy="false">(</mo><mi>q</mi><mo>−</mo><mi>z</mi><mo stretchy="false">)</mo><mo>⋅</mo><mi>s</mi></mrow><annotation encoding="application/x-tex">r \approx (q - z) \cdot s</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.48312em;vertical-align:0em;"></span><span class="mord mathnormal" style="margin-right:0.02778em;">r</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">≈</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.03588em;">q</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.04398em;">z</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.43056em;vertical-align:0em;"></span><span class="mord mathnormal">s</span></span></span></span></p>
+</li>
+<li>
+<p><strong>缩放因子</strong><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>s</mi></mrow><annotation encoding="application/x-tex">s</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.43056em;vertical-align:0em;"></span><span class="mord mathnormal">s</span></span></span></span><strong>和零点</strong><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>z</mi></mrow><annotation encoding="application/x-tex">z</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.43056em;vertical-align:0em;"></span><span class="mord mathnormal" style="margin-right:0.04398em;">z</span></span></span></span><strong>计算为</strong>：</p>
+<ul>
+<li>
+<p><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>s</mi><mo>=</mo><mfrac><mrow><msub><mi>r</mi><mtext>max</mtext></msub><mo>−</mo><msub><mi>r</mi><mtext>min</mtext></msub></mrow><mrow><msub><mi>q</mi><mtext>max</mtext></msub><mo>−</mo><msub><mi>q</mi><mtext>min</mtext></msub></mrow></mfrac></mrow><annotation encoding="application/x-tex">s = \frac{r_{\text{max}} - r_{\text{min}}}{q_{\text{max}} - q_{\text{min}}}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.43056em;vertical-align:0em;"></span><span class="mord mathnormal">s</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1.2995389999999998em;vertical-align:-0.481108em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8184309999999999em;"><span style="top:-2.6550000000000002em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.03588em;">q</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.16454285714285719em;"><span style="top:-2.357em;margin-left:-0.03588em;margin-right:0.07142857142857144em;"><span class="pstrut" style="height:2.5em;"></span><span class="sizing reset-size3 size1 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord mtight">max</span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.143em;"><span></span></span></span></span></span></span><span class="mbin mtight">−</span><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.03588em;">q</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3340428571428572em;"><span style="top:-2.357em;margin-left:-0.03588em;margin-right:0.07142857142857144em;"><span class="pstrut" style="height:2.5em;"></span><span class="sizing reset-size3 size1 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord mtight">min</span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.143em;"><span></span></span></span></span></span></span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.4101em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.02778em;">r</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.16454285714285719em;"><span style="top:-2.357em;margin-left:-0.02778em;margin-right:0.07142857142857144em;"><span class="pstrut" style="height:2.5em;"></span><span class="sizing reset-size3 size1 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord mtight">max</span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.143em;"><span></span></span></span></span></span></span><span class="mbin mtight">−</span><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.02778em;">r</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3340428571428572em;"><span style="top:-2.357em;margin-left:-0.02778em;margin-right:0.07142857142857144em;"><span class="pstrut" style="height:2.5em;"></span><span class="sizing reset-size3 size1 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord mtight">min</span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.143em;"><span></span></span></span></span></span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.481108em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span></p>
+</li>
+<li>
+<p><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>z</mi><mo>=</mo><mtext>int</mtext><mrow><mo fence="true">(</mo><mtext>round</mtext><mrow><mo fence="true">(</mo><msub><mi>q</mi><mtext>min</mtext></msub><mo>−</mo><mfrac><msub><mi>r</mi><mtext>min</mtext></msub><mi>s</mi></mfrac><mo fence="true">)</mo></mrow><mo fence="true">)</mo></mrow></mrow><annotation encoding="application/x-tex">z = \text{int} \left( \text{round} \left( q_{\text{min}} - \frac{r_{\text{min}}}{s} \right) \right)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.43056em;vertical-align:0em;"></span><span class="mord mathnormal" style="margin-right:0.04398em;">z</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1.20001em;vertical-align:-0.35001em;"></span><span class="mord text"><span class="mord">int</span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="minner"><span class="mopen delimcenter" style="top:0em;"><span class="delimsizing size1">(</span></span><span class="mord text"><span class="mord">round</span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="minner"><span class="mopen delimcenter" style="top:0em;"><span class="delimsizing size1">(</span></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.03588em;">q</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.31750199999999995em;"><span style="top:-2.5500000000000003em;margin-left:-0.03588em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord mtight">min</span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.7114919999999999em;"><span style="top:-2.6550000000000002em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">s</span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.4101em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.02778em;">r</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3340428571428572em;"><span style="top:-2.357em;margin-left:-0.02778em;margin-right:0.07142857142857144em;"><span class="pstrut" style="height:2.5em;"></span><span class="sizing reset-size3 size1 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord mtight">min</span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.143em;"><span></span></span></span></span></span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.345em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mclose delimcenter" style="top:0em;"><span class="delimsizing size1">)</span></span></span><span class="mclose delimcenter" style="top:0em;"><span class="delimsizing size1">)</span></span></span></span></span></span></p>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>为什么z是整数?</strong></p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>将零值（在原始“r”范围内）表示为在量化的“q”范围内的一个整数。</p>
+<p>例如，卷积神经网络中的零填充（zero-padding）使用完全等于零的张量。</p>
+<ul>
+<li>
+<ul>
+<li><strong>zero point超出</strong><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false">[</mo><msub><mi>q</mi><mrow><mi>m</mi><mi>i</mi><mi>n</mi></mrow></msub><mo separator="true">,</mo><msub><mi>q</mi><mrow><mi>m</mi><mi>a</mi><mi>x</mi></mrow></msub><mo stretchy="false">]</mo></mrow><annotation encoding="application/x-tex">[q_{min}, q_{max}]</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">[</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.03588em;">q</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.31166399999999994em;"><span style="top:-2.5500000000000003em;margin-left:-0.03588em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">m</span><span class="mord mathnormal mtight">i</span><span class="mord mathnormal mtight">n</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.03588em;">q</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.151392em;"><span style="top:-2.5500000000000003em;margin-left:-0.03588em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">m</span><span class="mord mathnormal mtight">a</span><span class="mord mathnormal mtight">x</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">]</span></span></span></span><strong>表示的范围的情况</strong></li>
+</ul>
+</li>
+</ul>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126143907400.png" alt="image.png" /></p>
+<ol>
+<li><strong>对称量化 (Symmetric)</strong>：我们将区间 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false">[</mo><mo>−</mo><msub><mi>r</mi><mtext>max</mtext></msub><mo separator="true">,</mo><msub><mi>r</mi><mtext>max</mtext></msub><mo stretchy="false">]</mo></mrow><annotation encoding="application/x-tex">[-r_{\text{max}}, r_{\text{max}}]</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">[</span><span class="mord">−</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.02778em;">r</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.151392em;"><span style="top:-2.5500000000000003em;margin-left:-0.02778em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord mtight">max</span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.02778em;">r</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.151392em;"><span style="top:-2.5500000000000003em;margin-left:-0.02778em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord mtight">max</span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">]</span></span></span></span>映射到 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false">[</mo><mo>−</mo><msub><mi>q</mi><mtext>max</mtext></msub><mo separator="true">,</mo><msub><mi>q</mi><mtext>max</mtext></msub><mo stretchy="false">]</mo></mrow><annotation encoding="application/x-tex">[-q_{\text{max}}, q_{\text{max}}]</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">[</span><span class="mord">−</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.03588em;">q</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.151392em;"><span style="top:-2.5500000000000003em;margin-left:-0.03588em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord mtight">max</span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.03588em;">q</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.151392em;"><span style="top:-2.5500000000000003em;margin-left:-0.03588em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord mtight">max</span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">]</span></span></span></span>。其中，我们可以将 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>r</mi><mtext>max</mtext></msub></mrow><annotation encoding="application/x-tex">r_{\text{max}}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.02778em;">r</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.151392em;"><span style="top:-2.5500000000000003em;margin-left:-0.02778em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord mtight">max</span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> 设置为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>max</mi><mo>⁡</mo><mo stretchy="false">(</mo><mi mathvariant="normal">∣</mi><msub><mi>r</mi><mtext>tensor</mtext></msub><mi mathvariant="normal">∣</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">\max(|r_{\text{tensor}}|)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mop">max</span><span class="mopen">(</span><span class="mord">∣</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.02778em;">r</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2805559999999999em;"><span style="top:-2.5500000000000003em;margin-left:-0.02778em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord mtight">tensor</span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord">∣</span><span class="mclose">)</span></span></span></span>。</li>
+</ol>
+<ul>
+<li>
+<ul>
+<li>
+<p><strong>量化公式</strong>: <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>q</mi><mo>=</mo><mtext>int</mtext><mrow><mo fence="true">(</mo><mtext>round</mtext><mrow><mo fence="true">(</mo><mfrac><mi>r</mi><mi>s</mi></mfrac><mo fence="true">)</mo></mrow><mo fence="true">)</mo></mrow></mrow><annotation encoding="application/x-tex">q = \text{int} \left( \text{round} \left( \frac{r}{s} \right) \right)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.625em;vertical-align:-0.19444em;"></span><span class="mord mathnormal" style="margin-right:0.03588em;">q</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1.20001em;vertical-align:-0.35001em;"></span><span class="mord text"><span class="mord">int</span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="minner"><span class="mopen delimcenter" style="top:0em;"><span class="delimsizing size1">(</span></span><span class="mord text"><span class="mord">round</span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="minner"><span class="mopen delimcenter" style="top:0em;"><span class="delimsizing size1">(</span></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.695392em;"><span style="top:-2.6550000000000002em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">s</span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.394em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.02778em;">r</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.345em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mclose delimcenter" style="top:0em;"><span class="delimsizing size1">)</span></span></span><span class="mclose delimcenter" style="top:0em;"><span class="delimsizing size1">)</span></span></span></span></span></span></p>
+<ul>
+<li>
+<p><strong>反量化公式</strong>: <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>r</mi><mo>≈</mo><mi>q</mi><mo>⋅</mo><mi>s</mi></mrow><annotation encoding="application/x-tex">r \approx q \cdot s</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.48312em;vertical-align:0em;"></span><span class="mord mathnormal" style="margin-right:0.02778em;">r</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">≈</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.63889em;vertical-align:-0.19444em;"></span><span class="mord mathnormal" style="margin-right:0.03588em;">q</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.43056em;vertical-align:0em;"></span><span class="mord mathnormal">s</span></span></span></span></p>
+</li>
+<li>
+<p><strong>缩放因子</strong><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>s</mi></mrow><annotation encoding="application/x-tex">s</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.43056em;vertical-align:0em;"></span><span class="mord mathnormal">s</span></span></span></span><strong>计算为</strong>：<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>s</mi><mo>=</mo><mfrac><msub><mi>r</mi><mtext>max</mtext></msub><msub><mi>q</mi><mtext>max</mtext></msub></mfrac></mrow><annotation encoding="application/x-tex">s = \frac{r_{\text{max}}}{q_{\text{max}}}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.43056em;vertical-align:0em;"></span><span class="mord mathnormal">s</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1.1925999999999999em;vertical-align:-0.481108em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.7114919999999999em;"><span style="top:-2.6550000000000002em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.03588em;">q</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.16454285714285719em;"><span style="top:-2.357em;margin-left:-0.03588em;margin-right:0.07142857142857144em;"><span class="pstrut" style="height:2.5em;"></span><span class="sizing reset-size3 size1 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord mtight">max</span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.143em;"><span></span></span></span></span></span></span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.4101em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.02778em;">r</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.16454285714285719em;"><span style="top:-2.357em;margin-left:-0.02778em;margin-right:0.07142857142857144em;"><span class="pstrut" style="height:2.5em;"></span><span class="sizing reset-size3 size1 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord mtight">max</span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.143em;"><span></span></span></span></span></span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.481108em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span></p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p><strong>权衡（Trade-off）</strong></p>
+<ul>
+<li>
+<p><strong>量化范围的利用率（Utilization of quantized range）：</strong></p>
+<ul>
+<li>
+<p>当使用非对称量化（asymmetric quantization）时，量化范围可以被完全利用。</p>
+</li>
+<li>
+<p>当使用对称量化模式（symmetric mode）时，如果浮点数的范围偏向于某一侧，这将导致部分量化范围被分配给不会出现的值。例如在 ReLU 操作中，输出总是正值。</p>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>简单性（Simplicity）：</strong></p>
+<ul>
+<li>对称量化模式相比于非对称模式更简单。</li>
+</ul>
+</li>
+<li>
+<p><strong>内存（Memory）：</strong></p>
+<ul>
+<li>对于对称量化，我们无需存储零点（zero-point）。</li>
+</ul>
+</li>
+</ul>
+<h2 id="量化精细度-granularity"><a class="markdownIt-Anchor" href="#量化精细度-granularity"></a> <strong>量化精细度 (granularity)</strong></h2>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126143916406.png" alt="image.png" /></p>
+<ul>
+<li>
+<p><strong>Per tensor</strong></p>
+</li>
+<li>
+<p><strong>Per channel(along an axis)</strong></p>
+</li>
+<li>
+<p><strong>Per group(group n elements together)</strong></p>
+</li>
+</ul>
+<h2 id="推理线性量化"><a class="markdownIt-Anchor" href="#推理线性量化"></a> <strong>推理：线性量化</strong></h2>
+<p>在神经网络中，我们不仅可以量化<strong>权重（weights）</strong>，还可以量化<strong>激活值（activation）</strong>。根据我们量化的对象，**存储（storage）**和 **计算（computation）**会有所不同</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>存储（Storage）</strong></td>
+<td><strong>量化权重 +</strong> 激活值（例如 W8A32）</td>
+<td><strong>量化权重 + 量化激活值</strong>（例如 W8A8）</td>
+</tr>
+<tr>
+<td><strong>计算（Computation）</strong></td>
+<td>浮点运算（FP32，FP16，BF16…）<br><br><strong>注意：我们需要对权重进行反量化（dequantize）以执行浮点运算</strong></td>
+<td>基于整数的运算（INT8，INT4…）<br><br><strong>注意：并非所有硬件都支持</strong></td>
+</tr>
+</tbody>
+</table>
+<h2 id="低比特量化-2-bit-4-bit-中的的-weight-packing"><a class="markdownIt-Anchor" href="#低比特量化-2-bit-4-bit-中的的-weight-packing"></a> <strong>低比特量化 (2 bit, 4 bit) 中的的 Weight Packing</strong></h2>
+<p>框架往往不对低比特数据类型做原生支持</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">import torch</span><br><span class="line">tensor = torch.tensor([0, 1], dtype=torch.int4) # is not supported!</span><br></pre></td></tr></table></figure>
+<h3 id="packing是如何工作的"><a class="markdownIt-Anchor" href="#packing是如何工作的"></a> <strong>Packing是如何工作的？</strong></h3>
+<ul>
+<li>考虑以下张量，它存储了 4 个值，这些值可以用 2-bit 精度表示，但存储在 8-bit 中：  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">import torch</span><br><span class="line">tensor = torch.tensor([1, 0, 3, 2], dtype=torch.uint8)</span><br></pre></td></tr></table></figure>
+当前编码形式为：  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">00000001 00000000 00000011 00000010</span><br></pre></td></tr></table></figure>
+我们可以将所有这些数据“打包”到一个单独的 8-bit 值中：  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">10110001</span><br></pre></td></tr></table></figure>
+代码示例：  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">packed_tensor = torch.Tensor([177], dtype=torch.uint8)</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p><strong>优点：</strong></p>
+<ul>
+<li>它反映了量化权重的“真实”内存占用。</li>
+</ul>
+<p><strong>缺点：</strong></p>
+<ul>
+<li>
+<p>解包后的张量形状需要是 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>8</mn><mi mathvariant="normal">/</mi><mi mathvariant="normal">/</mi><mtext>nbits</mtext></mrow><annotation encoding="application/x-tex">8 // \text{nbits}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">8</span><span class="mord">/</span><span class="mord">/</span><span class="mord text"><span class="mord">nbits</span></span></span></span></span> 的倍数。</p>
+</li>
+<li>
+<p>在执行操作之前需要先解包。</p>
+</li>
+</ul>
+<h1 id="主流量化方法"><a class="markdownIt-Anchor" href="#主流量化方法"></a> 主流量化方法</h1>
+<h2 id="qlora"><a class="markdownIt-Anchor" href="#qlora"></a> QLoRA</h2>
+<p><strong>QLoRA 同时结合了模型量化 Quant 和 LoRA 参数微调两种方法</strong>，因此可以在单张<strong>48GB</strong>的 GPU 上对一个<strong>65B</strong> 的大模型做 finetune。QLoRA 的量化方法（由 bitsandbytes 库提供 backend）也是 Transformers 官方的模型量化实现。</p>
+<p>运用 QLoRA 的微调方法训练的模型 Guanaco 在多项任务上表现强劲，<strong>截止2023.07.14，Guanaco-65B模型在 Open LLM Leaderboard 排名第二</strong>，大幅超越了原始的 llama-65B。正因为 QLoRA 的高效训练方法和在下游任务的优秀表现，自公开 Guanaco 模型后，QLoRA 的这套方法也开始得到许多人的关注。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144209069.png" alt="image.png" /></p>
+<p>排行榜的指标仅是一种参考。当然，现在的 LeaderBoard 已经被 Llama 2 等一众模型超越了</p>
+<p>QLoRA 针对模型权重（weight）做量化，采用的是对称量化算法，量化过程基本同上面讲述的方法一致。我们主要来看它的量化创新点。</p>
+<p>量化部分的创新点：</p>
+<ul>
+<li>
+<p>采用新的 NF（NormalFloat） 数据类型，它是对于正态分布权重而言信息理论上最优的数据类型，同时，NF 类型有助于缓解异常值的影响；</p>
+</li>
+<li>
+<p>Double Quant，对于量化后的 scale 数据做进一步的量化；</p>
+</li>
+</ul>
+<h3 id="nf4-数据类型"><a class="markdownIt-Anchor" href="#nf4-数据类型"></a> NF4 数据类型</h3>
+<p>新的数据类型，可以看成<strong>新的</strong>格点分配策略。我们用一张图说明 int4 数据类型和 NF4 数据类型的区别。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144226363.png" alt="" /></p>
+<ul>
+<li>
+<p>int4 的格点分布是<strong>均匀的</strong>，然而模型的权重通常服从均值为 0 的正态分布，因此格点的分布和数据的分布不一致。这会导致格点“供需”的不匹配。</p>
+<ul>
+<li>
+<p>靠近 0 点的数据很多，但可用的格点数就相对较少，这样大量参数 round 的粒度较粗，会导致模型量化的精度受损；</p>
+</li>
+<li>
+<p>远离 0 点的数据较少，而可用的格点数相对多，这部分的少量数据不需要太高的量化精度，因此部分格点就被浪费了。</p>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>NF4 的格点按照正态分布的分位数截取</strong>，格点分布两端稀疏，中间密集，格点分布与数据分布一致。这样格点分配的效率就大大增加了，同时精度受损也不会太大。</p>
+</li>
+</ul>
+<h3 id="double-quant"><a class="markdownIt-Anchor" href="#double-quant"></a> Double Quant</h3>
+<p>QLoRA 将每 64 个参数为做一个 block，即 block_size = 64，每个 block 计算一个 Scale。由于量化后的 Scale 通常以 FP32 存储，在 block 数众多的情况下，Scale 占用的显存也不可忽视。因此，QLoRA 对 Scale 进一步量化成 FP8，取 Double Quant 的 block size = 256，因而进一步降低了显存消耗。</p>
+<ul>
+<li>
+<p>Double Quant 前，每个参数做量化会需要额外的 32/64 = <strong>0.5 bits</strong> 显存；</p>
+</li>
+<li>
+<p>Double Quant 后，每个参数做量化只需要额外的 8/64 + 32 / (64*256) = <strong>0.127 bits</strong> 显存。</p>
+</li>
+</ul>
+<h3 id="实验效果"><a class="markdownIt-Anchor" href="#实验效果"></a> 实验效果</h3>
+<ul>
+<li>相比于其他数据格式，NF4 + DQ 训练后的模型 PPL 最低，且在精度（rouge-score、MMLU acc 等）上没有明显损失。</li>
+</ul>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144244892.png" alt="image.png" /></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144250427.png" alt="image.png" /></p>
+<h2 id="llmint8"><a class="markdownIt-Anchor" href="#llmint8"></a> LLM.int8()</h2>
+<p><strong>核心思想</strong></p>
+<p>激活中存在离群值(Emergent Features),这些离群值对量化精度取决定性作用。分解权重和激活矩阵，对绝大部分权重和激活用8bit量化，对离群特征的几个维度保留16bit，对其做高精度的矩阵乘法。主要操作概括为：矩阵分解、量化矩阵乘&amp;高精度矩阵乘、矩阵相加，下图解释的非常清楚：</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144259759.png" alt="image.png" /></p>
+<p><strong>优点</strong></p>
+<p>能保持与FP16相当的精度，同时，有效降低显存占用</p>
+<p><strong>缺点</strong></p>
+<p>计算比FP16还慢</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144306095.png" alt="image.png" /></p>
+<h2 id="gptq"><a class="markdownIt-Anchor" href="#gptq"></a> GPTQ</h2>
+<p>简单来说，<strong>GPTQ 对某个 block 内的所有参数逐个量化，每个参数量化后，需要适当调整这个 block 内其他未量化的参数，以弥补量化造成的精度损失。</strong> GPTQ 量化需要准备校准数据集。</p>
+<p>GPTQ 的思想最初来源于 Yann LeCun 在 1990 年提出的 OBD 算法，随后 OBS、OBC（OBQ） 等方法不断进行改进，而 GPTQ 是 OBQ 方法的加速版。GPTQ 的量化有严谨的数学理论推导，所有的算法步骤都有理论支撑。</p>
+<h3 id="核心思想"><a class="markdownIt-Anchor" href="#核心思想"></a> <strong>核心思想</strong></h3>
+<p>按行迭代进行权重量化，部分权重量化后，利用近似二阶导数信息，更新未量化的权重，从而弥补已量化权重带来的精度损失。</p>
+<h3 id="优点"><a class="markdownIt-Anchor" href="#优点"></a> <strong>优点</strong></h3>
+<p>小批量推理加速明显，4bit量化精度损失可忽略，可扩展至2bit，甚至三元量化</p>
+<h3 id="缺点"><a class="markdownIt-Anchor" href="#缺点"></a> <strong>缺点</strong></h3>
+<p>可能会过拟合于校准数据</p>
+<h3 id="原理"><a class="markdownIt-Anchor" href="#原理"></a> <strong>原理</strong></h3>
+<p><em><strong>目标优化函数</strong></em></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144331146.png" alt="image.png" /></p>
+<p><em><strong>优化过程示意图（省去Hessian逆&amp;Cholesky，便于理解）</strong></em></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144337796.png" alt="image.png" /></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144344138.png" alt="image.png" /></p>
+<p><em><strong>伪代码（耐心看下，就能懂）</strong></em></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144350030.png" alt="image.png" /></p>
+<h2 id="awq"><a class="markdownIt-Anchor" href="#awq"></a> AWQ</h2>
+<p><strong>AWQ（Activation-aware Weight Quantization ）<strong>方法由 MIT、SJTU、Tsinghua University 联合提出的方法，一种对大模型仅权重量化方法。该方法基于”<strong>权重并不同等重要</strong>“的观察，仅保护1%的显著权重（salient weight）可以大大减少量化误差。AWQ不依赖于任何反向传播或重建，因此可以很好地保持LLM在不同领域和模式上的泛化能力，而不会过拟合到校准集；它也不依赖于任何数据布局重新排序，保持硬件效率。AWQ在多种语言建模、常识问答和领域特定基准测试中优于现有工作。得益于更好的泛化能力，它在指令微调LM和首次实现多模态LM方面取得了出色的量化性能。论文还实现了有效的张量核心内核，以加速AWQ的无重新排序在线反量化，实现速度比</strong>GPTQ快1.45倍</strong>，比<strong>cuBLAS FP16实现快1.85倍</strong>。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144356075.png" alt="image.png" /></p>
+<p><strong>误区：AWQ量化=W4A16量化</strong></p>
+<p>AWQ是一种对模型权重进行低比特量化的方法，使用该方法可以将模型权重(Weight)量化为4bit，并在计算激活值(Activation)时反量化为FP16，即W4A16。也可以基于AWQ方法将权重量化为3bit/8bit，并在计算时是使用4bit/8bit/16bit，由此衍生出W4A4、W4A8等一系列方法。</p>
+<p>作者在原文中指出，W4A16可以在精度损失较小的情况下，大幅降低内存占用，且提升模型推理速度，是最常用的方法，因此AWQ和W4A16同镜率较高。</p>
+<h3 id="通过保留1的显著权重来改进llm量化"><a class="markdownIt-Anchor" href="#通过保留1的显著权重来改进llm量化"></a> 通过保留1%的显著权重来改进LLM量化</h3>
+<p>核心思路：<strong>不是所有的权重都同等重要</strong>。1%的权重参数，可能会主导模型量化过程中的损失。保留这些参数的精度（FP16），会极大程度保护模型的性能。</p>
+<p>salient weight 如何选择？</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144402474.png" alt="image.png" /></p>
+<p>通常的做法是基于权重 W 选择，实验发现这种方式并不能提升模型量化效果，和随机选择效果差不多。论文中发现<strong>根据activation magnitude选择权重能显著提升模型效果。</strong></p>
+<p>**局限性：**如果权重矩阵中有的元素用FP16格式存储，有的用INT4格式存储，不仅存储时很麻烦，计算时取数也很麻烦，kernel函数写起来会很抽象。于是，作者想了一个变通的方法——Scaling。</p>
+<h3 id="通过激活感知缩放保护显著权重"><a class="markdownIt-Anchor" href="#通过激活感知缩放保护显著权重"></a> 通过激活感知缩放保护显著权重</h3>
+<p>考虑一个权重矩阵 w ，线性运算可以写作 y=wx 。对权重矩阵进行量化后，可以写作 y=Q(w)x ，量化函数 Q(⋅) 定义为公式1：</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144409513.png" alt="image.png" /></p>
+<p>其中 N 是量化后的比特数， Δ 是量化因子(scaler)。 w′=Round(wΔ) 是量化过程， Δ⋅w′ 是反量化过程。原始的 w 、 Δ 和输入 x 都是FP16格式，不会带来精度损失。整个过程的精度损失全部来源于量化过程中的 Round 取整函数，其误差近似成[0, 0.5]的均匀分布，期望为0.25，可以写作 RoundErr(⋅)∼0.25 。</p>
+<p>考虑对于权重矩阵 w 中的单个元素 w ，引入一个缩放因子 s&gt;1 ，量化过程将 w 与该因子相乘，写作 w′=Round(wsΔ′) ，相应地将反量化过程写作 Δ′⋅w′s，这样在计算过程上是“等价”的，如公式2：</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144427459.png" alt="image.png" /></p>
+<p>虽然公式1和公式2在计算过程上是“等价”的，但是带来的精度损失是不一样的。两种计算方法的误差可以写作公式3：</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144433283.png" alt="image.png" /></p>
+<p>RoundErr(⋅) 视作常数0.25，公式2的误差与公式1的误差的比值可以表示为 Δ′Δ⋅1s 。</p>
+<p>通常情况下，我们对权重矩阵 w 中的某几个元素 w ，乘以缩放因子 s 后，大概率是不会影响权重矩阵 w 的元素最大值的，除非乘的 w 本身就是最大值，但这种概率很小。进而，根据公式1中 Δ 的计算方法，我们认为 Δ′≈Δ。加上 s&gt;1 ，公式2与公式1的误差比值&lt;1，于是作者提出一个观点：<strong>量化时对显著权重进行放大，可以降低量化误差。</strong></p>
+<p>这种理论是否正确？作者进行了实验，如下表，随着 s 的增大， Δ′≠Δ 的概率由0不断升高，但在 s&lt;2 之前，概率还是很低的(&lt;5%)；同时，<strong>在一定范围内，随着</strong> s <strong>的增大，误差比值越来越小，这是完全支持作者观点的。</strong></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144441368.png" alt="image.png" /></p>
+<p>因此，作者改变了思路：为了更加hardware-friendly，<strong>我们对所有权重均进行低比特量化</strong>，但是，在量化时，对于显著权重乘以较大的 s ，相当于降低其量化误差；同时，对于非显著权重，乘以较小的 s ，相当于给予更少的关注。这便是上一节提到的缩放(Scaling)方法。</p>
+<p>按照作者的观点，激活值越大，对应通道越显著，就应该分配更大的缩放系数降低其量化误差。因此，作者统计了各通道的平均激活值（计算输入矩阵各列绝对值的平均值） sx ，并直接将此作为各通道的缩放系数。同时引入一个变量 α 用于平衡显著通道和非显著通道的系数</p>
+<p>作者在论文中提到，采用一种称为“Fast Grid Search”的方法在[0, 1]区间快速找出最合适的 α ，</p>
+<h3 id="实验"><a class="markdownIt-Anchor" href="#实验"></a> 实验</h3>
+<p>在 MMLU、Common Sense 数据集上，Llama 模型使用AWQ方法量化后效果要优于 RTN 和 GPTQ 量化方法。</p>
+<p>AWQ 在所有模型尺寸和不同的比特精度上都优于四舍五入到最近量化（RTN）。在较小尺寸的OPT模型上，它比GPTQ在WikiText-2困惑度上取得更好的结果，在较大尺寸的模型上结果相当，这表明了它对不同模型尺寸和家族的普遍适用性。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144448068.png" alt="image.png" /></p>
+<p>在指令微调模型 Vicuna 7B、13B 模型进行测试，Awq方法也是优于 RTN、GPTQ 方法。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144453615.png" alt="image.png" /></p>
+<p>在模型推理性能上，使用 4-bit AWQ 方法量化速度是 3-bit GPTQ 方法量化的 1.45 倍，是 GPTQ-R 的 2 倍，是使用 Triton 实现的 GPTQ 方法的 2.4倍。</p>
+<h2 id="smoothquant"><a class="markdownIt-Anchor" href="#smoothquant"></a> SmoothQuant</h2>
+<p>LLM.int8()采用一种混合精度分解（离群值使用FP16计算，其它使用 FP8 计算）的方法，虽然降低了模型显存占用，但很难在硬件加速器上高效地实现分解，导致推理效率不佳。</p>
+<p>SmoothQuant 方法是一种不需要训练，能保持模型精度的训练后量化（PTQ）方法，<strong>它对权重 Weight和激活值 Activation都采用了 int8 量化</strong>，显存节省了一半，推理速度提升了1.56 倍。</p>
+<h3 id="核心思想-2"><a class="markdownIt-Anchor" href="#核心思想-2"></a> <strong>核心思想</strong></h3>
+<p>weights容易量化，activations不易量化，通过一个数学等价的转换形式，迁移激活的outliers到weights，均衡一下，使得weights和activations都相对好量化。</p>
+<p>关键点：<strong>将量化难度从激活值转移到权重值。</strong></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144501403.png" alt="image.png" /></p>
+<h3 id="量化难点"><a class="markdownIt-Anchor" href="#量化难点"></a> 量化难点</h3>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144506969.png" alt="image.png" /></p>
+<ol>
+<li>
+<p><strong>激活值比权重更难量化:</strong> 之前的工作LLM.int8()表明，使用 INT8 甚至 INT4 量化 LLM 的权重不会降低准确性；</p>
+</li>
+<li>
+<p><strong>异常值让激活值量化变得更艰难:</strong> 激活异常值比大多数激活值大约 100 倍。 如果我们使用 INT8 量化，大多数值将被清零；</p>
+</li>
+<li>
+<p>**异常值只存在少数通道（Channel）内。**单一token 方差很大（异常值会存在于每一个 token 中），单一 channel 方差会小很多。</p>
+</li>
+</ol>
+<p>需要在权重值和激活值中分离量化难度，让彼此均容易被量化。</p>
+<p>提出加入一个超参 α （迁移强度），来控制从激活值迁移多少难度到权重值。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144514597.png" alt="image.png" /></p>
+<h3 id="smoothquant-方法应用于-transformer块"><a class="markdownIt-Anchor" href="#smoothquant-方法应用于-transformer块"></a> <strong>SmoothQuant 方法应用于 Transformer块</strong></h3>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144520635.png" alt="image.png" /></p>
+<p>如上图，通过将线性层和 batched matmul (BMMs) 使用 INT8 计算，将 element-wise 算子，譬如 LayerNorm、Softmax 使用 FP16 计算，这样可以均衡精度和推理效率。</p>
+<h3 id="实验-2"><a class="markdownIt-Anchor" href="#实验-2"></a> 实验</h3>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144526413.png" alt="image.png" /></p>
+<p>量化 baselines 和 SmoothQuant</p>
+<p>其中，SmoothQuant 有三种方式 O1|O2|O3，推理效率会依次提升。</p>
+<p><strong>模型效果</strong></p>
+<p>以 OPT-175B 模型为例，8bit 量化后精度和原模型相当。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144532158.png" alt="image.png" /></p>
+<p>SmoothQuant 方法应用于多个模型，在多个数据集的平均精度也与原模型相当。</p>
+<p>SmoothQuant方法在推理速度和显存占用方面相比原模型也都有不少的提升。其中<strong>速度提升 1.51 倍，显存占用节省 1.96 倍。</strong></p>
+<h2 id="fp8"><a class="markdownIt-Anchor" href="#fp8"></a> FP8</h2>
+<h3 id="background"><a class="markdownIt-Anchor" href="#background"></a> Background</h3>
+<h4 id="硬件的支持"><a class="markdownIt-Anchor" href="#硬件的支持"></a> 硬件的支持</h4>
+<p>许多硬件厂商的芯片开始支持 FP8 的计算，如英伟达最新的两种架构 Ada (4090) 和 Hopper (H100)。它们的 Tensor Core 计算单元都开始支持 FP8 的计算，如图所示：</p>
+<p>在 H100 的第四代 Tensor Core 中，支持任意的 FP8 格式矩阵的乘法 （E4M3xE4M3, E5M2xE5M2, E4M3xE5M2, E5M2xE4M3）</p>
+<p>然后会进行累加到 FP32 和 FP16 的数据格式之中</p>
+<p>同时也支持浮点格式之间的互相转换，如下图</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144539470.png" alt="image.png" /></p>
+<h4 id="fp8-好处"><a class="markdownIt-Anchor" href="#fp8-好处"></a> FP8 好处</h4>
+<ol>
+<li>
+<p>FP8 Tensor Cores 比 16-bit Tensor Cores 快</p>
+</li>
+<li>
+<p>减少 memory movement</p>
+</li>
+<li>
+<p>如果模型已经在 FP8 中进行，部署更加方便</p>
+</li>
+<li>
+<p>FP8 拥有更宽的动态范围</p>
+</li>
+<li>
+<p>FP8 到 FP16/FP32/BF16 之间的转换电路，可以设计得更简单直接，而不需要像INT8/UINT8到FP的转化需要乘法和加法的开销。</p>
+</li>
+</ol>
+<h3 id="2-fp8-types"><a class="markdownIt-Anchor" href="#2-fp8-types"></a> 2. FP8 TYPES</h3>
+<p>先简单回顾一下浮点数的表示方式：</p>
+<h4 id="ieee-754"><a class="markdownIt-Anchor" href="#ieee-754"></a> IEEE 754</h4>
+<ul>
+<li>浮点数会分为符号位（sign）, 指数位 （exponent）, 和小数位 （Mantissa）</li>
+</ul>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144547807.png" alt="image.png" /></p>
+<p>float32 的表示方法</p>
+<ul>
+<li>
+<p>浮点数根据 Exponent 的值会分为规格化，非规格化和特殊值 （无穷和NAN）。</p>
+</li>
+<li>
+<p>规格化的值计算公式如下：</p>
+</li>
+</ul>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144555839.png" alt="image.png" /></p>
+<ul>
+<li>指数部分为了表示负指数，会减去一个 bias, bias 的值为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mn>2</mn><mrow><mi>e</mi><mtext>−</mtext><mn>1</mn></mrow></msup><mtext>−</mtext><mn>1</mn><mo>=</mo><mn>127</mn></mrow><annotation encoding="application/x-tex">2^{e−1}−1= 127</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.897438em;vertical-align:-0.08333em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141079999999999em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">e</span><span class="mord mtight">−</span><span class="mord mtight">1</span></span></span></span></span></span></span></span></span><span class="mord">−</span><span class="mord">1</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.64444em;vertical-align:0em;"></span><span class="mord">1</span><span class="mord">2</span><span class="mord">7</span></span></span></span></li>
+</ul>
+<hr />
+<p>在 <strong>Tensor Cores</strong> 中，根据指数位和小数位的不同，支持 E5M2 和 E4M3</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144601136.png" alt="image.png" /></p>
+<p>下面分别来看看它们的浮点数表示方法:</p>
+<h4 id="e5m2"><a class="markdownIt-Anchor" href="#e5m2"></a> E5M2</h4>
+<p>E5M2 遵循上面的 IEEE 754 的浮点数格式，其中 <code>bias = 15</code></p>
+<ul>
+<li>
+<p>规格化的值 （指数位不全为 0 /不全为 1）<br />
+eg: 0 | 01101 | 01 ，如下图</p>
+<p>易得最大值和最小值</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144609843.png" alt="image.png" /></p>
+</li>
+<li>
+<p>非规格化的值 （指数位全为 0）<br />
+注意此时计算方法发生了改变，指数位变为 21−b ，小数位不需要 <strong>+1</strong><br />
+eg: 0 | 00000 | 11 ，如下图</p>
+<p>如果指数位和小数位都为 0，则表示 0</p>
+<p>同时，易得非规格化的最大值最小值</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144619245.png" alt="image.png" /></p>
+</li>
+<li>
+<p>特殊值 （指数位全为 1）<br />
+特殊值根据小数位的不同分为 无穷 （Infinites） 和 NaN (Not a number)，表示如下：</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144627138.png" alt="image.png" /></p>
+</li>
+</ul>
+<h4 id="e4m3"><a class="markdownIt-Anchor" href="#e4m3"></a> E4M3</h4>
+<p>E4M3 不完全遵循 IEEE 754 的数据格式，主要不同在于当指数位全为1时，一样可以用来表示规格化的值（当小数位不为1），而且不能用来表示 Infinites。其中， <code>bias = 7</code></p>
+<p>计算方式还是一样的，综合一下，可参考下图：</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144859989.png" alt="image.png" /></p>
+<p>根据表示的方式，可以把浮点数看成 2 的幂之间的 2E 个样本的精度，比如在 E5M2 中，2 和 4 之间会有 4 个样本，4 和 8 之间也会有 4 个样本；在 E4M3 中，2 和 4 之间有 16 个样本。通过这一特性，可以容易得出浮点量化的误差会随着数值变化的增大而增大。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144905905.png" alt="image.png" /></p>
+<h3 id="3-convert-to-fp8"><a class="markdownIt-Anchor" href="#3-convert-to-fp8"></a> 3. Convert to FP8</h3>
+<p>先试想一下，模型的权重如果都是 [-2, 2]，它们原本的数据格式都是 FP32，如果你想把它转换成 FP8，其实只需要一个 round 函数。</p>
+<p>eg: 易得 FP8 E5M2 在 [1,2] 之间的数为 [1, 1.25, 1.5, 1.75]，fp32 的值为 1.4445，那么 fp8 = round(1.4445) = 1.5</p>
+<p>不过，FP8 E4M3 的表示范围为 [-448, 448]，明显远远小于正常的 FP32 表示的范围。在一些应用上肯定还是无法表示的，办法就是引入一个缩放因子 scale，使得原 Tensor 的值可以在 FP8 的表示范围下表示，如图：</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144913253.png" alt="image.png" /></p>
+<p>所以对于一个 FP32 的数，要想转换成 FP8, 只需要两步：</p>
+<ol>
+<li>
+<p>Unscaled FP32 = FP32 / scale</p>
+</li>
+<li>
+<p>FP8 = Convert(Unscaled FP32)</p>
+</li>
+</ol>
+<p>第一步，就是尽可能地把 FP32 的数据放到 FP8 的表示范围内。</p>
+<p>eg: 假设有 fp32 数组 [1000.0, 23.0, 123.123]，最简单的操作类似于 “minmax”，所有数除以 1000.0/448, 得到 Unscaled FP32 数组 [448, 10.304, 55.104]。</p>
+<p>第二步，其实就是上面所说的 Rounding 了，FP8 表示不了精确的 10.304 和 55.104。具体方法可见<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/574825662">FP8 量化-原理、实现与误差分析</a></p>
+<h4 id="寻找-scaling-factor"><a class="markdownIt-Anchor" href="#寻找-scaling-factor"></a> 寻找 scaling factor</h4>
+<p>这里提供两种较为容易理解的方法：</p>
+<p>第一种 （from Nvidia）:</p>
+<p>假设是 Per-Tensor 的量化，就是找到整个 Tensor 中的最大值，而为了减少找全局最大值带来的 memory consumption, 这里提出了一个基于一个 window, 即找到一个局部的最大值，然后再在这个局部最大值添加一个 margin 在作为 scaling factor</p>
+<p>第二种 （from PPQ）:</p>
+<p>根据 <a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/574825662">志佬的文章</a>，他发现 FP8 对 scale 的选择并不太敏感，所以在 ppq 中，预设了一些 scale 的候选 [.0078125, .03125, .125, 1.0, 4.0, 16.0, 64.0]， 然后通过计算 MSE 损失来选择对应的 scale。</p>
+<h3 id="4-example-of-fp8-gemm"><a class="markdownIt-Anchor" href="#4-example-of-fp8-gemm"></a> 4. Example of FP8 GEMM</h3>
+<p>在实际的硬件上，FP8 矩阵运算的大体计算过程如下：</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144920847.png" alt="image.png" /></p>
+<h3 id="5-fp8-performance"><a class="markdownIt-Anchor" href="#5-fp8-performance"></a> 5. FP8 Performance</h3>
+<h4 id="gemm-performance"><a class="markdownIt-Anchor" href="#gemm-performance"></a> GEMM Performance</h4>
+<p>在 H100 中，矩阵乘法的速度提升如下图：</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144934316.png" alt="image.png" /></p>
+<h4 id="dl-training-performance"><a class="markdownIt-Anchor" href="#dl-training-performance"></a> DL TRAINING PERFORMANCE</h4>
+<p>对于 GPT 模型训练速度的提升</p>
+<p>IMAGE CLASSIFICATION</p>
+<p>对于大部分图像分类的模型 FP8 的精度如下：</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144940435.png" alt="image.png" /></p>
+<p>可以看到，经过FP8训练后，精度几乎很少下降，而且如下图所示，训练的过程与 FP16 十分相似</p>
+<h2 id="开源工具"><a class="markdownIt-Anchor" href="#开源工具"></a> 开源工具</h2>
+<h3 id="autoawq"><a class="markdownIt-Anchor" href="#autoawq"></a> AutoAWQ</h3>
+<p><a target="_blank" rel="noopener" href="https://github.com/casper-hansen/AutoAWQ">https://github.com/casper-hansen/AutoAWQ</a></p>
+<h3 id="autogptq"><a class="markdownIt-Anchor" href="#autogptq"></a> AutoGPTQ</h3>
+<p><a target="_blank" rel="noopener" href="https://github.com/AutoGPTQ/AutoGPTQ">https://github.com/AutoGPTQ/AutoGPTQ</a></p>
+<h3 id="auto-fp8"><a class="markdownIt-Anchor" href="#auto-fp8"></a> Auto-FP8</h3>
+<p><a target="_blank" rel="noopener" href="https://github.com/neuralmagic/AutoFP8">https://github.com/neuralmagic/AutoFP8</a></p>
+<h3 id="tensorrt-llm"><a class="markdownIt-Anchor" href="#tensorrt-llm"></a> TensorRT-LLM</h3>
+<p><a target="_blank" rel="noopener" href="https://github.com/NVIDIA/TensorRT-LLM/blob/main/examples/quantization/quantize.py">https://github.com/NVIDIA/TensorRT-LLM/blob/main/examples/quantization/quantize.py</a></p>
+<h2 id="nvidia-benchmark-参考数据"><a class="markdownIt-Anchor" href="#nvidia-benchmark-参考数据"></a> Nvidia Benchmark 参考数据</h2>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144947414.png" alt="image.png" /></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144953513.png" alt="image.png" /></p>
+<p><em><strong>Performance &amp; Accuracy Tradeoff</strong></em></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126144959259.png" alt="image.png" /></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" rel="tag"># 大模型</a>
+              <a href="/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%8E%A8%E7%90%86/" rel="tag"># 大模型推理</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/01/26/LoRA-Low-Rank-Adaptation-%E4%BD%8E%E7%A7%A9%E5%BE%AE%E8%B0%83/" rel="prev" title="LoRA (Low-Rank Adaptation) 低秩微调">
+                  <i class="fa fa-angle-left"></i> LoRA (Low-Rank Adaptation) 低秩微调
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2025/01/26/%E6%8A%95%E6%9C%BA%E8%A7%A3%E7%A0%81-Speculative-Decoding/" rel="next" title="投机解码 (Speculative Decoding)">
+                  投机解码 (Speculative Decoding) <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Ronny Lu</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">197k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">11:56</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">false</script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" integrity="sha256-UF1fgpAiu3tPJN/uCqEUHNe7pnr+QR0SQDNfgglgtcM=" crossorigin="anonymous">
+  <script class="next-config" data-name="katex" type="application/json">{"copy_tex_js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/copy-tex.min.js","integrity":"sha256-Us54+rSGDSTvIhKKUs4kygE2ipA0RXpWWh0/zLqw3bs="}}</script>
+  <script src="/js/third-party/math/katex.js"></script>
+
+
+
+</body>
+</html>

@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-minimal.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"luyiyun1021.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.22.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="🔗 原文链接：https:&#x2F;&#x2F;www.53ai.com&#x2F;news&#x2F;finetuning&#x2F;2024071109285.html   一、背景 关于 Speculative Decoding 的综述文章 [2401.07851] Unlocking Efficiency in Large Language Model Inference: A Comprehensive Survey of Spe">
+<meta property="og:type" content="article">
+<meta property="og:title" content="投机解码 (Speculative Decoding)">
+<meta property="og:url" content="https://luyiyun1021.github.io/2025/01/26/%E6%8A%95%E6%9C%BA%E8%A7%A3%E7%A0%81-Speculative-Decoding/index.html">
+<meta property="og:site_name" content="Ronny Lu&#39;s blog">
+<meta property="og:description" content="🔗 原文链接：https:&#x2F;&#x2F;www.53ai.com&#x2F;news&#x2F;finetuning&#x2F;2024071109285.html   一、背景 关于 Speculative Decoding 的综述文章 [2401.07851] Unlocking Efficiency in Large Language Model Inference: A Comprehensive Survey of Spe">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126154418463.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/65db84a0f0924ade9b633620554eaac7">
+<meta property="og:image" content="https://bj.bcebos.com/brainbox-online/app/brainBox/image/webScissorStorage/fb671e3290db46af8cb88da84646f3c7">
+<meta property="og:image" content="https://bj.bcebos.com/brainbox-online/app/brainBox/image/webScissorStorage/65db84a0f0924ade9b633620554eaac7">
+<meta property="og:image" content="https://bj.bcebos.com/brainbox-online/app/brainBox/image/webScissorStorage/b3160b698f034a1c97ff33af81ce1943">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126154703961.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/3f7b476db20e4776a3b79b3f2289fd97">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126154850851.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126154910705.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126154942664.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126154949627.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126154959329.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126155010317.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126155016265.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126155022384.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126155027608.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126155037577.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126155045187.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126155058820.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126155108487.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126155120150.png">
+<meta property="article:published_time" content="2025-01-26T09:15:02.000Z">
+<meta property="article:modified_time" content="2025-01-26T09:15:39.067Z">
+<meta property="article:author" content="Ronny Lu">
+<meta property="article:tag" content="大模型">
+<meta property="article:tag" content="大模型推理">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126154418463.png">
+
+
+<link rel="canonical" href="https://luyiyun1021.github.io/2025/01/26/%E6%8A%95%E6%9C%BA%E8%A7%A3%E7%A0%81-Speculative-Decoding/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://luyiyun1021.github.io/2025/01/26/%E6%8A%95%E6%9C%BA%E8%A7%A3%E7%A0%81-Speculative-Decoding/","path":"2025/01/26/投机解码-Speculative-Decoding/","title":"投机解码 (Speculative Decoding)"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>投机解码 (Speculative Decoding) | Ronny Lu's blog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<style>.darkmode--activated{--body-bg-color:#282828;--content-bg-color:#333;--card-bg-color:#555;--text-color:#ccc;--blockquote-color:#bbb;--link-color:#ccc;--link-hover-color:#eee;--brand-color:#ddd;--brand-hover-color:#ddd;--table-row-odd-bg-color:#282828;--table-row-hover-bg-color:#363636;--menu-item-bg-color:#555;--btn-default-bg:#222;--btn-default-color:#ccc;--btn-default-border-color:#555;--btn-default-hover-bg:#666;--btn-default-hover-color:#ccc;--btn-default-hover-border-color:#666;--highlight-background:#282b2e;--highlight-foreground:#a9b7c6;--highlight-gutter-background:#34393d;--highlight-gutter-foreground:#9ca9b6}.darkmode--activated img{opacity:.75}.darkmode--activated img:hover{opacity:.9}.darkmode--activated code{color:#69dbdc;background:0 0}button.darkmode-toggle{z-index:9999}.darkmode-ignore,img{display:flex!important}.beian img{display:inline-block!important}</style></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Ronny Lu's blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%80-%E8%83%8C%E6%99%AF"><span class="nav-number">1.</span> <span class="nav-text"> 一、背景</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BA%8C-%E8%87%AA%E5%9B%9E%E5%BD%92%E8%A7%A3%E7%A0%81autoregressive-decoding"><span class="nav-number">2.</span> <span class="nav-text"> 二、自回归解码（Autoregressive Decoding）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#21-%E6%A6%82%E8%BF%B0"><span class="nav-number">2.0.1.</span> <span class="nav-text"> 2.1. 概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#22-kv-cache"><span class="nav-number">2.0.2.</span> <span class="nav-text"> 2.2 KV Cache</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%80-%E8%83%8C%E6%99%AF-2"><span class="nav-number">3.</span> <span class="nav-text"> 一、背景</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BA%8C-%E8%87%AA%E5%9B%9E%E5%BD%92%E8%A7%A3%E7%A0%81autoregressive-decoding-2"><span class="nav-number">4.</span> <span class="nav-text"> 二、自回归解码（Autoregressive Decoding）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#21-%E6%A6%82%E8%BF%B0-2"><span class="nav-number">4.0.1.</span> <span class="nav-text"> 2.1. 概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#22-kv-cache-2"><span class="nav-number">4.0.2.</span> <span class="nav-text"> 2.2 KV Cache</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#23-%E8%AE%BF%E5%AD%98%E7%93%B6%E9%A2%88"><span class="nav-number">4.0.3.</span> <span class="nav-text"> 2.3 访存瓶颈</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#24-decoding-%E9%98%B6%E6%AE%B5%E4%BC%98%E5%8C%96"><span class="nav-number">4.0.4.</span> <span class="nav-text"> 2.4 Decoding 阶段优化</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%89-%E5%B9%B6%E8%A1%8C%E8%A7%A3%E7%A0%81parallel-decoding"><span class="nav-number">5.</span> <span class="nav-text"> 三、并行解码（Parallel Decoding）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#31-%E6%96%B9%E6%A1%88%E6%A6%82%E8%BF%B0"><span class="nav-number">5.0.1.</span> <span class="nav-text"> 3.1 方案概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#32-%E5%AE%9E%E7%8E%B0%E7%BB%86%E8%8A%82"><span class="nav-number">5.0.2.</span> <span class="nav-text"> 3.2 实现细节</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#33-%E8%AF%84%E4%BC%B0%E7%BB%93%E6%9E%9C"><span class="nav-number">5.0.3.</span> <span class="nav-text"> 3.3. 评估结果</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9B%9B-%E6%8A%95%E6%9C%BA%E8%A7%A3%E7%A0%81speculative-decoding"><span class="nav-number">6.</span> <span class="nav-text"> 四、投机解码（Speculative Decoding）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#41-%E6%96%B9%E6%A1%88%E6%A6%82%E8%BF%B0"><span class="nav-number">6.0.1.</span> <span class="nav-text"> 4.1. 方案概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#42-%E5%AE%9E%E7%8E%B0%E7%BB%86%E8%8A%82"><span class="nav-number">6.0.2.</span> <span class="nav-text"> 4.2 实现细节</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#43-%E8%AF%84%E4%BC%B0%E7%BB%93%E6%9E%9C"><span class="nav-number">6.0.3.</span> <span class="nav-text"> 4.3. 评估结果</span></a></li></ol></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Ronny Lu"
+      src="https://avatars.githubusercontent.com/u/55233584?v=4">
+  <p class="site-author-name" itemprop="name">Ronny Lu</p>
+  <div class="site-description" itemprop="description">Tech notes on LLM, LLM Infra, C++</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">50</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">14</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">14</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/01/26/%E6%8A%95%E6%9C%BA%E8%A7%A3%E7%A0%81-Speculative-Decoding/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
+      <meta itemprop="name" content="Ronny Lu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ronny Lu's blog">
+      <meta itemprop="description" content="Tech notes on LLM, LLM Infra, C++">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="投机解码 (Speculative Decoding) | Ronny Lu's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          投机解码 (Speculative Decoding)
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-01-26 17:15:02 / 修改时间：17:15:39" itemprop="dateCreated datePublished" datetime="2025-01-26T17:15:02+08:00">2025-01-26</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">大模型</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E6%8E%A8%E7%90%86%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index"><span itemprop="name">推理技术</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>8.1k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>30 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><blockquote>
+<p>🔗 原文链接：<a target="_blank" rel="noopener" href="https://www.53ai.com/news/finetuning/2024071109285.html">https://www.53ai.com/news/finetuning/2024071109285.html</a></p>
+</blockquote>
+<h1 id="一-背景"><a class="markdownIt-Anchor" href="#一-背景"></a> 一、背景</h1>
+<p>关于 Speculative Decoding 的综述文章 [2401.07851] Unlocking Efficiency in Large Language Model Inference: A Comprehensive Survey of Speculative Decoding，如下图Figure 3 所示：</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126154418463.png" alt="image.png" /></p>
+<span id="more"></span>
+<h1 id="二-自回归解码autoregressive-decoding"><a class="markdownIt-Anchor" href="#二-自回归解码autoregressive-decoding"></a> 二、自回归解码（Autoregressive Decoding）</h1>
+<h3 id="21-概述"><a class="markdownIt-Anchor" href="#21-概述"></a> 2.1. 概述</h3>
+<p>当前的主流 LLM 基本都是 Decoder Only 的 Transformer 模型，其推理过程可以分为两个阶段：</p>
+<ul>
+<li>
+<p>Prefill：根据输入 Tokens（Recite, the, first, law, of, robotics） 生成第一个输出 Token（A），通过一次 Forward 就可以完成，在 Forward 中，输入 Tokens 间可以并行执行（类似 Bert 这些 Encoder 模型），因此执行效率很高。</p>
+</li>
+<li>
+<p>Decoding：从生成第一个 Token（A） 之后开始，采用自回归方式一次生成一个 Token，直到生成一个特殊的 Stop Token（或者满足用户的某个条件，比如超过特定长度） 才会结束，假设输出总共有 N 个 Token，则 Decoding 阶段需要执行 N-1 次 Forward，这 N-1 次 Forward 只能串行执行，效率很低。另外，在生成过程中，需要关注的 Token 越来越多（每个 Token 的生成都需要 Attention 之前的 Token），计算量也会适当增大。</p>
+</li>
+</ul>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/65db84a0f0924ade9b633620554eaac7" alt="image.gif" /></p>
+<h3 id="22-kv-cache"><a class="markdownIt-Anchor" href="#22-kv-cache"></a> 2.2 KV Cache</h3>
+<p>如下图所示，在 LLM 推理中最关键的就是下图中的 Multi-Head Attention，其主要的计算集中在左图中灰色的 Linear（矩阵乘）和 Scaled Dot-Product Attention 中的 MatMul 矩阵乘法：</p>
+<blockquote>
+<p>🔗 原文链接：<a target="_blank" rel="noopener" href="https://www.53ai.com/news/finetuning/2024071109285.html">https://www.53ai.com/news/finetuning/2024071109285.html</a></p>
+</blockquote>
+<h1 id="一-背景-2"><a class="markdownIt-Anchor" href="#一-背景-2"></a> 一、背景</h1>
+<p>关于 Speculative Decoding 的综述文章 [2401.07851] Unlocking Efficiency in Large Language Model Inference: A Comprehensive Survey of Speculative Decoding，如下图Figure 3 所示：</p>
+<p><img src="https://bj.bcebos.com/brainbox-online/app/brainBox/image/webScissorStorage/fb671e3290db46af8cb88da84646f3c7" alt="" /></p>
+<h1 id="二-自回归解码autoregressive-decoding-2"><a class="markdownIt-Anchor" href="#二-自回归解码autoregressive-decoding-2"></a> 二、自回归解码（Autoregressive Decoding）</h1>
+<h3 id="21-概述-2"><a class="markdownIt-Anchor" href="#21-概述-2"></a> 2.1. 概述</h3>
+<p>当前的主流 LLM 基本都是 Decoder Only 的 Transformer 模型，其推理过程可以分为两个阶段：</p>
+<ul>
+<li>
+<p>Prefill：根据输入 Tokens（Recite, the, first, law, of, robotics） 生成第一个输出 Token（A），通过一次 Forward 就可以完成，在 Forward 中，输入 Tokens 间可以并行执行（类似 Bert 这些 Encoder 模型），因此执行效率很高。</p>
+</li>
+<li>
+<p>Decoding：从生成第一个 Token（A） 之后开始，采用自回归方式一次生成一个 Token，直到生成一个特殊的 Stop Token（或者满足用户的某个条件，比如超过特定长度） 才会结束，假设输出总共有 N 个 Token，则 Decoding 阶段需要执行 N-1 次 Forward，这 N-1 次 Forward 只能串行执行，效率很低。另外，在生成过程中，需要关注的 Token 越来越多（每个 Token 的生成都需要 Attention 之前的 Token），计算量也会适当增大。</p>
+</li>
+</ul>
+<p><img src="https://bj.bcebos.com/brainbox-online/app/brainBox/image/webScissorStorage/65db84a0f0924ade9b633620554eaac7" alt="" /></p>
+<h3 id="22-kv-cache-2"><a class="markdownIt-Anchor" href="#22-kv-cache-2"></a> 2.2 KV Cache</h3>
+<p>如下图所示，在 LLM 推理中最关键的就是下图中的 Multi-Head Attention，其主要的计算集中在左图中灰色的 Linear（矩阵乘）和 Scaled Dot-Product Attention 中的 MatMul 矩阵乘法：</p>
+<p><img src="https://bj.bcebos.com/brainbox-online/app/brainBox/image/webScissorStorage/b3160b698f034a1c97ff33af81ce1943" alt="" /></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126154703961.png" alt="image.png" /></p>
+<p>如上右图中的 Mask 是一个下三角矩阵，也是因为这个下三角矩阵实现了 LLM Decoder 的主要特性，每个 Token 都只能看到当前位置及之前的 Token。</p>
+<p>如下图所示，其中的 QKT 可以理解为一个相关性矩阵，如动图所示，4 个 Token 对应 4 个 Step，其中：</p>
+<ul>
+<li>
+<p>Step 2 依赖 Step 1 的结果，相关性矩阵的第 1 行不用重复计算</p>
+</li>
+<li>
+<p>Step 3 依赖 Step 1 和 Step 2 的结果，相关性矩阵的第 1 行和第 2 行不用重复计算</p>
+</li>
+<li>
+<p>Step 4 依赖 Step 1、Step 2 和 Step 3 的结果，相关性矩阵的第 1 行、第 2 行和第 3 行不用重复计算</p>
+</li>
+</ul>
+<p>在 Decoding 阶段 Token 是逐个生成的，上述的计算过程中每次都会依赖之前的结果，此时最简单的思路就是 Cache 之前计算过的中间结果，在计算当前 Token 时直接从 Cache 中读取而不是重新计算，如下图所示，上面是没有 Cache 的情况，下面是有 Cache 的情况：</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/3f7b476db20e4776a3b79b3f2289fd97" alt="" /></p>
+<p>如下表所示，在 T4 GPU 上以 GPT2 模型为例验证有无 Cache 对推理时延的影响，其加速效果非常明显，因此也成为 LLM 推理的标配：</p>
+<table>
+<thead>
+<tr>
+<th>GPT2/T4</th>
+<th>无 KV Cache</th>
+<th>有 KV Cache</th>
+<th>加速比</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Output Token 1000</td>
+<td>52.53s</td>
+<td>9.12s</td>
+<td>5.76x</td>
+</tr>
+</tbody>
+</table>
+<p>当然，KV Cache 也有一定不足，其相当于使用空间换时间，占用的显存会大幅增加，尤其是对于参数规模较大的模型。比如，对于 Vicuna-13B 模型（FP16 推理，其 Transformer layer num=40, embedding size=5120）来说，在 Sequence Length=1024，batch size=8 下，KV 缓存所占显存大小为 2 * 2 * 40 * 5120 * 1024 * 8 = 6.7G。</p>
+<h3 id="23-访存瓶颈"><a class="markdownIt-Anchor" href="#23-访存瓶颈"></a> 2.3 访存瓶颈</h3>
+<p>因为 Decoding 阶段 Token 逐个处理，使用 KV Cache 之后，上面介绍的 Multi-Head Attention 里的矩阵乘矩阵操作全部降级为矩阵乘向量。</p>
+<p>除此之外，Transformer 模型中的另一个关键组件 FFN 中主要也包含两个矩阵乘法操作，但是 Token 之间不会交叉融合，也就是任何一个 Token 都可以独立计算，因此在 Decoding 阶段不用 Cache 之前的结果，但同样会出现矩阵乘矩阵操作降级为矩阵乘向量。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126154850851.png" alt="image.png" /></p>
+<p>矩阵乘向量操作是明显的访存 bound，而以上操作是 LLM 推理中最主要的部分，这也就导致 LLM 推理是访存 bound 类型。</p>
+<p>基于 V100 GPU，FP16 精度，LLM 推理 Prefill 阶段和 Decoding 阶段的 Roofline Model 可以近似表示如下（理论上限），其中</p>
+<ul>
+<li>
+<p>三角表示 Prefill 阶段：假设 Batch size 为 1，Sequence Length 越大，计算强度越大，通常都会位于 Compute Bound 区域。</p>
+</li>
+<li>
+<p>圆表示 Decoding 阶段：Batch size 越大，计算强度越大，理论性能峰值越大，通常都会位于 Memory Bound 区域。</p>
+</li>
+</ul>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126154910705.png" alt="image.png" /></p>
+<h3 id="24-decoding-阶段优化"><a class="markdownIt-Anchor" href="#24-decoding-阶段优化"></a> 2.4 Decoding 阶段优化</h3>
+<p>如下图 Figure 4 所示，Prefill 阶段在比较小 Batch Size 下可以获得比较大的计算强度，相应的吞吐也很高；而 Decoding 阶段需要比较大的 Batch Size 才能获得相对高的计算强度及吞吐（图片来自 [2308.16369] SARATHI: Efficient LLM Inference by Piggybacking Decodes with Chunked Prefills ）：</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126154942664.png" alt="image.png" /></p>
+<p>针对 Decoding 阶段计算强度比较低的情况，有两种优化的思路：</p>
+<ul>
+<li>
+<p>在不同请求间 Batching 的方式（Continuous Batching），可以增大 Decoding 阶段的 Batch Size，进而更充分发挥 GPU 算力，但是其无法降低单个请求的 Latency，而且如果用户请求比较少，比如只有单一用户，那么永远无法实现 Batching。</p>
+</li>
+<li>
+<p>在单一请求内一次验证多个 Decoding Step（Speculative Decoding），虽然一次 Decoding Step 计算量线性增加，但由于是访存瓶颈，因此计算时间不会明显增加，如果 Decoding Step 数量减少的比例更多，那么就很有可能降低整个请求的时延。</p>
+</li>
+</ul>
+<p>如下图所示为 Batch size 为 1 和 512 时 LLM 中几个主要 OP 的计算耗时，可以看出，将 Batch size 从 1 增加到 512，计算量增加 512 倍，但是其整体时间只增加为原来的 3 倍左右（图片来自 openppl-public · GitHub），如果平均每次验证通过 5 个 Token，那么总的 Decoding Step 数目将降为 1/5，总的 Decoding 时间变为原来的 3/5（忽略其他部分开销），那么即可以实现单一请求的加速：</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126154949627.png" alt="image.png" /></p>
+<p>实际的生成环境中可能要综合考虑上述的两种优化思路，比如如果不同用户间 Continuous Batching 已经达到比较大的 Batch Size，各种矩阵运算接近或超过 Roofline 的交叉点，那么再使用 Speculative Decoding 并不会有什么收益，这一点也是当前提到投机采样最容易被忽略的。</p>
+<h1 id="三-并行解码parallel-decoding"><a class="markdownIt-Anchor" href="#三-并行解码parallel-decoding"></a> 三、并行解码（Parallel Decoding）</h1>
+<h3 id="31-方案概述"><a class="markdownIt-Anchor" href="#31-方案概述"></a> 3.1 方案概述</h3>
+<p>Parallel Decoding 的第一个工作是 2018 发表在 NIPS 上的 Blockwise Parallel Decoding for Deep Autoregressive Models。作者提出分块并行解码（Blockwise Parallel Decoding）方案，在精度不变的情况下可以获得 2x 加速，在牺牲少量精度的情况下可以获得 7x 加速。</p>
+<p>假设输出序列的长度为 m，那么 Autoregressive Decoding 要执行 m 步才能获得最终结果，随着模型的增大，每一步的时延也会增大，整体时延也会放大至少 m 倍，在 Blockwise Parallel Decoding 中，作者期望通过 l 步就可完成整个预测，其中 l 远小于 m。</p>
+<h3 id="32-实现细节"><a class="markdownIt-Anchor" href="#32-实现细节"></a> 3.2 实现细节</h3>
+<p>具体方案如下图所示，分为三步：</p>
+<ol>
+<li>Predict 阶段</li>
+</ol>
+<p>令 p1=p（p 表示原始模型），然后额外训练一系列的辅助模型 p2，…，pk，其中 pi(yj+i|y&lt;=j,x)，也就是说，第 i 个模型是根据之前 1-j 个输出生成第 j + i 个输出。比如，当前已经生成了 I、saw、a、dog、ride 5 个 Token，后续要生产 in、the、bus，那么</p>
+<ul>
+<li>
+<p>第 1 个模型（原始模型）负责生成 in 所在位置的 Token</p>
+</li>
+<li>
+<p>第 2 个模型负责生成 the 所在位置的 Token</p>
+</li>
+<li>
+<p>第 3 个模型负责生成 bus 所在位置的 Token</p>
+</li>
+</ul>
+<ol>
+<li>Verify 阶段</li>
+</ol>
+<p>上一步得到了 K 个新的输出，但是还无法知道这 K 个输出是否全部正确，因此需要进一步验证。分别将前 j-1 个新的 Token 与输入合并，并预测下一个 Token，如果下一个 Token 与第 j 个 Token 相同，则接受这个 Token。例如，上一步得到了 in，the，car，则需使用模型 p1（原始模型）分三组验证（这三组可以并行执行）：</p>
+<ul>
+<li>
+<p>第一组：输入 I saw a dog ride，待验证 Token 为 <strong>in</strong>，实际预测的 Top1 为 <strong>in</strong>，<strong>结果相同</strong>，接受 in 这个 Token</p>
+</li>
+<li>
+<p>第二组：输入 I saw a dog ride in，待验证 Token 为 <strong>the</strong>，实际预测的 Top1 为 <strong>the</strong>，<strong>结果相同</strong>，接受 <strong>the</strong> 这个 Token</p>
+</li>
+<li>
+<p>第三组：输入 I saw a dog ride in the，待验证 Token 为 <strong>car</strong>，实际预测的 Top1 为 <strong>bus</strong>，<strong>结果不相同</strong>，不接受 car 这个 Token</p>
+</li>
+</ul>
+<ol>
+<li>Accept 阶段</li>
+</ol>
+<p>假设上一步生成了 10 个 Token，在第 5 个 Token 出不一致，那么就可以将前 4 个 Token 和输入合并，然后开始下一次生成。还是用前两步的例子，因为第三组 car 和 bus 不一致，因此只接受 in 和 the，则下一次迭代的输入为 I saw a dog ride in the。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126154959329.png" alt="image.png" /></p>
+<p>如下图 Figure 3 所示为模型的实现方式，在模型的最后一个 Transformer Decoder 层额外的加几个 head，分别为 p2，…，pk：</p>
+<ul>
+<li>
+<p>在 Blockwise Parallel Decoding 的 Predict 阶段，原始模型 p1 和辅助模型 p2，…，pk 都是相互独立的，可以并行执行，因此时间和生成一个 Token 时间一致。</p>
+</li>
+<li>
+<p>在 Blockwise Parallel Decoding 的 Verify 阶段，需要上一步中生成的 K 个 Token 里选择符合要求的最长前缀，因为可以一次生成多个 Token（&lt;=K），所以可降低整体生成的步数，也就帮助降低整体时延。</p>
+</li>
+<li>
+<p>在 Blockwise Parallel Decoding 的 Accept 阶段，因为只接受第一个不一致的 Token 之前的 Token，并且验证时使用的就是原始模型 p1 ，这也就保证了最终结果是与原始序列预测的结果是完全一致的（与 Greedy Decoding 结果完全一致）。</p>
+</li>
+</ul>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126155010317.png" alt="image.png" /></p>
+<p>并行验证过程如下所示，经过一次前向推理即可验证获得新的 <strong>in</strong>、<strong>the</strong>、<strong>car</strong> 三个 Token：</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126155016265.png" alt="image.png" /></p>
+<p>综上所述，由于 Predict 阶段 p1 和 Verify 阶段都使用的原始模型，因此在理想情况下（每次生成的 K 个 Token 都能接受），总的解码次数从 m 降低到 2m/K。</p>
+<h3 id="33-评估结果"><a class="markdownIt-Anchor" href="#33-评估结果"></a> 3.3. 评估结果</h3>
+<p>作者使用 WMT 2014 的英语-德语翻译数据集。Baseline 模型是在 8 个 P100 GPU 上训练了 1,000,000 steps 的 Transformer 模型。使用 Greddy Decoding，在 newstest2023 development 数据集上 BLEU 得分为 25.56.</p>
+<p>作者针对不同的猜测 Token 数，使用原始数据或者 Beam Search 生成的蒸馏数据分别进行训练，每个模型都在相同的硬件额外训练 1,000,000 steps。基于上述模型，作者统计了相应的 BLEU 得分和对应的平均接受 Token 数，如下图所示：</p>
+<ul>
+<li>
+<p>Regular ●：表示冻结 backbone，使用原始数据，对应的平均接受 Token 数很小，最大只有 1.76</p>
+</li>
+<li>
+<p>Distillation ◼：表示冻结 backbone，使用蒸馏数据，对应的平均接受 Token 数很小，最大只有 1.91，BLEU 得分也相应提高</p>
+</li>
+<li>
+<p>Fine Tuning ▲：表示不冻结 backbone，使用原始数据，对应的平均接受 Token 数相对增大，最大为 3.01</p>
+</li>
+<li>
+<p>Both ◆：表示不冻结 backbone，使用蒸馏数据，对应的平均接受 Token 数明显增大，最大有 4.95，BLEU 得分相应提高</p>
+</li>
+</ul>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126155022384.png" alt="image.png" /></p>
+<p>对应上述的机器翻译任务，当 k=8 时，对应的平均接受 Token 数为 4.7，相应的整个任务的加速比达到 3.3 倍。如下图所示：</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126155027608.png" alt="image.png" /></p>
+<h1 id="四-投机解码speculative-decoding"><a class="markdownIt-Anchor" href="#四-投机解码speculative-decoding"></a> 四、投机解码（Speculative Decoding）</h1>
+<h3 id="41-方案概述"><a class="markdownIt-Anchor" href="#41-方案概述"></a> 4.1. 方案概述</h3>
+<p>Google 和 Deepmind 于 2022 年提出投机采样方案 Fast Inference from Transformers via Speculative Decoding，其思路很简单，使用一个高效的小模型来生成多个候选 Token，然后让 LLM 来验证。</p>
+<p>其方法可以概括为由一个小模型一次猜一批可能的结果，再由大模型并行地验证这些结果是否要接受。 投机解码算法的提出，主要源于两点观察：</p>
+<ul>
+<li>
+<p>和early exit的想法类似，在一些相对简单的问题下，我们可以用小模型（或者大模型的前面几层）的输出得到很好的结果。 如果我们用小模型去回答这些简单的问题，在遇到难题的情况下再调用大模型，就可以整体的生成效率。</p>
+</li>
+<li>
+<p>大模型在做推理任务的时候，一次只能生成一个token，无法并行计算。如果我们能让大模型一次处理一批tokens，就能利用上算例的并行能力。（大模型推理的时候batch size往往为1）</p>
+</li>
+</ul>
+<p>投机解码利用了上面两个观察，先用小模型猜后续的若干个tokens，如果当前的问题比较简单，则小模型有更大的可能猜对多个token。 然后再用大模型并行的验证这一些token是否符合大模型的输出。由于现代计算机的并行能力，我们可以近似的认为大模型处理一个token和处理w个token的用时是几乎一样的。 假设我们一次猜n个tokens，平均有m个token会被最终接收，那么在这个过程中： 我们调用了n次小模型D，1次大模型T，生成了m个token，平均每个token的用时为 (nD+T)/m。只要nD显著地小于(m-1)T，就能实现很好的加速效果。</p>
+<p>对于大模型来说，decoding的时候有几种方案：</p>
+<ul>
+<li>
+<p>Greedy：每次选择logit最大的token</p>
+</li>
+<li>
+<p>归一化logits后按照分布采样</p>
+</li>
+<li>
+<p>Top k： 保留最大的k个token</p>
+</li>
+<li>
+<p>Top p： 从大到小保留概率分布和为p的token</p>
+</li>
+<li>
+<p>（top k/top p）+（greedy/sampling）</p>
+</li>
+</ul>
+<p>投机是一个加速推理的技术，为了保证这样得到的结果performance不下降，这一系列工作认为只要保证最后的概率分布一样即可。因此，只需要大模型验证的方法能保证整个过程输出的结果的概率分布不变。</p>
+<p>验证操作弥补了小模型和大模型之间的概率分布的gap，思路是对于小模型的每一次猜测，根据大模型和小模型的概率分布去判断这一次猜测有多大概率是正确的。相当于是从小模型的采样到大模型的采样之间做了一个映射，可以把小模型和大模型的概率分别看成若干个随机事件，然后将小模型的随机事件和大模型的随机时间做映射，如果两边的随机事件的结果一致，我们就认为这个猜测是正确的。</p>
+<p>如果在某一部中我们认为小模型的猜测是错误的，那么后面的结果都是无效的。此时用大模型最后一步得到的概率分布做一个采样后退出。这一步既是保证输出同分布必须的，又可以保证每次至少输出一个token。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126155037577.png" alt="image.png" /></p>
+<h3 id="42-实现细节"><a class="markdownIt-Anchor" href="#42-实现细节"></a> 4.2 实现细节</h3>
+<p>假设 Mp 为目标模型，模型推理就是给定前缀输入 x&lt;t，从模型获得对应的分布 p(xt|x&lt;t)，要做的就是加速这个推理过程；假设 Mq 为针对相同任务的更高效的近似模型，给定前缀输入 x&lt;t，从模型可以获得对应的分布 q(xt|x&lt;t)。核心思想为：</p>
+<ol>
+<li>
+<p>使用更高效的模型 Mq 来生成输出 ?∈ℤ+ 个 Token</p>
+</li>
+<li>
+<p>使用目标模型 Mp 来并行的评估上一步 Mq 生成的 Token，接受能够满足同一分布的 Token</p>
+</li>
+<li>
+<p>从调整后的分布中生成一个额外的 Token（根据第一个出错 Token 之前的 Token 生成），来修复第一个出错的 Token，如果所有 Token 都被接受，则额外新增一个新生成的 Token，以此来保证每次至少生成一个新的 Token。这样，即使在最坏情况下，目标模型相当于完全串行运行，运行次数也不会超过常规模式直接串行运行目标模型的次数；当然，也很可能能够生成更多的 Token，最多可以达到 ?+1，这取决于Mp 和 Mq 的相似度。</p>
+</li>
+</ol>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126155045187.png" alt="image.png" /></p>
+<p>如下图 Figure 5 所示，作者提供了一个简单的示例，包含不同的 ?（验证的 Token 数目），其中紫色为执行目标模型 Mp 的 decoder，蓝色为执行近似模型 Mq 的 decoder，黄色和橙色为调用 encoder。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126155058820.png" alt="image.png" /></p>
+<h3 id="43-评估结果"><a class="markdownIt-Anchor" href="#43-评估结果"></a> 4.3. 评估结果</h3>
+<p>作者基于 T5X 代码库验证了 T5-XXL 模型的加速效果。相关的设置如下：</p>
+<ul>
+<li>模型：标准的 encoder-decoder T5 1.1 版本模型</li>
+</ul>
+<ol>
+<li>
+<p>目标模型 Mp：T5-XXL（11B）</p>
+</li>
+<li>
+<p>近似模型 Mq：T5-Large（800M），T5-Base（250M），T5-Small（75M）</p>
+</li>
+</ol>
+<ul>
+<li>任务：</li>
+</ul>
+<ol>
+<li>
+<ol>
+<li>
+<p>英语到德语翻译，基于 WMT EnDe 数据集微调</p>
+</li>
+<li>
+<p>文本总结，基于 CCN/DM 数据集微调</p>
+</li>
+</ol>
+</li>
+</ol>
+<ul>
+<li>
+<p>硬件：TPU-v4</p>
+</li>
+<li>
+<p>推理参数：</p>
+</li>
+</ul>
+<ol>
+<li>
+<ol>
+<li>
+<p>Batch-size：1</p>
+</li>
+<li>
+<p>Argmax sampling（temp=0）和 standard sampling（temp=1）</p>
+</li>
+</ol>
+</li>
+</ol>
+<p>结果如下 Table 2 所示，最小的近似模型 T5-Small（75M）获得最高的加速比（模型很小，推理最快，而且模型生成质量相比 Base 模型没有下降太多，? 表示高效模型的质量与目标模型的接近程度），比如 T5-Small 在 EnDe 任务上，当 temp=0 时获得 3.4 倍加速，temp=1 时获得 2.6 倍加速：</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126155108487.png" alt="image.png" /></p>
+<p>如下所示为 Huggingface 官方的测试结果（Assisted Generation: a new direction toward low-latency text generation）：</p>
+<ul>
+<li>
+<ul>
+<li>
+<p>Assistant Model</p>
+<pre><code>- facebook/opt-125m
+</code></pre>
+<ul>
+<li>
+<p>Model Names:</p>
+<ul>
+<li>
+<p>1.3B: facebook/opt-1.3b</p>
+</li>
+<li>
+<p>6.7B: facebook/opt-6.7b</p>
+</li>
+<li>
+<p>30B: facebook/opt-30b</p>
+</li>
+<li>
+<p>66B: facebook/opt-66b</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Dataset used as input prompt:</p>
+<ul>
+<li>C4 (en, validation set)</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126155120150.png" alt="image.png" /></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" rel="tag"># 大模型</a>
+              <a href="/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%8E%A8%E7%90%86/" rel="tag"># 大模型推理</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/01/26/%E9%87%8F%E5%8C%96%E5%9F%BA%E7%A1%80-%E4%B8%BB%E6%B5%81%E9%87%8F%E5%8C%96%E6%8A%80%E6%9C%AF-QLoRA-LLM-int8-GPTQ-AWQ-SmoothQuant-FP8/" rel="prev" title="量化基础 & 主流量化技术 (QLoRA, LLM.int8, GPTQ, AWQ, SmoothQuant, FP8)">
+                  <i class="fa fa-angle-left"></i> 量化基础 & 主流量化技术 (QLoRA, LLM.int8, GPTQ, AWQ, SmoothQuant, FP8)
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2025/01/26/Chunked-Prefill/" rel="next" title="Chunked Prefill">
+                  Chunked Prefill <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Ronny Lu</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">197k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">11:56</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">false</script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" integrity="sha256-UF1fgpAiu3tPJN/uCqEUHNe7pnr+QR0SQDNfgglgtcM=" crossorigin="anonymous">
+  <script class="next-config" data-name="katex" type="application/json">{"copy_tex_js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/copy-tex.min.js","integrity":"sha256-Us54+rSGDSTvIhKKUs4kygE2ipA0RXpWWh0/zLqw3bs="}}</script>
+  <script src="/js/third-party/math/katex.js"></script>
+
+
+
+</body>
+</html>

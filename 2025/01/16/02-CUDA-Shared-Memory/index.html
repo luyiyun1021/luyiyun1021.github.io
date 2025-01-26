@@ -15,19 +15,19 @@
 
 
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha256-5eIC48iZUHmSlSUz9XtjRyK2mzQkHScZY1WdMaoz74E=" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-minimal.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
 
-<script class="next-config" data-name="main" type="application/json">{"hostname":"luyiyun1021.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.21.1","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+<script class="next-config" data-name="main" type="application/json">{"hostname":"luyiyun1021.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.22.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
 
-    <meta name="description" content="1-D Stencil 问题stencil可以理解为一个计算的窗口，如下图为半径为3的1-D stencil，宽度为7（宽度一般为奇数），一次进行对七个元素的计算">
+    <meta name="description" content="1-D Stencil 问题 stencil可以理解为一个计算的窗口，如下图为半径为3的1-D stencil，宽度为7（宽度一般为奇数），一次进行对七个元素的计算">
 <meta property="og:type" content="article">
 <meta property="og:title" content="02 CUDA Shared Memory">
 <meta property="og:url" content="https://luyiyun1021.github.io/2025/01/16/02-CUDA-Shared-Memory/index.html">
 <meta property="og:site_name" content="Ronny Lu&#39;s blog">
-<meta property="og:description" content="1-D Stencil 问题stencil可以理解为一个计算的窗口，如下图为半径为3的1-D stencil，宽度为7（宽度一般为奇数），一次进行对七个元素的计算">
+<meta property="og:description" content="1-D Stencil 问题 stencil可以理解为一个计算的窗口，如下图为半径为3的1-D stencil，宽度为7（宽度一般为奇数），一次进行对七个元素的计算">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116162607310.png">
 <meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116162615963.png">
@@ -152,14 +152,14 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-D-Stencil-%E9%97%AE%E9%A2%98"><span class="nav-number">1.</span> <span class="nav-text">1-D Stencil 问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%B1%E4%BA%AB%E5%86%85%E5%AD%98%EF%BC%88shared-memory%EF%BC%89"><span class="nav-number">2.</span> <span class="nav-text">共享内存（shared memory）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9E%E5%88%B01-D-Stencil-%E9%97%AE%E9%A2%98"><span class="nav-number">3.</span> <span class="nav-text">回到1-D Stencil 问题</span></a></li></ol></div>
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-d-stencil-%E9%97%AE%E9%A2%98"><span class="nav-number">1.</span> <span class="nav-text"> 1-D Stencil 问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%B1%E4%BA%AB%E5%86%85%E5%AD%98shared-memory"><span class="nav-number">2.</span> <span class="nav-text"> 共享内存（shared memory）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9E%E5%88%B01-d-stencil-%E9%97%AE%E9%A2%98"><span class="nav-number">3.</span> <span class="nav-text"> 回到1-D Stencil 问题</span></a></li></ol></div>
         </div>
         <!--/noindex-->
 
         <div class="site-overview-wrap sidebar-panel">
           <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
     <img class="site-author-image" itemprop="image" alt="Ronny Lu"
-      src="/images/avatar.jpeg">
+      src="https://avatars.githubusercontent.com/u/55233584?v=4">
   <p class="site-author-name" itemprop="name">Ronny Lu</p>
   <div class="site-description" itemprop="description">Tech notes on LLM, LLM Infra, C++</div>
 </div>
@@ -167,18 +167,18 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">29</span>
+          <span class="site-state-item-count">50</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
           <a href="/categories/">
-        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-count">14</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-count">14</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -208,7 +208,7 @@
     <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/01/16/02-CUDA-Shared-Memory/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpeg">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
       <meta itemprop="name" content="Ronny Lu">
     </span>
 
@@ -268,7 +268,7 @@
         <i class="far fa-clock"></i>
       </span>
       <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>1 分钟</span>
+      <span>2 分钟</span>
     </span>
 </div>
 
@@ -278,26 +278,30 @@
     
     
     
-    <div class="post-body" itemprop="articleBody"><h2 id="1-D-Stencil-问题"><a href="#1-D-Stencil-问题" class="headerlink" title="1-D Stencil 问题"></a><strong>1-D Stencil 问题</strong></h2><p>stencil可以理解为一个计算的窗口，如下图为半径为3的1-D stencil，宽度为7（宽度一般为奇数），一次进行对七个元素的计算</p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116162607310.png" alt="image.png"></p>
+    <div class="post-body" itemprop="articleBody"><h2 id="1-d-stencil-问题"><a class="markdownIt-Anchor" href="#1-d-stencil-问题"></a> <strong>1-D Stencil 问题</strong></h2>
+<p>stencil可以理解为一个计算的窗口，如下图为半径为3的1-D stencil，宽度为7（宽度一般为奇数），一次进行对七个元素的计算</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116162607310.png" alt="image.png" /></p>
 <span id="more"></span>
-
 <p>已知stencil 半径为3，宽度为7，步长为1（即每个元素会有7次参与到运算），下图为stencil计算过程</p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116162615963.png" alt="image.png"></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116162615963.png" alt="image.png" /></p>
 <p>在向量加法问题中，单一输入点仅贡献于单一输出点，而单一输出点也仅依赖于单一输入点。</p>
 <p>而在 stencil 问题中，单一输入点贡献于七个输出点，单一输出点也依赖于七个输入点。</p>
 <p>stencil 问题依赖于 cuda 提供的共享内存（shared memory）</p>
-<h2 id="共享内存（shared-memory）"><a href="#共享内存（shared-memory）" class="headerlink" title="共享内存（shared memory）"></a>共享内存（shared memory）</h2><p>thread 之间的数据共享基于 shared memory</p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116162631214.png" alt="image.png"></p>
+<h2 id="共享内存shared-memory"><a class="markdownIt-Anchor" href="#共享内存shared-memory"></a> 共享内存（shared memory）</h2>
+<p>thread 之间的数据共享基于 shared memory</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116162631214.png" alt="image.png" /></p>
 <ul>
-<li><p>每一个线程都有私有的寄存器，64&#x2F;128KB的寄存器堆会划分到每一个线程上</p>
+<li>
+<p>每一个线程都有私有的寄存器，64/128KB的寄存器堆会划分到每一个线程上</p>
 </li>
-<li><p>每一个<strong>线程块</strong>都有一块<strong>共享内存</strong>，共享内存实际上是在GPU芯片上实现的，因此我们可以称之为片上内存（on-chip），也被称为用户管理的快速缓存（与之对比的是真的的cache由硬件管理）</p>
+<li>
+<p>每一个<strong>线程块</strong>都有一块<strong>共享内存</strong>，共享内存实际上是在GPU芯片上实现的，因此我们可以称之为片上内存（on-chip），也被称为用户管理的快速缓存（与之对比的是真的的cache由硬件管理）</p>
 </li>
-<li><p>每一个<strong>网格</strong>共用一块大的<strong>全局共享内存</strong>（同时有一个768KB的共享L2），这是在 host 上通过<code>cudaMalloc</code>分配的内存，这并非位于GPU芯片本身，而是由多个高速内存设备组成，与GPU相连，比线程块之间的共享内存慢五倍。</p>
+<li>
+<p>每一个<strong>网格</strong>共用一块大的<strong>全局共享内存</strong>（同时有一个768KB的共享L2），这是在 host 上通过<code>cudaMalloc</code>分配的内存，这并非位于GPU芯片本身，而是由多个高速内存设备组成，与GPU相连，比线程块之间的共享内存慢五倍。</p>
 </li>
 </ul>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116162637944.png" alt="image.png"></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116162637944.png" alt="image.png" /></p>
 <table>
 <thead>
 <tr>
@@ -307,7 +311,8 @@
 <th></th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>变量声明</td>
 <td>存储器</td>
 <td>作用域</td>
@@ -321,7 +326,7 @@
 </tr>
 <tr>
 <td><code>int array_var[100]</code></td>
-<td>寄存器&#x2F;本地</td>
+<td>寄存器/本地</td>
 <td>线程</td>
 <td>线程</td>
 </tr>
@@ -343,36 +348,44 @@
 <td>全局</td>
 <td>应用程序</td>
 </tr>
-</tbody></table>
-<h2 id="回到1-D-Stencil-问题"><a href="#回到1-D-Stencil-问题" class="headerlink" title="回到1-D Stencil 问题"></a>回到<strong>1-D Stencil 问题</strong></h2><p>思路：</p>
+</tbody>
+</table>
+<h2 id="回到1-d-stencil-问题"><a class="markdownIt-Anchor" href="#回到1-d-stencil-问题"></a> 回到<strong>1-D Stencil 问题</strong></h2>
+<p>思路：</p>
 <ol>
-<li><p>把（blockDim(每个block包含的threads数量) + 2 * 半径（也被称为光晕））数量的数据从全局内存中加载入共享内存中</p>
+<li>
+<p>把（blockDim(每个block包含的threads数量) + 2 * 半径（也被称为光晕））数量的数据从全局内存中加载入共享内存中</p>
 </li>
-<li><p>计算出 blockDim 维度的输出</p>
+<li>
+<p>计算出 blockDim 维度的输出</p>
 </li>
-<li><p>把 blockDim 维度的计算结果写回全局内存</p>
+<li>
+<p>把 blockDim 维度的计算结果写回全局内存</p>
 </li>
 </ol>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116162646435.png" alt="image.png"></p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116162652825.png" alt="image.png"></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116162646435.png" alt="image.png" /></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116162652825.png" alt="image.png" /></p>
 <ul>
-<li><p>﻿<code>gindex</code>:全局内存中的数据索引</p>
+<li>
+<p><code>gindex</code>:全局内存中的数据索引</p>
 </li>
-<li><p>﻿<code>lindex</code>:共享内存中的数据索引</p>
+<li>
+<p><code>lindex</code>:共享内存中的数据索引</p>
 </li>
-<li><p>在radius为3的情况下，会有三个线程负责将左右的光晕load到共享内存中</p>
+<li>
+<p>在radius为3的情况下，会有三个线程负责将左右的光晕load到共享内存中</p>
 </li>
 </ul>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116162659403.png" alt="image.png"></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116162659403.png" alt="image.png" /></p>
 <p>以上代码的问题：线程并没有做同步</p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116162709653.png" alt="image.png"></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116162709653.png" alt="image.png" /></p>
 <p><strong>解决方法：引入</strong><code>**__syncthreads()**</code><strong>同步</strong></p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116162717375.png" alt="image.png"></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116162717375.png" alt="image.png" /></p>
 <ul>
 <li><strong>所有线程都必须能够参与并执行到同步线程（sync thread)语句。</strong></li>
 </ul>
 <p>修改后的正确版本</p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116162725282.png" alt="image.png"></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116162725282.png" alt="image.png" /></p>
 <p>02-CUDA-Shared-Memory.pdf</p>
 
     </div>
@@ -429,14 +442,14 @@
       <i class="fa fa-chart-line"></i>
     </span>
       <span>站点总字数：</span>
-    <span title="站点总字数">75k</span>
+    <span title="站点总字数">197k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span>站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">1:08</span>
+    <span title="站点阅读时长">11:56</span>
   </span>
 </div>
 <div class="busuanzi-count">
@@ -457,8 +470,7 @@
       </span>
     </span>
 </div>
-  <div class="powered-by">
-    <!--由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动 -->
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
   </div>
 
     </div>
@@ -499,6 +511,13 @@
   <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 
 
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">false</script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" integrity="sha256-UF1fgpAiu3tPJN/uCqEUHNe7pnr+QR0SQDNfgglgtcM=" crossorigin="anonymous">
+  <script class="next-config" data-name="katex" type="application/json">{"copy_tex_js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/copy-tex.min.js","integrity":"sha256-Us54+rSGDSTvIhKKUs4kygE2ipA0RXpWWh0/zLqw3bs="}}</script>
+  <script src="/js/third-party/math/katex.js"></script>
 
 
 

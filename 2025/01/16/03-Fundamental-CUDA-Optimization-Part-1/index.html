@@ -15,19 +15,19 @@
 
 
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha256-5eIC48iZUHmSlSUz9XtjRyK2mzQkHScZY1WdMaoz74E=" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-minimal.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
 
-<script class="next-config" data-name="main" type="application/json">{"hostname":"luyiyun1021.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.21.1","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+<script class="next-config" data-name="main" type="application/json">{"hostname":"luyiyun1021.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.22.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
 
-    <meta name="description" content="这一章节将探讨GPU架构和第一个CUDA优化重点，即实现充分的并行性 Nvidia GPU 架构演进对 GPU 架构的一定了解，将有助于你从根本上编写出在 GPU 上性能优异的代码">
+    <meta name="description" content="这一章节将探讨GPU架构和第一个CUDA优化重点，即实现充分的并行性  Nvidia GPU 架构演进 对 GPU 架构的一定了解，将有助于你从根本上编写出在 GPU 上性能优异的代码">
 <meta property="og:type" content="article">
 <meta property="og:title" content="03 Fundamental CUDA Optimization (Part 1)">
 <meta property="og:url" content="https://luyiyun1021.github.io/2025/01/16/03-Fundamental-CUDA-Optimization-Part-1/index.html">
 <meta property="og:site_name" content="Ronny Lu&#39;s blog">
-<meta property="og:description" content="这一章节将探讨GPU架构和第一个CUDA优化重点，即实现充分的并行性 Nvidia GPU 架构演进对 GPU 架构的一定了解，将有助于你从根本上编写出在 GPU 上性能优异的代码">
+<meta property="og:description" content="这一章节将探讨GPU架构和第一个CUDA优化重点，即实现充分的并行性  Nvidia GPU 架构演进 对 GPU 架构的一定了解，将有助于你从根本上编写出在 GPU 上性能优异的代码">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163109194.png">
 <meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163126366.png">
@@ -158,14 +158,14 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Nvidia-GPU-%E6%9E%B6%E6%9E%84%E6%BC%94%E8%BF%9B"><span class="nav-number">1.</span> <span class="nav-text">Nvidia GPU 架构演进</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#KEPLER-%E6%9E%B6%E6%9E%84"><span class="nav-number">1.1.</span> <span class="nav-text">KEPLER 架构</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Wrap"><span class="nav-number">1.1.1.</span> <span class="nav-text">Wrap</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Maxwell-Pascal-%E6%9E%B6%E6%9E%84"><span class="nav-number">1.2.</span> <span class="nav-text">Maxwell &amp; Pascal 架构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Pascal-Volta-%E6%9E%B6%E6%9E%84"><span class="nav-number">1.3.</span> <span class="nav-text">Pascal &amp; Volta 架构</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#TensorCore"><span class="nav-number">1.3.1.</span> <span class="nav-text">TensorCore</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BD%AF%E4%BB%B6%E5%92%8C%E7%A1%AC%E4%BB%B6%E7%9A%84%E6%98%A0%E5%B0%84%E5%85%B3%E7%B3%BB"><span class="nav-number">1.4.</span> <span class="nav-text">软件和硬件的映射关系</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Launch-Configuration"><span class="nav-number">2.</span> <span class="nav-text">Launch Configuration</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84%E7%A8%8B%E5%BA%8F"><span class="nav-number">2.1.</span> <span class="nav-text">一个简单的程序</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="nav-number">3.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#nvidia-gpu-%E6%9E%B6%E6%9E%84%E6%BC%94%E8%BF%9B"><span class="nav-number">1.</span> <span class="nav-text"> Nvidia GPU 架构演进</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#kepler-%E6%9E%B6%E6%9E%84"><span class="nav-number">1.1.</span> <span class="nav-text"> KEPLER 架构</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#wrap"><span class="nav-number">1.1.1.</span> <span class="nav-text"> Wrap</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#maxwell-pascal-%E6%9E%B6%E6%9E%84"><span class="nav-number">1.2.</span> <span class="nav-text"> Maxwell &amp; Pascal 架构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#pascal-volta-%E6%9E%B6%E6%9E%84"><span class="nav-number">1.3.</span> <span class="nav-text"> Pascal &amp; Volta 架构</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#tensorcore"><span class="nav-number">1.3.1.</span> <span class="nav-text"> TensorCore</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BD%AF%E4%BB%B6%E5%92%8C%E7%A1%AC%E4%BB%B6%E7%9A%84%E6%98%A0%E5%B0%84%E5%85%B3%E7%B3%BB"><span class="nav-number">1.4.</span> <span class="nav-text"> 软件和硬件的映射关系</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#launch-configuration"><span class="nav-number">2.</span> <span class="nav-text"> Launch Configuration</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84%E7%A8%8B%E5%BA%8F"><span class="nav-number">2.1.</span> <span class="nav-text"> 一个简单的程序</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="nav-number">3.</span> <span class="nav-text"> 参考资料</span></a></li></ol></div>
         </div>
         <!--/noindex-->
 
         <div class="site-overview-wrap sidebar-panel">
           <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
     <img class="site-author-image" itemprop="image" alt="Ronny Lu"
-      src="/images/avatar.jpeg">
+      src="https://avatars.githubusercontent.com/u/55233584?v=4">
   <p class="site-author-name" itemprop="name">Ronny Lu</p>
   <div class="site-description" itemprop="description">Tech notes on LLM, LLM Infra, C++</div>
 </div>
@@ -173,18 +173,18 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">29</span>
+          <span class="site-state-item-count">50</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
           <a href="/categories/">
-        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-count">14</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-count">14</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -214,7 +214,7 @@
     <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/01/16/03-Fundamental-CUDA-Optimization-Part-1/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpeg">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
       <meta itemprop="name" content="Ronny Lu">
     </span>
 
@@ -274,7 +274,7 @@
         <i class="far fa-clock"></i>
       </span>
       <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>1 分钟</span>
+      <span>6 分钟</span>
     </span>
 </div>
 
@@ -285,74 +285,91 @@
     
     
     <div class="post-body" itemprop="articleBody"><p><strong>这一章节将探讨GPU架构和第一个CUDA优化重点，即实现充分的并行性</strong></p>
-<h2 id="Nvidia-GPU-架构演进"><a href="#Nvidia-GPU-架构演进" class="headerlink" title="Nvidia GPU 架构演进"></a>Nvidia GPU 架构演进</h2><p><strong>对 GPU 架构的一定了解，将有助于你从根本上编写出在 GPU 上性能优异的代码</strong></p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163109194.png" alt="image.png"></p>
+<h2 id="nvidia-gpu-架构演进"><a class="markdownIt-Anchor" href="#nvidia-gpu-架构演进"></a> Nvidia GPU 架构演进</h2>
+<p><strong>对 GPU 架构的一定了解，将有助于你从根本上编写出在 GPU 上性能优异的代码</strong></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163109194.png" alt="image.png" /></p>
 <span id="more"></span>
-
-
-<h3 id="KEPLER-架构"><a href="#KEPLER-架构" class="headerlink" title="KEPLER 架构"></a>KEPLER 架构</h3><p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163126366.png" alt="image.png"></p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163115967.png" alt="image.png"></p>
+<h3 id="kepler-架构"><a class="markdownIt-Anchor" href="#kepler-架构"></a> KEPLER 架构</h3>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163126366.png" alt="image.png" /></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163115967.png" alt="image.png" /></p>
 <p><strong>CC</strong> (Compute Capability，计算能力)：计算能力，数字越大能力越强</p>
 <p><strong>SM</strong> (Streaming Multiprocessor，流式多处理器) ：GPU 架构的 buliding block，但我们构建一个大的 GPU 时，我们通过在芯片上集成大量的 SM 来达成这一目标</p>
-<p><strong>SP Unit&#x2F;Core</strong> (Streaming processor Unit) ：执行 32 位浮点乘法、浮点加法以及浮点融合乘加运算的算数单元</p>
+<p><strong>SP Unit/Core</strong> (Streaming processor Unit) ：执行 32 位浮点乘法、浮点加法以及浮点融合乘加运算的算数单元</p>
 <p><strong>DP Unit</strong>（Double Precision Unit）：执行 64 位浮点运算的算数单元</p>
 <p><strong>SFU Unit</strong>（Special Function Unit，特殊运算单元）负责特殊的 ALU 运算，如 SIN 和 COS</p>
-<p><strong>LD&#x2F;ST Unit</strong>（Load-Store Unit，存储负载单元）：在 GPU 上执行操作，例如 32 位浮点乘法时，首先执行的指令是将操作数据加载到寄存器文件中，随后执行一条指令在 Register File 内部完成乘法运算，当需要保存结果时则通过加载存储单元进行存储。加载存储单元作为独立的逻辑单元，负责管理大部分进出内存的数据流。</p>
+<p><strong>LD/ST Unit</strong>（Load-Store Unit，存储负载单元）：在 GPU 上执行操作，例如 32 位浮点乘法时，首先执行的指令是将操作数据加载到寄存器文件中，随后执行一条指令在 Register File 内部完成乘法运算，当需要保存结果时则通过加载存储单元进行存储。加载存储单元作为独立的逻辑单元，负责管理大部分进出内存的数据流。</p>
 <p><strong>Warp Scheduler</strong>（Warp 调度器）：SM 中的指令分发单元，warp 调度器将决定何时以及哪些指令被执行。</p>
-<h4 id="Wrap"><a href="#Wrap" class="headerlink" title="Wrap"></a>Wrap</h4><p><strong>一个 warp 是 32 个线程的集合。GPU 并非向单个线程发出指令，指令总是以 warp 为单位进行发布。因此，当发出一条指令时，根据定义一个线程束中的 32 个线程將执行相同的指令。</strong></p>
+<h4 id="wrap"><a class="markdownIt-Anchor" href="#wrap"></a> Wrap</h4>
+<p><strong>一个 warp 是 32 个线程的集合。GPU 并非向单个线程发出指令，指令总是以 warp 为单位进行发布。因此，当发出一条指令时，根据定义一个线程束中的 32 个线程將执行相同的指令。</strong></p>
 <p>若一个线程块被分配至SM，该线程块将逻辑上分解为一系列的 warp。</p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163144224.png" alt="image.png"></p>
-<h3 id="Maxwell-Pascal-架构"><a href="#Maxwell-Pascal-架构" class="headerlink" title="Maxwell &amp; Pascal 架构"></a>Maxwell &amp; Pascal 架构</h3><p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163151335.png" alt="image.png"></p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163158377.png" alt="image.png"></p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163206360.png" alt="image.png"></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163144224.png" alt="image.png" /></p>
+<h3 id="maxwell-pascal-架构"><a class="markdownIt-Anchor" href="#maxwell-pascal-架构"></a> Maxwell &amp; Pascal 架构</h3>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163151335.png" alt="image.png" /></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163158377.png" alt="image.png" /></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163206360.png" alt="image.png" /></p>
 <p><strong>CC6.1 SM 引入了名为 INT8 的新计算能力</strong>：在一个时钟周期内能执行四个 8 位宽的整数运算</p>
-<h3 id="Pascal-Volta-架构"><a href="#Pascal-Volta-架构" class="headerlink" title="Pascal &amp; Volta 架构"></a>Pascal &amp; Volta 架构</h3><p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163214641.png" alt="image.png"></p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163220770.png" alt="image.png"></p>
+<h3 id="pascal-volta-架构"><a class="markdownIt-Anchor" href="#pascal-volta-架构"></a> Pascal &amp; Volta 架构</h3>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163214641.png" alt="image.png" /></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163220770.png" alt="image.png" /></p>
 <p><strong>支持 FP16 的运算</strong>：每个 SP 单元（核心）能执行一个 32 位浮点运算或两个 16 位浮点运算</p>
 <p>在此之前，我们讨论的是拥有大约 20 到 24 个 SM 的 GPU，而现在我们谈论的是 50 到 80 个 SM 的 GPU</p>
 <p><strong>CC7.0 SM 引入了名为 TensorCore 的新计算能力</strong></p>
-<h4 id="TensorCore"><a href="#TensorCore" class="headerlink" title="TensorCore"></a>TensorCore</h4><p>Tensor Core 的思路从系统设计上还是相当直接的，目前深度学习的 workload 中最主要的计算量都在矩阵的乘加上，因此为了专门去高效地支持这些 workload，就增加一些专用于矩阵运算的专用部件进去。</p>
+<h4 id="tensorcore"><a class="markdownIt-Anchor" href="#tensorcore"></a> TensorCore</h4>
+<p>Tensor Core 的思路从系统设计上还是相当直接的，目前深度学习的 workload 中最主要的计算量都在矩阵的乘加上，因此为了专门去高效地支持这些 workload，就增加一些专用于矩阵运算的专用部件进去。</p>
 <p><strong>Tensor Core 为 GPU 的原始计算能力带来了 5 至 10 倍的提升,特别是在 16 位浮点数的矩阵乘法运算模式下</strong></p>
 <p>这也是常见的AI ASIC（如Google的TPU和其他厂商的各种xPU等）通常采用的策略，只不过 ASIC 可以从一开始就是针对特定的 workload 去的，因此设计上可以更直接更激进一些，直接上大量的 MMU（Matrix Multiply Unit），然后采用例如脉冲阵列这种设计去最大化它的 throughput。</p>
 <p>而 NV 的 GPU 毕竟还要用作其他一些通用的运算，所以只能往原本的 SM 流水线里面插进去一些额外的专用部件 lane 了。开个脑洞，如果有一天发现除了FMA之外，还有其他形式的运算存在大量需求，未来的 GPU 设计里面说不定也会出现其他 xx Core。好在 FMA 除了深度学习以外在 HPC 的 workload 里面也是挺常见的，这个设计以后还是比较有用的。</p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163229634.png" alt="image.png"></p>
-<p>﻿<a target="_blank" rel="noopener" href="https://jcf94.com/download/2020-05-24-nvidia-arch-tensorcore1.png">Tensor Core 4x4 Matrix Multiply and Accumulate</a>﻿</p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163237236.png" alt="image.png"></p>
-<p>﻿<a target="_blank" rel="noopener" href="https://jcf94.com/download/2020-05-24-nvidia-arch-tensorcore2.png">Mixed Precision Multiply and Accumulate in Tensor Core</a>﻿</p>
-<p>Tensor Core 这个部件直接从 SM 的寄存器里面取两个 FP16 的矩阵作为输入，进行全精度的矩阵乘之后得到的结果可以是 FP16 或者 FP32 的，然后累加到 FP16&#x2F;FP32 的 accumulator 里面去。选择 FP16 作为输入数据类型，并输出为 FP32，这一做法可能旨在确保结果不会因溢出而受损，然后在加速部件设计等等方面做了一些 trade off。</p>
-<h3 id="软件和硬件的映射关系"><a href="#软件和硬件的映射关系" class="headerlink" title="软件和硬件的映射关系"></a>软件和硬件的映射关系</h3><p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163244836.png" alt="image.png"></p>
-<h2 id="Launch-Configuration"><a href="#Launch-Configuration" class="headerlink" title="Launch Configuration"></a>Launch Configuration</h2><p><strong>首先聚焦于两大性能目标中的第一个，即实现充分的并行性（尽可能多地使用线程）。但我们要搞明白为什么要尽可能多地使用线程。</strong></p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163253901.png" alt="image.png"></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163229634.png" alt="image.png" /></p>
+<p><a target="_blank" rel="noopener" href="https://jcf94.com/download/2020-05-24-nvidia-arch-tensorcore1.png">Tensor Core 4x4 Matrix Multiply and Accumulate</a></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163237236.png" alt="image.png" /></p>
+<p><a target="_blank" rel="noopener" href="https://jcf94.com/download/2020-05-24-nvidia-arch-tensorcore2.png">Mixed Precision Multiply and Accumulate in Tensor Core</a></p>
+<p>Tensor Core 这个部件直接从 SM 的寄存器里面取两个 FP16 的矩阵作为输入，进行全精度的矩阵乘之后得到的结果可以是 FP16 或者 FP32 的，然后累加到 FP16/FP32 的 accumulator 里面去。选择 FP16 作为输入数据类型，并输出为 FP32，这一做法可能旨在确保结果不会因溢出而受损，然后在加速部件设计等等方面做了一些 trade off。</p>
+<h3 id="软件和硬件的映射关系"><a class="markdownIt-Anchor" href="#软件和硬件的映射关系"></a> 软件和硬件的映射关系</h3>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163244836.png" alt="image.png" /></p>
+<h2 id="launch-configuration"><a class="markdownIt-Anchor" href="#launch-configuration"></a> Launch Configuration</h2>
+<p><strong>首先聚焦于两大性能目标中的第一个，即实现充分的并行性（尽可能多地使用线程）。但我们要搞明白为什么要尽可能多地使用线程。</strong></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163253901.png" alt="image.png" /></p>
 <ul>
-<li><p>如前所述，指令是按 warp 宽度发布的，并且也按顺序执行，因此GPU并非乱序执行的机器。若线程执行到某条指令时，发现下一条待执行的指令所需的 operand 尚未就绪，该线程便会 stall。operand 是指令的输入数据，比如进行乘法运算，所乘的两个数即为 operand。</p>
+<li>
+<p>如前所述，指令是按 warp 宽度发布的，并且也按顺序执行，因此GPU并非乱序执行的机器。若线程执行到某条指令时，发现下一条待执行的指令所需的 operand 尚未就绪，该线程便会 stall。operand 是指令的输入数据，比如进行乘法运算，所乘的两个数即为 operand。</p>
 </li>
-<li><p>延迟是试图在GPU中避免的问题，若仅使用单一线程，会因为等待数据出现而遇到停滞。在不同GPU架构中，全局内存延迟是所面临的最长延迟之一，通常为100个时钟周期以上，而算数延迟通常在10个时钟周期左右。</p>
+<li>
+<p>延迟是试图在GPU中避免的问题，若仅使用单一线程，会因为等待数据出现而遇到停滞。在不同GPU架构中，全局内存延迟是所面临的最长延迟之一，通常为100个时钟周期以上，而算数延迟通常在10个时钟周期左右。</p>
 </li>
-<li><p>我们的具标在于启动足够多的线程以掩盖延迟</p>
+<li>
+<p>我们的具标在于启动足够多的线程以掩盖延迟</p>
 </li>
 </ul>
-<h3 id="一个简单的程序"><a href="#一个简单的程序" class="headerlink" title="一个简单的程序"></a>一个简单的程序</h3><p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163301686.png" alt="image.png"></p>
+<h3 id="一个简单的程序"><a class="markdownIt-Anchor" href="#一个简单的程序"></a> 一个简单的程序</h3>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163301686.png" alt="image.png" /></p>
 <ul>
-<li><p>Wrap 调度器在一个 Warp 因数据未准备好而 stall 时向下一个 Warp 发送指令，以尽可能保证每个 Clock Cycle 都是忙碌的。</p>
+<li>
+<p>Wrap 调度器在一个 Warp 因数据未准备好而 stall 时向下一个 Warp 发送指令，以尽可能保证每个 Clock Cycle 都是忙碌的。</p>
 </li>
-<li><p><strong>Warp 数量越多越能更好地隐藏延迟。</strong></p>
+<li>
+<p><strong>Warp 数量越多越能更好地隐藏延迟。</strong></p>
 </li>
-<li><p>假设一个 SM 有64个 warp，而一个 wrap 由32个线程组成，因此我们希望每个 SM 有2048个线程</p>
+<li>
+<p>假设一个 SM 有64个 warp，而一个 wrap 由32个线程组成，因此我们希望每个 SM 有2048个线程</p>
 </li>
-<li><p><strong>要最大化任何GPU的性能，关键在于使其饱和，即提供足够多的线程以使机器完全占用，从而为延迟隐藏创造最佳条件。</strong></p>
+<li>
+<p><strong>要最大化任何GPU的性能，关键在于使其饱和，即提供足够多的线程以使机器完全占用，从而为延迟隐藏创造最佳条件。</strong></p>
 </li>
-<li><p>具有双发射能力的 wrap scheduler：如果指令流中的两条相邻指令彼此之间没有依赖关系，那么wrap调度器有可能同时发出这两条指令。</p>
-</li>
-</ul>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163311797.png" alt="image.png"></p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163318519.png" alt="image.png"></p>
-<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ul>
-<li><p>﻿<a target="_blank" rel="noopener" href="https://jcf94.com/2020/05/24/2020-05-24-nvidia-arch/">https://jcf94.com/2020/05/24/2020-05-24-nvidia-arch/</a>﻿</p>
-</li>
-<li><p>﻿<a target="_blank" rel="noopener" href="https://cnblogs.com/upyun/p/17824106.html">https://cnblogs.com/upyun/p/17824106.html</a></p>
+<li>
+<p>具有双发射能力的 wrap scheduler：如果指令流中的两条相邻指令彼此之间没有依赖关系，那么wrap调度器有可能同时发出这两条指令。</p>
 </li>
 </ul>
-<p>﻿</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163311797.png" alt="image.png" /></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116163318519.png" alt="image.png" /></p>
+<h2 id="参考资料"><a class="markdownIt-Anchor" href="#参考资料"></a> 参考资料</h2>
+<ul>
+<li>
+<p><a target="_blank" rel="noopener" href="https://jcf94.com/2020/05/24/2020-05-24-nvidia-arch/">https://jcf94.com/2020/05/24/2020-05-24-nvidia-arch/</a></p>
+</li>
+<li>
+<p><a target="_blank" rel="noopener" href="https://cnblogs.com/upyun/p/17824106.html">https://cnblogs.com/upyun/p/17824106.html</a></p>
+</li>
+</ul>
 <p>03-CUDA-Fundamental-Optimization-Part-1.pdf</p>
 
     </div>
@@ -409,14 +426,14 @@
       <i class="fa fa-chart-line"></i>
     </span>
       <span>站点总字数：</span>
-    <span title="站点总字数">75k</span>
+    <span title="站点总字数">197k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span>站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">1:08</span>
+    <span title="站点阅读时长">11:56</span>
   </span>
 </div>
 <div class="busuanzi-count">
@@ -437,8 +454,7 @@
       </span>
     </span>
 </div>
-  <div class="powered-by">
-    <!--由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动 -->
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
   </div>
 
     </div>
@@ -479,6 +495,13 @@
   <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 
 
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">false</script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" integrity="sha256-UF1fgpAiu3tPJN/uCqEUHNe7pnr+QR0SQDNfgglgtcM=" crossorigin="anonymous">
+  <script class="next-config" data-name="katex" type="application/json">{"copy_tex_js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/copy-tex.min.js","integrity":"sha256-Us54+rSGDSTvIhKKUs4kygE2ipA0RXpWWh0/zLqw3bs="}}</script>
+  <script src="/js/third-party/math/katex.js"></script>
 
 
 

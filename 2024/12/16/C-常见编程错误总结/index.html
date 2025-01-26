@@ -15,19 +15,19 @@
 
 
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha256-5eIC48iZUHmSlSUz9XtjRyK2mzQkHScZY1WdMaoz74E=" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-minimal.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
 
-<script class="next-config" data-name="main" type="application/json">{"hostname":"luyiyun1021.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.21.1","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+<script class="next-config" data-name="main" type="application/json">{"hostname":"luyiyun1021.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.22.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
 
-    <meta name="description" content="++i More Efficient Than i++">
+    <meta name="description" content="i More Efficient Than i">
 <meta property="og:type" content="article">
 <meta property="og:title" content="C++常见编程错误总结">
 <meta property="og:url" content="https://luyiyun1021.github.io/2024/12/16/C-%E5%B8%B8%E8%A7%81%E7%BC%96%E7%A8%8B%E9%94%99%E8%AF%AF%E6%80%BB%E7%BB%93/index.html">
 <meta property="og:site_name" content="Ronny Lu&#39;s blog">
-<meta property="og:description" content="++i More Efficient Than i++">
+<meta property="og:description" content="i More Efficient Than i">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241216193001450.png">
 <meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241216193108850.png">
@@ -147,14 +147,14 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#i-More-Efficient-Than-i"><span class="nav-number">1.</span> <span class="nav-text">++i More Efficient Than i++</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#shared-ptr-Construction"><span class="nav-number">2.</span> <span class="nav-text">shared_ptr Construction</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Function-Argument-Evaluation-Order-Undefined"><span class="nav-number">3.</span> <span class="nav-text">Function Argument Evaluation Order Undefined</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Resource-Management"><span class="nav-number">4.</span> <span class="nav-text">Resource Management</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Multiple-Resources"><span class="nav-number">5.</span> <span class="nav-text">Multiple Resources</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Recommendations"><span class="nav-number">5.1.</span> <span class="nav-text">Recommendations</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Returning-Value"><span class="nav-number">6.</span> <span class="nav-text">Returning Value</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Recommendations-1"><span class="nav-number">6.1.</span> <span class="nav-text">Recommendations</span></a></li></ol></li></ol></div>
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#i-more-efficient-than-i"><span class="nav-number">1.</span> <span class="nav-text"> i More Efficient Than i</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#shared_ptr-construction"><span class="nav-number">2.</span> <span class="nav-text"> shared_ptr Construction</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#function-argument-evaluation-order-undefined"><span class="nav-number">3.</span> <span class="nav-text"> Function Argument Evaluation Order Undefined</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#resource-management"><span class="nav-number">4.</span> <span class="nav-text"> Resource Management</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#multiple-resources"><span class="nav-number">5.</span> <span class="nav-text"> Multiple Resources</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#recommendations"><span class="nav-number">5.1.</span> <span class="nav-text"> Recommendations</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#returning-value"><span class="nav-number">6.</span> <span class="nav-text"> Returning Value</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#recommendations-2"><span class="nav-number">6.1.</span> <span class="nav-text"> Recommendations</span></a></li></ol></li></ol></div>
         </div>
         <!--/noindex-->
 
         <div class="site-overview-wrap sidebar-panel">
           <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
     <img class="site-author-image" itemprop="image" alt="Ronny Lu"
-      src="/images/avatar.jpeg">
+      src="https://avatars.githubusercontent.com/u/55233584?v=4">
   <p class="site-author-name" itemprop="name">Ronny Lu</p>
   <div class="site-description" itemprop="description">Tech notes on LLM, LLM Infra, C++</div>
 </div>
@@ -162,18 +162,18 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">29</span>
+          <span class="site-state-item-count">50</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
           <a href="/categories/">
-        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-count">14</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-count">14</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -203,7 +203,7 @@
     <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2024/12/16/C-%E5%B8%B8%E8%A7%81%E7%BC%96%E7%A8%8B%E9%94%99%E8%AF%AF%E6%80%BB%E7%BB%93/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpeg">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
       <meta itemprop="name" content="Ronny Lu">
     </span>
 
@@ -263,7 +263,7 @@
         <i class="far fa-clock"></i>
       </span>
       <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>1 分钟</span>
+      <span>2 分钟</span>
     </span>
 </div>
 
@@ -273,59 +273,77 @@
     
     
     
-    <div class="post-body" itemprop="articleBody"><h1 id="i-More-Efficient-Than-i"><a href="#i-More-Efficient-Than-i" class="headerlink" title="++i More Efficient Than i++"></a>++i More Efficient Than i++</h1><p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241216193001450.png" alt="image.png"></p>
+    <div class="post-body" itemprop="articleBody"><h1 id="i-more-efficient-than-i"><a class="markdownIt-Anchor" href="#i-more-efficient-than-i"></a> <ins>i More Efficient Than i</ins></h1>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241216193001450.png" alt="image.png" /></p>
 <span id="more"></span>
-
-<h1 id="shared-ptr-Construction"><a href="#shared-ptr-Construction" class="headerlink" title="shared_ptr Construction"></a>shared_ptr Construction</h1><p><strong>What’s wrong with this code?</strong></p>
+<h1 id="shared_ptr-construction"><a class="markdownIt-Anchor" href="#shared_ptr-construction"></a> shared_ptr Construction</h1>
+<p><strong>What’s wrong with this code?</strong></p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1. void f(const shared_ptr&lt;X&gt;&amp; sp, const vector&lt;int&gt;&amp; v);</span><br><span class="line">2. f(shared_ptr&lt;X&gt;(new X(args), &#123;11, 22, 33 &#125;);</span><br></pre></td></tr></table></figure>
-<p>The order of the evaluation of function arguments is unspecified in C++. So the compiler can execute “new X(args)” first, create the vector second, and create shared_ptr last. If the vector creation throws, the memory of X is leaked (shared_ptr has not been created yet).<br><strong>Fix:</strong><br><code>f(make_shared&lt;X&gt;(args), &#123; 11, 22, 33 &#125;);</code></p>
-<h1 id="Function-Argument-Evaluation-Order-Undefined"><a href="#Function-Argument-Evaluation-Order-Undefined" class="headerlink" title="Function Argument Evaluation Order Undefined"></a>Function Argument Evaluation Order Undefined</h1><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1. f(v[i], i+)      \\Result is undefined.</span><br><span class="line">2. f(out1(), out2() \\You don&#x27;t know which &quot;out&quot; is executed first.</span><br></pre></td></tr></table></figure>
-<h1 id="Resource-Management"><a href="#Resource-Management" class="headerlink" title="Resource Management"></a>Resource Management</h1><p>程序里不应该有和内存分配释放相关的裸指针<br><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241216193108850.png" alt="image.png"></p>
-<h1 id="Multiple-Resources"><a href="#Multiple-Resources" class="headerlink" title="Multiple Resources"></a>Multiple Resources</h1><p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241216193121639.png" alt="image.png"></p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241216193132627.png" alt="image.png"></p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241216193153724.png" alt="image.png"></p>
+<p>The order of the evaluation of function arguments is unspecified in C++. So the compiler can execute “new X(args)” first, create the vector second, and create shared_ptr last. If the vector creation throws, the memory of X is leaked (shared_ptr has not been created yet).<br />
+<strong>Fix:</strong><br />
+<code>f(make_shared&lt;X&gt;(args), &#123; 11, 22, 33 &#125;);</code></p>
+<h1 id="function-argument-evaluation-order-undefined"><a class="markdownIt-Anchor" href="#function-argument-evaluation-order-undefined"></a> Function Argument Evaluation Order Undefined</h1>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1. f(v[i], i+)      \\Result is undefined.</span><br><span class="line">2. f(out1(), out2() \\You don&#x27;t know which &quot;out&quot; is executed first.</span><br></pre></td></tr></table></figure>
+<h1 id="resource-management"><a class="markdownIt-Anchor" href="#resource-management"></a> Resource Management</h1>
+<p>程序里不应该有和内存分配释放相关的裸指针<br />
+<img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241216193108850.png" alt="image.png" /></p>
+<h1 id="multiple-resources"><a class="markdownIt-Anchor" href="#multiple-resources"></a> Multiple Resources</h1>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241216193121639.png" alt="image.png" /></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241216193132627.png" alt="image.png" /></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241216193153724.png" alt="image.png" /></p>
 <ul>
-<li>C++11 15.2: “if the non-delegating constructor for an object has completed execution and a delegating constructor for that object exists with an exception, the object’s destructor will be invoked.”</li>
+<li>C++11 15.2: “if the non-delegating constructor for an object has completed execution and a delegating constructor for that object exists with an exception, the object’s destructor will be invoked.&quot;</li>
 <li>Just because you can take advantage of this rule doesn’t mean that you should!</li>
 </ul>
-<h2 id="Recommendations"><a href="#Recommendations" class="headerlink" title="Recommendations"></a>Recommendations</h2><ul>
-<li>new and delete are dangerous. They are easy to cause memory leak.<ul>
+<h2 id="recommendations"><a class="markdownIt-Anchor" href="#recommendations"></a> Recommendations</h2>
+<ul>
+<li>new and delete are dangerous. They are easy to cause memory leak.
+<ul>
 <li>Use make_shared and make_unique.</li>
 </ul>
 </li>
-<li>new[] and delete[] are also dangerous.<ul>
+<li>new[] and delete[] are also dangerous.
+<ul>
 <li>Use vector and string.</li>
 </ul>
 </li>
-<li>Manual resource management is dangerous.<ul>
+<li>Manual resource management is dangerous.
+<ul>
 <li>Write a wrapper class for automatic resource management.</li>
 </ul>
 </li>
-<li>Each automatic resource manager..<ul>
-<li>..should acquire&#x2F;release exactly one resource, or </li>
-<li>..should acquire&#x2F;release multiple resources very carefully.</li>
+<li>Each automatic resource manager…
+<ul>
+<li>…should acquire/release exactly one resource, or</li>
+<li>…should acquire/release multiple resources very carefully.</li>
 </ul>
 </li>
 </ul>
-<h1 id="Returning-Value"><a href="#Returning-Value" class="headerlink" title="Returning Value"></a>Returning Value</h1><h2 id="Recommendations-1"><a href="#Recommendations-1" class="headerlink" title="Recommendations"></a>Recommendations</h2><ul>
-<li>Don’t return by const value<ul>
+<h1 id="returning-value"><a class="markdownIt-Anchor" href="#returning-value"></a> Returning Value</h1>
+<h2 id="recommendations-2"><a class="markdownIt-Anchor" href="#recommendations-2"></a> Recommendations</h2>
+<ul>
+<li>Don’t return by const value
+<ul>
 <li>Inhibits move semantics, doesn’t achieve anything useful.</li>
 </ul>
 </li>
-<li>Don’t move() when returning local X by value X (returned object and function return type are same).<ul>
+<li>Don’t move() when returning local X by value X (returned object and function return type are same).
+<ul>
 <li>The NRVO and move semantics are designed to work together.</li>
 <li>NRVO applicable -&gt; direct construction is optimal.</li>
 <li>NRVO inapplicable -&gt; move semantics is efficient.</li>
 </ul>
 </li>
-<li>Function return type should not be rvalue reference (X&amp;&amp; foo(..)<ul>
+<li>Function return type should not be rvalue reference (X&amp;&amp; foo(…)
+<ul>
 <li>For experts only, extremely rare.</li>
 <li>Even the Standardization Committee got burned.</li>
 <li>Valid examples: forward, move, declval, get(tuple&amp;&amp;)</li>
 </ul>
 </li>
-<li>Function return type can be lvalue reference (X&amp; foo(..)), but must carefully  check the lifetime of the referenced object:<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1.</span> <span class="function">string&amp; <span class="title">get_string</span><span class="params">()</span> </span>&#123; string s; <span class="keyword">return</span> s; &#125;  <span class="comment">//Wrong</span></span><br><span class="line"><span class="number">2.</span> <span class="function">string&amp; <span class="title">get_string</span><span class="params">(string s)</span></span>&#123; <span class="keyword">return</span> s; &#125;     <span class="comment">//Wrong</span></span><br><span class="line"><span class="number">3.</span> <span class="function">string&amp; <span class="title">get_string</span><span class="params">(string&amp; s)</span> </span>&#123;<span class="keyword">return</span> s; &#125;     <span class="comment">//Possible wrong, if s is short-lived.</span></span><br><span class="line"><span class="number">4.</span> <span class="function">string&amp; <span class="title">get_string</span><span class="params">(string&amp;&amp; s)</span> </span>&#123; <span class="keyword">return</span> s; &#125;    <span class="comment">//Possible wrong, if s is short-lived.</span></span><br><span class="line"><span class="number">5.</span> <span class="keyword">class</span> <span class="title class_">A</span> &#123;</span><br><span class="line"><span class="number">6.</span>   <span class="function">string&amp; <span class="title">get_string</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> m_str; &#125;     <span class="comment">//Ok, but make sure caller does</span></span><br><span class="line"><span class="number">7.</span>   string m_str;                              <span class="comment">//not hold the reference after A</span></span><br><span class="line"><span class="number">8.</span> &#125;;                                           <span class="comment">//is destroyed.</span></span><br></pre></td></tr></table></figure></li>
+<li>Function return type can be lvalue reference (X&amp; foo(…)), but must carefully  check the lifetime of the referenced object:</li>
 </ul>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1.</span> <span class="function">string&amp; <span class="title">get_string</span><span class="params">()</span> </span>&#123; string s; <span class="keyword">return</span> s; &#125;  <span class="comment">//Wrong</span></span><br><span class="line"><span class="number">2.</span> <span class="function">string&amp; <span class="title">get_string</span><span class="params">(string s)</span></span>&#123; <span class="keyword">return</span> s; &#125;     <span class="comment">//Wrong</span></span><br><span class="line"><span class="number">3.</span> <span class="function">string&amp; <span class="title">get_string</span><span class="params">(string&amp; s)</span> </span>&#123;<span class="keyword">return</span> s; &#125;     <span class="comment">//Possible wrong, if s is short-lived.</span></span><br><span class="line"><span class="number">4.</span> <span class="function">string&amp; <span class="title">get_string</span><span class="params">(string&amp;&amp; s)</span> </span>&#123; <span class="keyword">return</span> s; &#125;    <span class="comment">//Possible wrong, if s is short-lived.</span></span><br><span class="line"><span class="number">5.</span> <span class="keyword">class</span> <span class="title class_">A</span> &#123;</span><br><span class="line"><span class="number">6.</span>   <span class="function">string&amp; <span class="title">get_string</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> m_str; &#125;     <span class="comment">//Ok, but make sure caller does</span></span><br><span class="line"><span class="number">7.</span>   string m_str;                              <span class="comment">//not hold the reference after A</span></span><br><span class="line"><span class="number">8.</span> &#125;;                                           <span class="comment">//is destroyed.</span></span><br></pre></td></tr></table></figure>
 
     </div>
 
@@ -381,14 +399,14 @@
       <i class="fa fa-chart-line"></i>
     </span>
       <span>站点总字数：</span>
-    <span title="站点总字数">75k</span>
+    <span title="站点总字数">197k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span>站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">1:08</span>
+    <span title="站点阅读时长">11:56</span>
   </span>
 </div>
 <div class="busuanzi-count">
@@ -409,8 +427,7 @@
       </span>
     </span>
 </div>
-  <div class="powered-by">
-    <!--由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动 -->
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
   </div>
 
     </div>
@@ -451,6 +468,13 @@
   <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 
 
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">false</script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" integrity="sha256-UF1fgpAiu3tPJN/uCqEUHNe7pnr+QR0SQDNfgglgtcM=" crossorigin="anonymous">
+  <script class="next-config" data-name="katex" type="application/json">{"copy_tex_js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/copy-tex.min.js","integrity":"sha256-Us54+rSGDSTvIhKKUs4kygE2ipA0RXpWWh0/zLqw3bs="}}</script>
+  <script src="/js/third-party/math/katex.js"></script>
 
 
 

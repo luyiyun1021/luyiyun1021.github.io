@@ -15,19 +15,19 @@
 
 
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha256-5eIC48iZUHmSlSUz9XtjRyK2mzQkHScZY1WdMaoz74E=" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-minimal.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
 
-<script class="next-config" data-name="main" type="application/json">{"hostname":"luyiyun1021.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.21.1","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+<script class="next-config" data-name="main" type="application/json">{"hostname":"luyiyun1021.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.22.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
 
-    <meta name="description" content="🔗 原文链接：https:&#x2F;&#x2F;blog.csdn.net&#x2F;lansebingxuan&#x2F;article&#x2F;details&#x2F;13161...﻿  论文地址：CoCa: Contrastive Captioners are Image-Text Foundation Models﻿ 代码地址：CoCa﻿ CoCa代表Contrastive Captioners的缩写，代表模型用两个目标函数训练出来的，">
+    <meta name="description" content="🔗 原文链接：https:&#x2F;&#x2F;blog.csdn.net&#x2F;lansebingxuan&#x2F;article&#x2F;details&#x2F;13161…  论文地址：CoCa: Contrastive Captioners are Image-Text Foundation Models 代码地址：CoCa CoCa代表Contrastive Captioners的缩写，代表模型用两个目标函数训练出来的，一个是Co">
 <meta property="og:type" content="article">
 <meta property="og:title" content="CoCa">
 <meta property="og:url" content="https://luyiyun1021.github.io/2025/01/16/CoCa/index.html">
 <meta property="og:site_name" content="Ronny Lu&#39;s blog">
-<meta property="og:description" content="🔗 原文链接：https:&#x2F;&#x2F;blog.csdn.net&#x2F;lansebingxuan&#x2F;article&#x2F;details&#x2F;13161...﻿  论文地址：CoCa: Contrastive Captioners are Image-Text Foundation Models﻿ 代码地址：CoCa﻿ CoCa代表Contrastive Captioners的缩写，代表模型用两个目标函数训练出来的，">
+<meta property="og:description" content="🔗 原文链接：https:&#x2F;&#x2F;blog.csdn.net&#x2F;lansebingxuan&#x2F;article&#x2F;details&#x2F;13161…  论文地址：CoCa: Contrastive Captioners are Image-Text Foundation Models 代码地址：CoCa CoCa代表Contrastive Captioners的缩写，代表模型用两个目标函数训练出来的，一个是Co">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116161514502.png">
 <meta property="article:published_time" content="2025-01-16T08:15:29.000Z">
@@ -145,14 +145,14 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BD%91%E7%BB%9C%E7%BB%93%E6%9E%84"><span class="nav-number">1.</span> <span class="nav-text">网络结构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8D%9F%E5%A4%B1%E5%87%BD%E6%95%B0"><span class="nav-number">2.</span> <span class="nav-text">损失函数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">3.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BD%91%E7%BB%9C%E7%BB%93%E6%9E%84"><span class="nav-number">1.</span> <span class="nav-text"> 网络结构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8D%9F%E5%A4%B1%E5%87%BD%E6%95%B0"><span class="nav-number">2.</span> <span class="nav-text"> 损失函数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">3.</span> <span class="nav-text"> 总结</span></a></li></ol></div>
         </div>
         <!--/noindex-->
 
         <div class="site-overview-wrap sidebar-panel">
           <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
     <img class="site-author-image" itemprop="image" alt="Ronny Lu"
-      src="/images/avatar.jpeg">
+      src="https://avatars.githubusercontent.com/u/55233584?v=4">
   <p class="site-author-name" itemprop="name">Ronny Lu</p>
   <div class="site-description" itemprop="description">Tech notes on LLM, LLM Infra, C++</div>
 </div>
@@ -160,18 +160,18 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">29</span>
+          <span class="site-state-item-count">50</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
           <a href="/categories/">
-        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-count">14</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-count">14</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -201,7 +201,7 @@
     <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/01/16/CoCa/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpeg">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
       <meta itemprop="name" content="Ronny Lu">
     </span>
 
@@ -269,7 +269,7 @@
         <i class="far fa-clock"></i>
       </span>
       <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>1 分钟</span>
+      <span>4 分钟</span>
     </span>
 </div>
 
@@ -280,45 +280,57 @@
     
     
     <div class="post-body" itemprop="articleBody"><blockquote>
-<p>🔗 原文链接：<a target="_blank" rel="noopener" href="https://blog.csdn.net/lansebingxuan/article/details/131611916">https://blog.csdn.net/lansebingxuan/article/details/13161...</a>﻿</p>
+<p>🔗 原文链接：<a target="_blank" rel="noopener" href="https://blog.csdn.net/lansebingxuan/article/details/131611916">https://blog.csdn.net/lansebingxuan/article/details/13161…</a></p>
 </blockquote>
-<p>论文地址：<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2205.01917v1">CoCa: Contrastive Captioners are Image-Text Foundation Models</a>﻿</p>
-<p>代码地址：<a target="_blank" rel="noopener" href="https://github.com/lucidrains/CoCa-pytorch">CoCa</a>﻿</p>
+<p>论文地址：<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2205.01917v1">CoCa: Contrastive Captioners are Image-Text Foundation Models</a></p>
+<p>代码地址：<a target="_blank" rel="noopener" href="https://github.com/lucidrains/CoCa-pytorch">CoCa</a></p>
 <p>CoCa代表Contrastive Captioners的缩写，代表模型用两个目标函数训练出来的，一个是Contrastive Loss，一个是Captioning Loss。本文因为数据集更大，模型也更大，所以它的效果很好，在多模态所有的任务均SOTA，而且在单模态里，在ImageNet上也得到了90以上的Top1准确度，在视频动作识别领域，在Paper with Code上CoCa在K400、K600、K700这些数据集上排名前三。</p>
 <span id="more"></span>
-<h2 id="网络结构"><a href="#网络结构" class="headerlink" title="网络结构"></a>网络结构</h2><p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116161514502.png" alt="image.png"></p>
+<h2 id="网络结构"><a class="markdownIt-Anchor" href="#网络结构"></a> 网络结构</h2>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116161514502.png" alt="image.png" /></p>
 <p>CoCa是ALBEF的一个后续工作，它与ALBEF的模型类似，左边是一个Image Encoder，右边是一个Text <strong>Decoder</strong>，注意，这里是Decoder</p>
-<p>不是Encoder。从左右来看还是左边图像分支，右边文本分支，文本分支分两部分，前面用来抽取Unimodel的文本特征，后面做<a target="_blank" rel="noopener" href="https://so.csdn.net/so/search?q=%E5%A4%9A%E6%A8%A1%E6%80%81&spm=1001.2101.3001.7020">多模态</a>的特征。整个模型就是用两个目标函数训出来的，一个是ITC，一个是Language Modeling Loss，也就是Contrastive和Captioning，具体步骤如下：</p>
+<p>不是Encoder。从左右来看还是左边图像分支，右边文本分支，文本分支分两部分，前面用来抽取Unimodel的文本特征，后面做<a target="_blank" rel="noopener" href="https://so.csdn.net/so/search?q=%E5%A4%9A%E6%A8%A1%E6%80%81&amp;spm=1001.2101.3001.7020">多模态</a>的特征。整个模型就是用两个目标函数训出来的，一个是ITC，一个是Language Modeling Loss，也就是Contrastive和Captioning，具体步骤如下：</p>
 <ol>
-<li><p>图像通过Image Encoder，得到一系列的Token，文本通过文本的解码器，得到一系列的文本特征。</p>
+<li>
+<p>图像通过Image Encoder，得到一系列的Token，文本通过文本的解码器，得到一系列的文本特征。</p>
 </li>
-<li><p>图像的CLS Token和文本的CLS Token计算ITC loss</p>
+<li>
+<p>图像的CLS Token和文本的CLS Token计算ITC loss</p>
 </li>
-<li><p>图像其他的Token做Attention Pooling，然后再传到多模态的Text Decoder里做Cross Attention，这样把视觉和文本的特征融合在一起了。多模态的特征用Captioning Loss训练，也就是BLIP、GPT用的Language Modeling Loss。</p>
+<li>
+<p>图像其他的Token做Attention Pooling，然后再传到多模态的Text Decoder里做Cross Attention，这样把视觉和文本的特征融合在一起了。多模态的特征用Captioning Loss训练，也就是BLIP、GPT用的Language Modeling Loss。</p>
 </li>
 </ol>
 <p>所以CoCa的布局跟ALBEF是一模一样的，区别是：</p>
 <ol>
-<li><p>在图像分支做Attentional Pooling，这一部分是可学的，这种可学的Pooling方式能够针对不同的任务学到更好的特征。</p>
+<li>
+<p>在图像分支做Attentional Pooling，这一部分是可学的，这种可学的Pooling方式能够针对不同的任务学到更好的特征。</p>
 </li>
-<li><p>不论是单模态的文本特征的学习还是多模态的特征学习，整个文本端统一都用Decoder训练目标函数，使用Captioning的Loss，文本的输入从一开始前面的Self-Attention Layer就是Causal的（也就是mask住一个句子后半部分，然后用前半部分去预测句子后面内容）。因为作者在超大的几十亿的数据集上去做预训练，所以文本如何mask关系不大，模型应该是什么都见过。</p>
+<li>
+<p>不论是单模态的文本特征的学习还是多模态的特征学习，整个文本端统一都用Decoder训练目标函数，使用Captioning的Loss，文本的输入从一开始前面的Self-Attention Layer就是Causal的（也就是mask住一个句子后半部分，然后用前半部分去预测句子后面内容）。因为作者在超大的几十亿的数据集上去做预训练，所以文本如何mask关系不大，模型应该是什么都见过。</p>
 </li>
 </ol>
 <p>Coca的模型实现并不难，但是想复现它难度非常大。原因是：</p>
 <ol>
-<li><p>模型大：虽然很简单，但它训练出来最大的模型参数量已经达到了2.1 billion，算是视觉或者多模态里面非常大的一个模型（当然在NLP那边已经有几十亿上百亿的模型）</p>
+<li>
+<p>模型大：虽然很简单，但它训练出来最大的模型参数量已经达到了2.1 billion，算是视觉或者多模态里面非常大的一个模型（当然在NLP那边已经有几十亿上百亿的模型）</p>
 </li>
-<li><p>训练的数据集∶作者不只用了之前训练Align用的多模态的数据集，同时还把GFT 3 billion（google私有数据）图像分类的数据集转化成了多模态数据集，加在一起有几十亿的训练数据，所以不论是模型还是这个数据都远超之前所有工作的这个scale，效果也是非常明显的。</p>
+<li>
+<p>训练的数据集∶作者不只用了之前训练Align用的多模态的数据集，同时还把GFT 3 billion（google私有数据）图像分类的数据集转化成了多模态数据集，加在一起有几十亿的训练数据，所以不论是模型还是这个数据都远超之前所有工作的这个scale，效果也是非常明显的。</p>
 </li>
 </ol>
-<h2 id="损失函数"><a href="#损失函数" class="headerlink" title="损失函数"></a>损失函数</h2><ol>
-<li><p>ITC loss：Contrastive Loss，图像的CLS Token和文本的CLS Token计算ITC loss。</p>
+<h2 id="损失函数"><a class="markdownIt-Anchor" href="#损失函数"></a> 损失函数</h2>
+<ol>
+<li>
+<p>ITC loss：Contrastive Loss，图像的CLS Token和文本的CLS Token计算ITC loss。</p>
 </li>
-<li><p>LM(Captioning) Loss：单模态、多模态的文本特征学习，计算LM Loss。</p>
+<li>
+<p>LM(Captioning) Loss：单模态、多模态的文本特征学习，计算LM Loss。</p>
 </li>
 </ol>
 <p>文本端统一都用Decoder训练目标函数，并且只用一个Captioning Loss而不用ITM Loss，原因是作者这里想解决训练的效率问题，之前不论是ALBEF还是VLMO，因为算各种的目标函数，往往一个Training Iteration要forward这个模型好几次，无形中增加了模型训练的时间长度，比如训练100个Epoch，其实forward三次之后相当于训练了300个Epoch。作者这里<strong>为了让ITC Loss和Captioning Loss能同时计算，所以文本的输入从刚开始就必须是Causal的，这样通过Unimodal Text Decoder出来的特征能直接做ITC Loss，同样的输入得到的多模态特征也直接能做Captioning Loss</strong>。这样一个Iteration就是只forward一次，训练时间就会降低一些。</p>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>其实不论用ALBEF或者CoCa模型结构，还是VLMO、 BLIP，共享参数都是可以的。当把这个模型做大，数据集做大后，模型性能都差不多，其实往往最后拼的都是数据</p>
+<h2 id="总结"><a class="markdownIt-Anchor" href="#总结"></a> 总结</h2>
+<p>其实不论用ALBEF或者CoCa模型结构，还是VLMO、 BLIP，共享参数都是可以的。当把这个模型做大，数据集做大后，模型性能都差不多，其实往往最后拼的都是数据</p>
 
     </div>
 
@@ -376,14 +388,14 @@
       <i class="fa fa-chart-line"></i>
     </span>
       <span>站点总字数：</span>
-    <span title="站点总字数">75k</span>
+    <span title="站点总字数">197k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span>站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">1:08</span>
+    <span title="站点阅读时长">11:56</span>
   </span>
 </div>
 <div class="busuanzi-count">
@@ -404,8 +416,7 @@
       </span>
     </span>
 </div>
-  <div class="powered-by">
-    <!--由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动 -->
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
   </div>
 
     </div>
@@ -446,6 +457,13 @@
   <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 
 
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">false</script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" integrity="sha256-UF1fgpAiu3tPJN/uCqEUHNe7pnr+QR0SQDNfgglgtcM=" crossorigin="anonymous">
+  <script class="next-config" data-name="katex" type="application/json">{"copy_tex_js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/copy-tex.min.js","integrity":"sha256-Us54+rSGDSTvIhKKUs4kygE2ipA0RXpWWh0/zLqw3bs="}}</script>
+  <script src="/js/third-party/math/katex.js"></script>
 
 
 

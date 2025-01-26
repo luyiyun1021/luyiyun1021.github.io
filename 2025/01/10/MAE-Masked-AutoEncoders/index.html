@@ -15,19 +15,19 @@
 
 
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha256-5eIC48iZUHmSlSUz9XtjRyK2mzQkHScZY1WdMaoz74E=" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-minimal.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
 
-<script class="next-config" data-name="main" type="application/json">{"hostname":"luyiyun1021.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.21.1","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+<script class="next-config" data-name="main" type="application/json">{"hostname":"luyiyun1021.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.22.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
 
-    <meta name="description" content="MAE 是什么MAE (Masked AutoEncoders) 是可拓展自监督视觉学习器，思想是随机掩盖一些图像块，然后重建丢失的像素。MAE 使用一个非对称的解码编码器对可见的图形块进行处理，同时使用一个轻量级的解码器从潜在表示和掩码块重建原始图像；如果遮挡输入图像的大部分（例如75%），就是变成了一个自监督任务。这两种方法可以有效地训练大规模模型：可以加速训练和提高精度。MAE可用于ViT下">
+    <meta name="description" content="MAE 是什么 MAE (Masked AutoEncoders) 是可拓展自监督视觉学习器，思想是随机掩盖一些图像块，然后重建丢失的像素。MAE 使用一个非对称的解码编码器对可见的图形块进行处理，同时使用一个轻量级的解码器从潜在表示和掩码块重建原始图像；如果遮挡输入图像的大部分（例如75%），就是变成了一个自监督任务。这两种方法可以有效地训练大规模模型：可以加速训练和提高精度。MAE可用于Vi">
 <meta property="og:type" content="article">
 <meta property="og:title" content="MAE (Masked AutoEncoders)">
 <meta property="og:url" content="https://luyiyun1021.github.io/2025/01/10/MAE-Masked-AutoEncoders/index.html">
 <meta property="og:site_name" content="Ronny Lu&#39;s blog">
-<meta property="og:description" content="MAE 是什么MAE (Masked AutoEncoders) 是可拓展自监督视觉学习器，思想是随机掩盖一些图像块，然后重建丢失的像素。MAE 使用一个非对称的解码编码器对可见的图形块进行处理，同时使用一个轻量级的解码器从潜在表示和掩码块重建原始图像；如果遮挡输入图像的大部分（例如75%），就是变成了一个自监督任务。这两种方法可以有效地训练大规模模型：可以加速训练和提高精度。MAE可用于ViT下">
+<meta property="og:description" content="MAE 是什么 MAE (Masked AutoEncoders) 是可拓展自监督视觉学习器，思想是随机掩盖一些图像块，然后重建丢失的像素。MAE 使用一个非对称的解码编码器对可见的图形块进行处理，同时使用一个轻量级的解码器从潜在表示和掩码块重建原始图像；如果遮挡输入图像的大部分（例如75%），就是变成了一个自监督任务。这两种方法可以有效地训练大规模模型：可以加速训练和提高精度。MAE可用于Vi">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110182334475.png">
 <meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110182342364.png">
@@ -147,14 +147,14 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#MAE-%E6%98%AF%E4%BB%80%E4%B9%88"><span class="nav-number">1.</span> <span class="nav-text">MAE 是什么</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A8%A1%E5%9E%8B%E6%9E%B6%E6%9E%84"><span class="nav-number">2.</span> <span class="nav-text">模型架构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BB%93%E6%9E%9C"><span class="nav-number">3.</span> <span class="nav-text">结果</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%A8%E8%AE%BA"><span class="nav-number">4.</span> <span class="nav-text">讨论</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5"><span class="nav-number">5.</span> <span class="nav-text">参考链接</span></a></li></ol></div>
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#mae-%E6%98%AF%E4%BB%80%E4%B9%88"><span class="nav-number">1.</span> <span class="nav-text"> MAE 是什么</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A8%A1%E5%9E%8B%E6%9E%B6%E6%9E%84"><span class="nav-number">2.</span> <span class="nav-text"> 模型架构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BB%93%E6%9E%9C"><span class="nav-number">3.</span> <span class="nav-text"> 结果</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%A8%E8%AE%BA"><span class="nav-number">4.</span> <span class="nav-text"> 讨论</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5"><span class="nav-number">5.</span> <span class="nav-text"> 参考链接</span></a></li></ol></div>
         </div>
         <!--/noindex-->
 
         <div class="site-overview-wrap sidebar-panel">
           <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
     <img class="site-author-image" itemprop="image" alt="Ronny Lu"
-      src="/images/avatar.jpeg">
+      src="https://avatars.githubusercontent.com/u/55233584?v=4">
   <p class="site-author-name" itemprop="name">Ronny Lu</p>
   <div class="site-description" itemprop="description">Tech notes on LLM, LLM Infra, C++</div>
 </div>
@@ -162,18 +162,18 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">29</span>
+          <span class="site-state-item-count">50</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
           <a href="/categories/">
-        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-count">14</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-count">14</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -203,7 +203,7 @@
     <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/01/10/MAE-Masked-AutoEncoders/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpeg">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
       <meta itemprop="name" content="Ronny Lu">
     </span>
 
@@ -271,7 +271,7 @@
         <i class="far fa-clock"></i>
       </span>
       <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>1 分钟</span>
+      <span>4 分钟</span>
     </span>
 </div>
 
@@ -281,31 +281,38 @@
     
     
     
-    <div class="post-body" itemprop="articleBody"><h2 id="MAE-是什么"><a href="#MAE-是什么" class="headerlink" title="MAE 是什么"></a>MAE 是什么</h2><p>MAE (Masked AutoEncoders) 是可拓展自监督视觉学习器，思想是随机掩盖一些图像块，然后重建丢失的像素。MAE 使用一个非对称的解码编码器对可见的图形块进行处理，同时使用一个轻量级的解码器从潜在表示和掩码块重建原始图像；如果遮挡输入图像的大部分（例如75%），就是变成了一个自监督任务。这两种方法可以有效地训练大规模模型：可以加速训练和提高精度。MAE可用于ViT下游识别任务的fine-tune，还可以用于目标检测、实例分割以及语义分割等任务的迁移学习。</p>
+    <div class="post-body" itemprop="articleBody"><h2 id="mae-是什么"><a class="markdownIt-Anchor" href="#mae-是什么"></a> MAE 是什么</h2>
+<p>MAE (Masked AutoEncoders) 是可拓展自监督视觉学习器，思想是随机掩盖一些图像块，然后重建丢失的像素。MAE 使用一个非对称的解码编码器对可见的图形块进行处理，同时使用一个轻量级的解码器从潜在表示和掩码块重建原始图像；如果遮挡输入图像的大部分（例如75%），就是变成了一个自监督任务。这两种方法可以有效地训练大规模模型：可以加速训练和提高精度。MAE可用于ViT下游识别任务的fine-tune，还可以用于目标检测、实例分割以及语义分割等任务的迁移学习。</p>
 <p><strong>和VIT的区别：</strong></p>
 <ol>
-<li><p>需要盖住更多的块，使得剩下的块块与块之间的冗余度没那么高</p>
+<li>
+<p>需要盖住更多的块，使得剩下的块块与块之间的冗余度没那么高</p>
 </li>
-<li><p>使用Transformer架构的解码器，直接还原原始的像素信息</p>
+<li>
+<p>使用Transformer架构的解码器，直接还原原始的像素信息</p>
 </li>
 </ol>
 <span id="more"></span>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110182334475.png" alt="image.png"></p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110182342364.png" alt="image.png"></p>
-<h2 id="模型架构"><a href="#模型架构" class="headerlink" title="模型架构"></a>模型架构</h2><p><strong>编码器</strong></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110182334475.png" alt="image.png" /></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110182342364.png" alt="image.png" /></p>
+<h2 id="模型架构"><a class="markdownIt-Anchor" href="#模型架构"></a> 模型架构</h2>
+<p><strong>编码器</strong></p>
 <p>编码器是 ViT。 它接受张量形状为 (batch_size, RGB_channels, height, width) 的图像。 通过执行线性投影为每个Patch获得嵌入， 这是通过 2D 卷积层来完成。 然后张量在最后一个维度被展平（压扁），变成 (batch_size, encoder_embed_dim, num_visible_patches)，并 转置为形状（batch_size、num_visible_patches、encoder_embed_dim）的张量。正如原始 Transformer 论文中提到的，位置编码添加了有关每个Patch位置的信息。 作者使用“sine-cosine”版本而不是可学习的位置嵌入。 与 Transformer 类似，每个块由norm层、多头注意力模块和前馈层组成。 中间输出形状是（batch_size、num_visible_patches、encoder_embed_dim）。这部分仅用于下游任务的微调。 论文的模型遵循 ViT 架构，该架构具有用于分类的类令牌（patch）。 因此，他们添加了一个虚拟令牌，但是论文中也说到他们的方法在没有它的情况下也可以运行良好，因为对其他令牌执行了平均池化操作。 在这里也包含了实现的平均池化版本。 之后，添加一个线性层作为分类器。 最终的张量形状是 (batch_size, num_classes)。</p>
 <p><strong>解码器</strong></p>
 <p>与编码器类似，解码器由一系列transformer 块组成。 在解码器的末端，有一个由norm层和前馈层组成的分类器。 输入张量的形状为 batch_size, num_patches,decoder_embed_dim) 而最终输出张量的形状为 (batch_size, num_patches, 3 * patch_size ** 2)。</p>
 <p><strong>把所有东西放在一起——MAE架构</strong></p>
 <p>MAE 用于对掩码图像进行预训练。首先，屏蔽的输入被发送到编码器。然后，它们被传递到前馈层以更改嵌入维度以匹配解码器。 在传递给解码器之前，被掩码的Patch被输入进去。 位置编码再次应用于完整的图像块集，包括可见的和被掩码遮盖的。</p>
 <p>在论文中，作者对包含所有Patch的列表进行了打乱，以便正确插入Patch的掩码。 这部分在本篇文章中没有完成，因为在 PyTorch 上实现并不简单。所以这里使用的是位置编码在被添加到Patch之前被相应地打乱的做法。</p>
-<h2 id="结果"><a href="#结果" class="headerlink" title="结果"></a>结果</h2><p>让我们看看原始论文中报道的预训练阶段的重建图像。看起来MAE在重建图像方面做得很好，即使80%的像素被遮蔽了。</p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110182351798.png" alt="image.png"></p>
-<h2 id="讨论"><a href="#讨论" class="headerlink" title="讨论"></a>讨论</h2><ul>
+<h2 id="结果"><a class="markdownIt-Anchor" href="#结果"></a> 结果</h2>
+<p>让我们看看原始论文中报道的预训练阶段的重建图像。看起来MAE在重建图像方面做得很好，即使80%的像素被遮蔽了。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110182351798.png" alt="image.png" /></p>
+<h2 id="讨论"><a class="markdownIt-Anchor" href="#讨论"></a> 讨论</h2>
+<ul>
 <li>MAE的Decoder和Bert，Vit有什么区别</li>
 </ul>
 <p>用于重建的decoder在图像和文本任务发挥的角色有区别，从句子中预测单词属于高语义任务，encoder和decoder的gap小，所以BERT的decoder部分微不足道（只需要一个MLP），而对图像重建像素属于低语义任务（相比图像分类），decoder需要发挥更大作用：将高语义的中间表征恢复成低语义的像素值。</p>
-<h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><p>﻿<a target="_blank" rel="noopener" href="https://blog.csdn.net/gailj/article/details/123664828">经典论文阅读笔记——VIT、Swin Transformer、MAE、CILP_clip与vit的关系-CSDN博客</a></p>
+<h2 id="参考链接"><a class="markdownIt-Anchor" href="#参考链接"></a> 参考链接</h2>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/gailj/article/details/123664828">经典论文阅读笔记——VIT、Swin Transformer、MAE、CILP_clip与vit的关系-CSDN博客</a></p>
 
     </div>
 
@@ -363,14 +370,14 @@
       <i class="fa fa-chart-line"></i>
     </span>
       <span>站点总字数：</span>
-    <span title="站点总字数">75k</span>
+    <span title="站点总字数">197k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span>站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">1:08</span>
+    <span title="站点阅读时长">11:56</span>
   </span>
 </div>
 <div class="busuanzi-count">
@@ -391,8 +398,7 @@
       </span>
     </span>
 </div>
-  <div class="powered-by">
-    <!--由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动 -->
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
   </div>
 
     </div>
@@ -433,6 +439,13 @@
   <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 
 
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">false</script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" integrity="sha256-UF1fgpAiu3tPJN/uCqEUHNe7pnr+QR0SQDNfgglgtcM=" crossorigin="anonymous">
+  <script class="next-config" data-name="katex" type="application/json">{"copy_tex_js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/copy-tex.min.js","integrity":"sha256-Us54+rSGDSTvIhKKUs4kygE2ipA0RXpWWh0/zLqw3bs="}}</script>
+  <script src="/js/third-party/math/katex.js"></script>
 
 
 

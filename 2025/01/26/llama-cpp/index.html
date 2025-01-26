@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-minimal.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"luyiyun1021.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.22.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="🔗 原文链接：https:&#x2F;&#x2F;zhuanlan.zhihu.com&#x2F;p&#x2F;996110863  原文： Understanding how LLM inference works with llama.cpp 译者的话: llama.cpp出道以来，很少有官方文档，但是本文通过代码驱动的讲解， 讲清楚了llama.cpp的原理，个人推荐一读。 在这篇文章中，我们将深入探讨大型语言模型（LLMs）">
+<meta property="og:type" content="article">
+<meta property="og:title" content="llama.cpp">
+<meta property="og:url" content="https://luyiyun1021.github.io/2025/01/26/llama-cpp/index.html">
+<meta property="og:site_name" content="Ronny Lu&#39;s blog">
+<meta property="og:description" content="🔗 原文链接：https:&#x2F;&#x2F;zhuanlan.zhihu.com&#x2F;p&#x2F;996110863  原文： Understanding how LLM inference works with llama.cpp 译者的话: llama.cpp出道以来，很少有官方文档，但是本文通过代码驱动的讲解， 讲清楚了llama.cpp的原理，个人推荐一读。 在这篇文章中，我们将深入探讨大型语言模型（LLMs）">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126170732132.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126170811556.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126170856916.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126170908379.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126170950263.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126171005906.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126171012624.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126171037410.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126171048245.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126171056771.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126171103132.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126171132918.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126171139202.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126171150127.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126171202988.png">
+<meta property="article:published_time" content="2025-01-26T09:18:26.000Z">
+<meta property="article:modified_time" content="2025-01-26T09:38:08.240Z">
+<meta property="article:author" content="Ronny Lu">
+<meta property="article:tag" content="大模型">
+<meta property="article:tag" content="大模型推理">
+<meta property="article:tag" content="工程能力提升">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126170732132.png">
+
+
+<link rel="canonical" href="https://luyiyun1021.github.io/2025/01/26/llama-cpp/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://luyiyun1021.github.io/2025/01/26/llama-cpp/","path":"2025/01/26/llama-cpp/","title":"llama.cpp"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>llama.cpp | Ronny Lu's blog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<style>.darkmode--activated{--body-bg-color:#282828;--content-bg-color:#333;--card-bg-color:#555;--text-color:#ccc;--blockquote-color:#bbb;--link-color:#ccc;--link-hover-color:#eee;--brand-color:#ddd;--brand-hover-color:#ddd;--table-row-odd-bg-color:#282828;--table-row-hover-bg-color:#363636;--menu-item-bg-color:#555;--btn-default-bg:#222;--btn-default-color:#ccc;--btn-default-border-color:#555;--btn-default-hover-bg:#666;--btn-default-hover-color:#ccc;--btn-default-hover-border-color:#666;--highlight-background:#282b2e;--highlight-foreground:#a9b7c6;--highlight-gutter-background:#34393d;--highlight-gutter-foreground:#9ca9b6}.darkmode--activated img{opacity:.75}.darkmode--activated img:hover{opacity:.9}.darkmode--activated code{color:#69dbdc;background:0 0}button.darkmode-toggle{z-index:9999}.darkmode-ignore,img{display:flex!important}.beian img{display:inline-block!important}</style></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Ronny Lu's blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%8E%E6%8F%90%E7%A4%BA%E5%88%B0%E8%BE%93%E5%87%BA%E7%9A%84%E9%AB%98%E7%BA%A7%E6%B5%81%E7%A8%8B"><span class="nav-number">1.</span> <span class="nav-text"> 从提示到输出的高级流程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%90%86%E8%A7%A3%E5%BC%A0%E9%87%8F%E5%8F%8A%E5%85%B6%E5%9C%A8-ggml-%E4%B8%AD%E7%9A%84%E5%BA%94%E7%94%A8"><span class="nav-number">2.</span> <span class="nav-text"> 理解张量及其在 ggml 中的应用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BC%A0%E9%87%8F%E7%9A%84%E5%9F%BA%E6%9C%AC%E7%BB%93%E6%9E%84"><span class="nav-number">2.1.</span> <span class="nav-text"> 张量的基本结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BC%A0%E9%87%8F%E6%93%8D%E4%BD%9C%E4%B8%8E%E8%A7%86%E5%9B%BE"><span class="nav-number">2.2.</span> <span class="nav-text"> 张量操作与视图</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%A1%E7%AE%97%E5%BC%A0%E9%87%8F"><span class="nav-number">2.3.</span> <span class="nav-text"> 计算张量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B0%86%E8%AE%A1%E7%AE%97%E4%BB%BB%E5%8A%A1%E8%BD%AC%E7%A7%BB%E5%88%B0-gpu"><span class="nav-number">2.4.</span> <span class="nav-text"> 将计算任务转移到 GPU</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%86%E8%AF%8Dtokenization"><span class="nav-number">3.</span> <span class="nav-text"> 分词Tokenization</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B5%8C%E5%85%A5embedding"><span class="nav-number">4.</span> <span class="nav-text"> 嵌入embedding</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#transformer"><span class="nav-number">5.</span> <span class="nav-text"> Transformer</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%87%AA%E6%B3%A8%E6%84%8F%E5%8A%9B%E6%9C%BA%E5%88%B6"><span class="nav-number">5.1.</span> <span class="nav-text"> 自注意力机制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#transformer%E7%9A%84%E5%B1%82"><span class="nav-number">5.2.</span> <span class="nav-text"> Transformer的层</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%A1%E7%AE%97logits"><span class="nav-number">5.3.</span> <span class="nav-text"> 计算logits</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%87%87%E6%A0%B7"><span class="nav-number">6.</span> <span class="nav-text"> 采样</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%B4%AA%E5%A9%AA%E9%87%87%E6%A0%B7"><span class="nav-number">6.1.</span> <span class="nav-text"> 贪婪采样</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B8%A9%E5%BA%A6%E9%87%87%E6%A0%B7"><span class="nav-number">6.2.</span> <span class="nav-text"> 温度采样</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BC%98%E5%8C%96%E6%8E%A8%E7%90%86"><span class="nav-number">7.</span> <span class="nav-text"> 优化推理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#kv%E7%BC%93%E5%AD%98"><span class="nav-number">7.1.</span> <span class="nav-text"> KV缓存</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BF%9B%E4%B8%80%E6%AD%A5%E4%BC%98%E5%8C%96%E5%90%8E%E7%BB%AD%E8%BF%AD%E4%BB%A3"><span class="nav-number">7.2.</span> <span class="nav-text"> 进一步优化后续迭代</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#kv%E7%BC%93%E5%AD%98%E7%9A%84%E5%AE%9E%E9%99%85%E5%BA%94%E7%94%A8"><span class="nav-number">7.3.</span> <span class="nav-text"> KV缓存的实际应用</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Ronny Lu"
+      src="https://avatars.githubusercontent.com/u/55233584?v=4">
+  <p class="site-author-name" itemprop="name">Ronny Lu</p>
+  <div class="site-description" itemprop="description">Tech notes on LLM, LLM Infra, C++</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">50</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">14</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">14</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/01/26/llama-cpp/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
+      <meta itemprop="name" content="Ronny Lu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ronny Lu's blog">
+      <meta itemprop="description" content="Tech notes on LLM, LLM Infra, C++">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="llama.cpp | Ronny Lu's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          llama.cpp
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-01-26 17:18:26 / 修改时间：17:38:08" itemprop="dateCreated datePublished" datetime="2025-01-26T17:18:26+08:00">2025-01-26</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">大模型</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E6%8E%A8%E7%90%86%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index"><span itemprop="name">推理技术</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>19k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>1:10</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><blockquote>
+<p>🔗 原文链接：<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/996110863">https://zhuanlan.zhihu.com/p/996110863</a></p>
+</blockquote>
+<p>原文： <a href="https://link.zhihu.com/?target=https%3A//www.omrimallis.com/posts/understanding-how-llm-inference-works-with-llama-cpp/">Understanding how LLM inference works with llama.cpp</a></p>
+<p><em>译者的话: llama.cpp出道以来，很少有官方文档，但是本文通过代码驱动的讲解， 讲清楚了llama.cpp的原理，个人推荐一读。</em></p>
+<p>在这篇文章中，我们将深入探讨大型语言模型（LLMs）的内部结构，以便更好地理解它们是如何工作的。为帮助我们进行这次探索，我们将使用 llama.cpp 的源码，它是 Meta 的 LLaMA 模型的纯 C++ 实现。作者个人认为，llama.cpp 是理解 LLM 深层原理的一个优秀学习工具，它的代码简洁明了，不涉及过多的抽象。我们将使用特定的提交版本。</p>
+<p>本文的重点是 LLM 的推理部分，即：已训练好的模型如何基于用户输入的提示生成响应。这篇文章主要写给那些非机器学习和人工智能领域的工程师，旨在帮助他们更好地理解 LLM，<strong>本文从工程角度而非 AI 角度探讨 LLM 的内部工作原理，因此不要求读者具备深厚的数学或深度学习知识</strong>。（<em>译者：这正是本文最妙的地方</em>）在文章中，我们将从头到尾介绍 LLM 的推理过程，涵盖以下主题：</p>
+<ol>
+<li>
+<p><a href="https://link.zhihu.com/?target=https%3A//www.omrimallis.com/posts/understanding-how-llm-inference-works-with-llama-cpp/%23understanding-tensors-with-ggml">张量</a>：概述数学运算如何以张量的形式实现， 并可能潜在转移到 GPU 上处理。</p>
+</li>
+<li>
+<p><a href="https://link.zhihu.com/?target=https%3A//www.omrimallis.com/posts/understanding-how-llm-inference-works-with-llama-cpp/%23tokenization">分词</a>：将用户输入的提示分解为令牌列表，LLM 使用这些令牌作为输入。</p>
+</li>
+<li>
+<p><strong>嵌入Embedding：将令牌转换为高维向量的过程。</strong></p>
+</li>
+<li>
+<p>Transformer：大语言模型架构的核心部分，负责实际的推理过程，我们将重点介绍自注意力机制。</p>
+</li>
+<li>
+<p><a href="https://link.zhihu.com/?target=https%3A//www.omrimallis.com/posts/understanding-how-llm-inference-works-with-llama-cpp/%23sampling">采样</a>：选择下一个预测令牌的过程，我们将探讨两种采样技术。</p>
+</li>
+<li>
+<p><a href="https://link.zhihu.com/?target=https%3A//www.omrimallis.com/posts/understanding-how-llm-inference-works-with-llama-cpp/%23optimizing-inference">KV 缓存</a>：一种常见的优化技术，用于加快长提示的推理速度，我们将介绍一个基本的 kv 缓存实现。</p>
+</li>
+</ol>
+<p>通过阅读本文，你将有望对 LLM 的工作过程有一个端到端的理解，并且能够探索更高级的主题，这些主题将在最后一节中详细说明。</p>
+<span id="more"></span>
+<h2 id="从提示到输出的高级流程"><a class="markdownIt-Anchor" href="#从提示到输出的高级流程"></a> 从提示到输出的高级流程</h2>
+<p>作为一个大型语言模型（LLM），LLaMA 的工作原理是接收一个输入文本（即“提示”），并预测下一个应该生成的标记（token）或词汇。</p>
+<p>为了说明这个过程，我们以维基百科量子力学条目中的第一句话为例。我们的提示是：</p>
+<blockquote>
+<p><strong>Quantum mechanics is a fundamental theory in physics that</strong></p>
+</blockquote>
+<p>LLM 会尝试根据训练时学到的知识继续这句话。使用 llama.cpp，我们得到如下的续写：</p>
+<blockquote>
+<p><strong>provides insights into how matter and energy behave at the atomic scale.</strong></p>
+</blockquote>
+<p>让我们先来看一下这个过程的高级流程。LLM 的核心功能是每次只预测一个标记。生成完整的句子（或更多内容）是通过反复应用 LLM 模型到相同的提示上，并将之前的输出标记附加到提示后形成的。这种模型被称为自回归模型。因此，我们主要关注单个标记的生成，流程可以简化为以下高级图所示：</p>
+<p><em>LLM 通过每次迭代生成一个标记，然后将其添加到输入提示中，不断重复该过程，直到生成完整的输出。这就是 LLM 如何从输入提示生成文本的基础。</em></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126170732132.png" alt="image.png" /></p>
+<p>从用户提示生成单个标记的完整流程包括多个阶段，如分词、嵌入、Transformer 神经网络和采样。本文将介绍这些阶段。</p>
+<p>根据图示，整个流程如下：</p>
+<ol>
+<li>
+<p><strong>分词</strong>：分词器将提示分解为一个标记列表。根据模型的词汇表，某些单词可能会被分解成多个标记。每个标记由一个唯一的数字表示。</p>
+</li>
+<li>
+<p><strong>嵌入embedding转换</strong>：每个数字标记被转换为一个嵌入向量。嵌入是一个固定大小的向量，以一种更适合 LLM 处理的方式表示标记。所有嵌入向量组合在一起形成嵌入矩阵。</p>
+</li>
+<li>
+<p><strong>输入 Transformer</strong>：嵌入矩阵作为 Transformer 的输入。Transformer 是 LLM 的核心神经网络，由多层链组成。每一层接收输入矩阵，并利用模型参数执行各种数学运算，最主要的是自注意力机制。该层的输出作为下一层的输入。</p>
+</li>
+<li>
+<p><strong>logits 生成</strong>：最后的神经网络将 Transformer 的输出转换为 logits。每个可能的下一个标记都有一个相应的 logits，表示该标记作为句子“正确”延续的概率。</p>
+</li>
+<li>
+<p><strong>采样</strong>：使用多种采样技术之一，从 logits 列表中选择下一个标记。</p>
+</li>
+<li>
+<p><strong>生成输出</strong>：所选标记作为输出返回。要继续生成更多的标记，所选标记会被附加到第 1 步的标记列表中，然后重复该过程。这可以一直进行，直到生成所需数量的标记，或者 LLM 发出特殊的结束流（EOS）标记。</p>
+</li>
+</ol>
+<p>接下来的部分将详细探讨这些步骤。但在此之前，我们需要熟悉张量的概念。</p>
+<h2 id="理解张量及其在-ggml-中的应用"><a class="markdownIt-Anchor" href="#理解张量及其在-ggml-中的应用"></a> 理解张量及其在 ggml 中的应用</h2>
+<p>张量是神经网络中执行数学运算的主要数据结构。<strong>llama.cpp</strong> 使用的是 <strong>ggml</strong>，这是一种纯 C++ 实现的张量库，相当于 Python 生态系统中的 <strong>PyTorch</strong> 或 <strong>TensorFlow</strong>。我们将通过 ggml 来理解张量是如何操作的。</p>
+<p>张量可以表示一个多维数组的数值。它可能包含一个单一的数值（标量）、一个向量（一维数组）、一个矩阵（二维数组）甚至是三维或四维数组。通常，实际应用中不需要使用更多维度。</p>
+<p>理解两种类型的张量是非常重要的：</p>
+<ol>
+<li>
+<p><strong>数据张量</strong>：这些张量持有实际数据，包含一个多维数组的数值。</p>
+</li>
+<li>
+<p><strong>运算张量</strong>：这些张量仅表示一个或多个其他张量之间运算的结果，只有在实际计算时才会包含数据。</p>
+</li>
+</ol>
+<p>我们接下来将详细探讨这两类张量之间的区别。</p>
+<h3 id="张量的基本结构"><a class="markdownIt-Anchor" href="#张量的基本结构"></a> 张量的基本结构</h3>
+<p>在 <strong>ggml</strong> 中，张量由 <code>ggml_tensor</code> 结构体表示。为便于理解，我们稍微简化了一下它的结构，简化后的样子如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ggml.h</span></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">ggml_tensor</span> &#123;</span><br><span class="line">    <span class="keyword">enum</span> <span class="title class_">ggml_type</span>    type;</span><br><span class="line">    <span class="keyword">enum</span> <span class="title class_">ggml_backend</span> backend;</span><br><span class="line"></span><br><span class="line">    <span class="type">int</span>     n_dims; <span class="comment">//张量的维度数量，例如一维向量、二维矩阵等</span></span><br><span class="line">    <span class="comment">// number of elements</span></span><br><span class="line">    <span class="type">int64_t</span> ne[GGML_MAX_DIMS];</span><br><span class="line">    <span class="comment">// stride in bytes</span></span><br><span class="line">    <span class="type">size_t</span>  nb[GGML_MAX_DIMS];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">enum</span> <span class="title class_">ggml_op</span> op; <span class="comment">// 表示张量是哪个操作的结果（例如加法、乘法等）</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">struct</span> <span class="title class_">ggml_tensor</span> * src[GGML_MAX_SRC];<span class="comment">// 张量的输入源（如果它是计算结果）</span></span><br><span class="line"></span><br><span class="line">    <span class="type">void</span> * data; <span class="comment">//指向实际数据的指针，可能是 NULL，如果该张量仅代表一个操作的结果</span></span><br><span class="line"></span><br><span class="line">    <span class="type">char</span> name[GGML_MAX_NAME];</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>前几个字段比较容易理解：</p>
+<ul>
+<li>
+<p><strong>type</strong>：包含张量元素的基本类型。例如，<code>GGML_TYPE_F32</code> 表示每个元素是一个 32 位浮点数， 也可以是F16或者其他整形量化。</p>
+</li>
+<li>
+<p><strong>ggml_backend</strong>：指示张量是基于 CPU 还是基于 GPU 存储的。我们稍后会讨论这一点。</p>
+</li>
+<li>
+<p><strong>n_dims</strong>：张量的维度数量，可以是 1 到 4 维。</p>
+</li>
+<li>
+<p><strong>ne</strong>：表示每个维度中的元素数量。ggml 采用行优先顺序，意味着 <code>ne[0]</code> 表示每行的大小，<code>ne[1]</code> 表示每列的大小，依此类推。</p>
+</li>
+<li>
+<p><strong>nb</strong>：这个字段稍微复杂一些，它包含步长信息，即每个维度中连续元素之间的字节数。在第一个维度中，步长等于元素的大小；在第二个维度中，它等于每行的大小乘以元素的大小，以此类推。</p>
+<ul>
+<li>例如，对于一个 4x3x2 的张量：</li>
+</ul>
+</li>
+</ul>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126170811556.png" alt="image.png" /></p>
+<p>一个 32 位浮点数张量的例子，维度为 {4, 3, 2}，步长为 {4, 16, 48}。</p>
+<p>使用步长的目的是为了在进行某些张量操作时无需复制任何数据。例如，在二维张量上执行转置操作，将行转换为列时，只需要交换 <code>ne</code>（维度大小）和 <code>nb</code>（步长），而指向相同的底层数据即可实现这个操作，无需对数据本身进行复制。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ggml.c (the function was slightly simplified).</span></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">ggml_tensor</span> * <span class="built_in">ggml_transpose</span>(</span><br><span class="line">        <span class="keyword">struct</span> ggml_context * ctx,</span><br><span class="line">        <span class="keyword">struct</span> ggml_tensor  * a) &#123;</span><br><span class="line">    <span class="comment">// Initialize `result` to point to the same data as `a`</span></span><br><span class="line">    <span class="keyword">struct</span> <span class="title class_">ggml_tensor</span> * result = <span class="built_in">ggml_view_tensor</span>(ctx, a);</span><br><span class="line"></span><br><span class="line">    result-&gt;ne[<span class="number">0</span>] = a-&gt;ne[<span class="number">1</span>];</span><br><span class="line">    result-&gt;ne[<span class="number">1</span>] = a-&gt;ne[<span class="number">0</span>];</span><br><span class="line"></span><br><span class="line">    result-&gt;nb[<span class="number">0</span>] = a-&gt;nb[<span class="number">1</span>];</span><br><span class="line">    result-&gt;nb[<span class="number">1</span>] = a-&gt;nb[<span class="number">0</span>];</span><br><span class="line"></span><br><span class="line">    result-&gt;op   = GGML_OP_TRANSPOSE;</span><br><span class="line">    result-&gt;src[<span class="number">0</span>] = a;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在上述函数中，<code>result</code> 是一个新张量，它被初始化为指向与源张量 <code>a</code> 相同的多维数值数组。通过交换 <code>ne</code>（维度大小）和 <code>nb</code>（步长），可以执行转置操作，而无需复制任何数据。</p>
+<p><em>译者注：这里ggml_view_tensor和GGML_OP_TRANSPOSE发挥了重要作用，</em> <em><strong>ggml_view_tensor</strong>__：</em> <code>_ggml_view_tensor_</code><em>函数创建了一个新的张量</em><code>_result_</code><em>，这个张量指向原始张量</em><code>_a_</code><em>的相同数据。这意味着</em><code>_result_</code><em>和</em><code>_a_</code><em>共享相同的内存空间，但它们的维度和步长可以不同。将</em> <code>_result-&gt;op_</code> <em>设置为</em> <code>_GGML_OP_TRANSPOSE_</code> <em>之后，</em><code>_ggml_</code> <em>系统知道这个张量是通过转置另一个张量得到的，而不是一个直接包含数据的张量。这个标记在后续的计算中很重要，因为</em> <code>_ggml_</code> <em>在需要计算时会按照这个操作类型来执行相应的计算逻辑。这在后面会马上讲到。</em></p>
+<h3 id="张量操作与视图"><a class="markdownIt-Anchor" href="#张量操作与视图"></a> 张量操作与视图</h3>
+<p>正如之前提到的，有些张量包含实际数据，而另一些张量则表示其他张量之间运算的理论结果。回到 <code>ggml_tensor</code> 结构体：</p>
+<ul>
+<li>
+<p><code>**op**</code>：可以是张量之间支持的任何操作。如果设置为 <code>GGML_OP_NONE</code>，则表示张量包含数据。其他值表示不同的操作。例如，<code>GGML_OP_MUL_MAT</code> 表示该张量不包含数据，而是表示两个其他张量之间矩阵乘法的结果。</p>
+</li>
+<li>
+<p><code>**src**</code>：这是一个指向要进行运算的张量的指针数组。例如，如果 <code>op == GGML_OP_MUL_MAT</code>，那么 <code>src</code> 将包含指向两个要相乘的张量的指针。如果 <code>op == GGML_OP_NONE</code>，则 <code>src</code> 为空。</p>
+</li>
+<li>
+<p><code>**data**</code>：指向实际张量数据的指针，如果该张量表示一个操作，则为 <code>NULL</code>。它也可能指向另一个张量的数据，在这种情况下，它被称为视图。例如，在上面的 <code>ggml_transpose()</code> 函数中，结果张量就是原始张量的视图，只是维度和步长被交换了。<code>data</code> 指向相同的内存位置。</p>
+</li>
+</ul>
+<p>矩阵乘法函数很好地展示了这些概念：通过指向相同的数据并修改维度和步长，张量可以通过视图避免数据复制。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ggml.c (simplified and commented)</span></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">ggml_tensor</span> * <span class="built_in">ggml_mul_mat</span>(</span><br><span class="line">        <span class="keyword">struct</span> ggml_context * ctx,</span><br><span class="line">        <span class="keyword">struct</span> ggml_tensor  * a,</span><br><span class="line">        <span class="keyword">struct</span> ggml_tensor  * b) &#123;</span><br><span class="line">    <span class="comment">// Check that the tensors&#x27; dimensions permit matrix multiplication.</span></span><br><span class="line">    <span class="built_in">GGML_ASSERT</span>(<span class="built_in">ggml_can_mul_mat</span>(a, b));</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Set the new tensor&#x27;s dimensions</span></span><br><span class="line">    <span class="comment">// according to matrix multiplication rules.</span></span><br><span class="line">    <span class="type">const</span> <span class="type">int64_t</span> ne[<span class="number">4</span>] = &#123; a-&gt;ne[<span class="number">1</span>], b-&gt;ne[<span class="number">1</span>], b-&gt;ne[<span class="number">2</span>], b-&gt;ne[<span class="number">3</span>] &#125;;</span><br><span class="line">    <span class="comment">// Allocate a new ggml_tensor.</span></span><br><span class="line">    <span class="comment">// No data is actually allocated except the wrapper struct.</span></span><br><span class="line">    <span class="keyword">struct</span> <span class="title class_">ggml_tensor</span> * result = <span class="built_in">ggml_new_tensor</span>(ctx, GGML_TYPE_F32, <span class="built_in">MAX</span>(a-&gt;n_dims, b-&gt;n_dims), ne);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Set the operation and sources.</span></span><br><span class="line">    result-&gt;op   = GGML_OP_MUL_MAT;</span><br><span class="line">    result-&gt;src[<span class="number">0</span>] = a;</span><br><span class="line">    result-&gt;src[<span class="number">1</span>] = b;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在上述函数中，<code>result</code> 不包含任何数据。它只是表示矩阵 <code>a</code> 和 <code>b</code> 相乘后的理论结果。</p>
+<h3 id="计算张量"><a class="markdownIt-Anchor" href="#计算张量"></a> 计算张量</h3>
+<p>上面的 <code>ggml_mul_mat()</code> 函数或其他任何张量操作，都不会立即进行计算，它只是为操作准备好张量。换一种方式理解，它是在构建一个计算图，其中每个张量操作都是一个节点，操作的来源是该节点的子节点。在矩阵乘法的情况下，计算图会有一个父节点，其操作为 <code>GGML_OP_MUL_MAT</code>，同时有两个子节点。</p>
+<p>在 <code>llama.cpp</code> 中的一个实际例子中，下面的代码实现了自注意力机制，这是每个 Transformer 层的一部分，后续会对此进行更深入的探讨：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// llama.cpp</span></span><br><span class="line"><span class="type">static</span> <span class="keyword">struct</span> <span class="title class_">ggml_cgraph</span> * <span class="built_in">llm_build_llama</span>(<span class="comment">/* ... */</span>) &#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// K,Q,V are tensors initialized earlier</span></span><br><span class="line">    <span class="keyword">struct</span> <span class="title class_">ggml_tensor</span> * KQ = <span class="built_in">ggml_mul_mat</span>(ctx0, K, Q);</span><br><span class="line">    <span class="comment">// KQ_scale is a single-number tensor initialized earlier.</span></span><br><span class="line">    <span class="keyword">struct</span> <span class="title class_">ggml_tensor</span> * KQ_scaled = <span class="built_in">ggml_scale_inplace</span>(ctx0, KQ, KQ_scale);</span><br><span class="line">    <span class="keyword">struct</span> <span class="title class_">ggml_tensor</span> * KQ_masked = <span class="built_in">ggml_diag_mask_inf_inplace</span>(ctx0, KQ_scaled, n_past);</span><br><span class="line">    <span class="keyword">struct</span> <span class="title class_">ggml_tensor</span> * KQ_soft_max = <span class="built_in">ggml_soft_max_inplace</span>(ctx0, KQ_masked);</span><br><span class="line">    <span class="keyword">struct</span> <span class="title class_">ggml_tensor</span> * KQV = <span class="built_in">ggml_mul_mat</span>(ctx0, V, KQ_soft_max);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这段代码是一系列张量操作，并构建了一个计算图，与原始 Transformer 论文中描述的计算图完全一致。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126170856916.png" alt="image.png" /></p>
+<p>要实际计算结果张量（这里是 KQV），需要执行以下步骤：</p>
+<ol>
+<li>
+<p><strong>加载数据</strong>：数据被加载到每个叶子张量的 <code>data</code> 指针中。在这个例子中，叶子张量是 K、Q 和 V。</p>
+</li>
+<li>
+<p><strong>构建计算图</strong>：使用 <code>ggml_build_forward()</code> 函数将输出张量（KQV）转换为计算图。这个函数比较简单，以深度优先顺序排列节点。</p>
+</li>
+<li>
+<p><strong>运行计算图</strong>：通过 <code>ggml_graph_compute()</code> 运行计算图，该函数对每个节点执行 <code>ggml_compute_forward()</code> 操作，按深度优先顺序计算。<code>ggml_compute_forward()</code> 负责主要的数学计算，完成数学运算并将结果填充到张量的 <code>data</code> 指针中。</p>
+</li>
+<li>
+<p><strong>结果输出</strong>：在这个过程结束时，输出张量的 <code>data</code> 指针指向最终计算结果。</p>
+</li>
+</ol>
+<h3 id="将计算任务转移到-gpu"><a class="markdownIt-Anchor" href="#将计算任务转移到-gpu"></a> 将计算任务转移到 GPU</h3>
+<p>由于 GPU 的高度并行性，许多张量操作（如矩阵加法和乘法）可以在 GPU 上更高效地完成。当 GPU 可用时，可以将张量标记为 <code>tensor-&gt;backend = GGML_BACKEND_GPU</code>。在这种情况下<code>ggml_compute_forward()</code> 会尝试将计算任务转移到 GPU 进行。GPU 会执行张量操作，并将结果存储在 GPU 的内存中（而不是张量的 <code>data</code> 指针中）。</p>
+<p>例如，在之前的自注意力计算图中，假设 K、Q、V 是固定的张量，计算可以转移到 GPU 上完成。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126170908379.png" alt="image.png" /></p>
+<p>这个过程首先将 K、Q、V 复制到 GPU 内存中。然后由 CPU 按照张量逐个驱动计算，但实际的数学运算会被转移到 GPU 进行。当计算图中的最后一个操作完成时，结果张量的数据会从 GPU 内存复制回 CPU 内存。</p>
+<p><strong>注意</strong>：在实际的 Transformer 中，K、Q、V 并不是固定的，KQV 也不是最终的输出。后面我们将对此进行详细说明。</p>
+<p>在理解了张量的工作机制之后，我们可以回到 LLaMA 的流程。</p>
+<h2 id="分词tokenization"><a class="markdownIt-Anchor" href="#分词tokenization"></a> 分词Tokenization</h2>
+<p>推理的第一步是分词。分词是将提示（prompt）拆分为称为“词元”的较短字符串列表的过程。词元必须是模型词汇表的一部分，词汇表是LLM（大型语言模型）在训练时使用的词元列表。例如，LLaMA的词汇表由32,000个词元组成，随模型一同分发。</p>
+<p>对于我们的示例提示，分词将提示拆分为11个词元（空格被替换为特殊的元符号‘▁’ (U+2581)）：</p>
+<blockquote>
+<p>|Quant|um|▁mechan|ics|▁is|▁a|▁fundamental|▁theory|▁in|▁physics|▁that|</p>
+</blockquote>
+<p>在分词过程中，LLaMA使用了基于字节对编码（BPE）算法的SentencePiece分词器。这种分词器非常有趣，因为它是基于子词的，这意味着一个词可能由多个词元表示。例如，在我们的提示中，‘Quantum’被拆分为‘Quant’和‘um’。在训练过程中，词汇表的生成通过BPE算法保证常用词作为单个词元包含在词汇表中，而罕见词则被分解为子词。在上面的示例中，单词‘Quantum’不在词汇表中，但‘Quant’和‘um’作为两个独立的词元存在。空格不会被特殊处理，它们如果足够常见，也会作为元字符包含在词元中。</p>
+<p>基于子词的分词具有多种优势：</p>
+<p>它允许LLM学习像‘Quantum’这样的罕见词的含义，同时通过将常见的后缀和前缀表示为独立词元，保持词汇表的相对小型化。 它无需使用语言特定的分词方案即可学习语言特定的特性。引用BPE编码论文中的例子： 考虑德语的复合词如Abwasser|behandlungs|anlange（污水处理厂），分段的、可变长度的表示形式比将该词编码为固定长度的向量更加直观。</p>
+<p>同样，这种分词方式在解析代码时也非常有用。例如，一个名为model_size的变量将被分词为model|_|size，这使得LLM能够“理解”该变量的用途（这也是为变量赋予有意义名称的另一个原因！）。 在llama.cpp中，分词是通过llama_tokenize()函数完成的。该函数接受提示字符串作为输入，并返回词元列表，其中每个词元由一个整数表示。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// llama.h</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="type">int</span> llama_token;</span><br><span class="line"></span><br><span class="line"><span class="comment">// common.h</span></span><br><span class="line"><span class="function">std::vector&lt;llama_token&gt; <span class="title">llama_tokenize</span><span class="params">(</span></span></span><br><span class="line"><span class="params"><span class="function">        <span class="keyword">struct</span> llama_context * ctx,</span></span></span><br><span class="line"><span class="params"><span class="function">        <span class="comment">// the prompt</span></span></span></span><br><span class="line"><span class="params"><span class="function">        <span class="type">const</span> std::string &amp; text,</span></span></span><br><span class="line"><span class="params"><span class="function">        <span class="type">bool</span>   add_bos)</span></span>;</span><br></pre></td></tr></table></figure>
+<p>分词过程首先将提示拆分为单个字符的词元。接着，它会迭代地尝试将每两个连续的词元合并为一个更大的词元，只要合并后的词元是词汇表的一部分。这样可以确保生成的词元尽可能大。对于我们的示例提示，分词步骤如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">Q|u|a|n|t|u|m|▁|m|e|c|h|a|n|i|c|s|▁|i|s|▁a|▁|f|u|n|d|a|m|e|n|t|a|l|</span><br><span class="line"></span><br><span class="line">Qu|an|t|um|▁m|e|ch|an|ic|s|▁|is|▁a|▁f|u|nd|am|en|t|al|</span><br><span class="line"></span><br><span class="line">Qu|ant|um|▁me|chan|ics|▁is|▁a|▁f|und|am|ent|al|</span><br><span class="line"></span><br><span class="line">Quant|um|▁mechan|ics|▁is|▁a|▁fund|ament|al|</span><br><span class="line"></span><br><span class="line">Quant|um|▁mechan|ics|▁is|▁a|▁fund|amental|</span><br><span class="line"></span><br><span class="line">Quant|um|▁mechan|ics|▁is|▁a|▁fundamental|</span><br></pre></td></tr></table></figure>
+<p>请注意，每个中间步骤都符合模型词汇表的有效分词规则。然而，只有最后一步会被用作LLM（大型语言模型）的输入。</p>
+<h2 id="嵌入embedding"><a class="markdownIt-Anchor" href="#嵌入embedding"></a> 嵌入embedding</h2>
+<p>这些词元将作为LLaMA的输入，用于预测下一个词元。此处的关键函数是llm_build_llama()函数：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// llama.cpp (simplified)</span></span><br><span class="line"><span class="type">static</span> <span class="keyword">struct</span> <span class="title class_">ggml_cgraph</span> * <span class="built_in">llm_build_llama</span>(</span><br><span class="line">         llama_context &amp; lctx,</span><br><span class="line">     <span class="type">const</span> llama_token * tokens,</span><br><span class="line">                   <span class="type">int</span>   n_tokens,</span><br><span class="line">                   <span class="type">int</span>   n_past);</span><br></pre></td></tr></table></figure>
+<p>该函数接受由<code>tokens</code>和<code>n_tokens</code>参数表示的词元列表作为输入。然后，它构建LLaMA的完整张量计算图，并将其作为<code>ggml_cgraph</code>结构返回。在此阶段实际上并不会进行任何计算。目前可以忽略<code>n_past</code>参数，它目前设置为零。稍后我们在讨论<code>kv cache</code>时将再次提到它。</p>
+<p>除了词元，该函数还使用模型权重或模型参数。这些是LLM（大型语言模型）在训练过程中学习的固定张量，作为模型的一部分包含在内。这些模型参数在推理开始前预先加载到<code>lctx</code>中。</p>
+<p>现在我们将开始探索计算图结构。该计算图的第一部分涉及将词元转换为嵌入。嵌入是每个词元的固定向量表示，它比纯整数更适合深度学习，因为它捕捉到了单词的语义意义。该向量的大小是模型维度，不同模型之间有所不同。例如，在LLaMA-7B中，模型维度为<code>n_embd=4096</code>。模型参数包括一个将词元转换为嵌入的词元嵌入矩阵。由于我们的词汇大小为<code>n_vocab=32000</code>，因此这是一个32000 x 4096的矩阵，每一行都包含一个词元的嵌入向量：</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126170950263.png" alt="image.png" /></p>
+<p>每个词元都有一个在训练过程中学习到的关联嵌入，可以通过词元嵌入矩阵进行访问。</p>
+<p>计算图的第一部分从词元嵌入矩阵中提取每个词元的相关行：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// llama.cpp (simplified)</span></span><br><span class="line"><span class="type">static</span> <span class="keyword">struct</span> <span class="title class_">ggml_cgraph</span> * <span class="built_in">llm_build_llama</span>(<span class="comment">/* ... */</span>) &#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">struct</span> <span class="title class_">ggml_tensor</span> * inp_tokens = <span class="built_in">ggml_new_tensor_1d</span>(ctx0, GGML_TYPE_I32, n_tokens);</span><br><span class="line">    <span class="built_in">memcpy</span>(</span><br><span class="line">        inp_tokens-&gt;data,</span><br><span class="line">        tokens,</span><br><span class="line">        n_tokens * <span class="built_in">ggml_element_size</span>(inp_tokens));</span><br><span class="line"></span><br><span class="line">    inpL = <span class="built_in">ggml_get_rows</span>(ctx0, model.tok_embeddings, inp_tokens);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//</span></span><br></pre></td></tr></table></figure>
+<p>代码首先创建一个名为<code>inp_tokens</code>的新的一维整数张量，用于存储数值化的词元。接着，它将词元值复制到该张量的数据指针中。最后，它创建了一个新的<code>GGML_OP_GET_ROWS</code>张量操作，将词元嵌入矩阵<code>model.tok_embeddings</code>与我们的词元组合起来。</p>
+<p>当稍后计算该操作时，它将从嵌入矩阵中提取相应的行，如上图所示，创建一个新的<code>n_tokens x n_embd</code>矩阵，仅包含按原始顺序排列的词元嵌入：</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126171005906.png" alt="image.png" /></p>
+<p>嵌入过程为每个原始词元创建一个固定大小的嵌入向量。当这些向量堆叠在一起时，它们构成了提示（prompt）的嵌入矩阵。</p>
+<h2 id="transformer"><a class="markdownIt-Anchor" href="#transformer"></a> Transformer</h2>
+<p>计算图的主要部分被称为Transformer。Transformer是一种神经网络架构，是大型语言模型（LLM）的核心，负责执行主要的推理逻辑。在接下来的部分中，我们将从工程角度探讨Transformer的一些关键方面，重点关注自注意力机制。如果你想对Transformer架构有直观的了解，我建议阅读《<a href="https://link.zhihu.com/?target=https%3A//jalammar.github.io/illustrated-transformer/">The Illustrated Transformer</a>》。</p>
+<h3 id="自注意力机制"><a class="markdownIt-Anchor" href="#自注意力机制"></a> 自注意力机制</h3>
+<p>我们首先深入了解下什么是自注意力机制，然后再回顾它在整体Transformer架构中的作用。</p>
+<p>自注意力机制是一种机制，它接收一系列词元，并生成该序列的紧凑向量表示，考虑到词元之间的关系。这是LLM架构中唯一计算词元间关系的地方，因此它构成了语言理解的核心，涵盖了对词汇关系的理解。由于涉及跨词元的计算，从工程角度来看，它也是最有趣的部分，尤其是对于较长序列来说，计算量可能会非常大。</p>
+<p>自注意力机制的输入是<code>n_tokens x n_embd</code>的嵌入矩阵，其中每一行或向量表示一个独立的词元。这些向量中的每一个都将被转换为三个不同的向量，分别称为“键”（key）、“查询”（query）和“值”（value）向量。这种转换通过将每个词元的嵌入向量与固定的<code>wk</code>、<code>wq</code>和<code>wv</code>矩阵（这些矩阵是模型参数的一部分）相乘来实现：</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126171012624.png" alt="image.png" /></p>
+<p>将词元的嵌入向量与wk、wq和wv参数矩阵相乘，会为该词元生成“键”（key）、“查询”（query）和“值”（value）向量。</p>
+<p>这个过程会对每个词元重复进行，也就是执行n_tokens次。理论上可以通过循环来完成，但为了提高效率，所有行会通过矩阵乘法在一次操作中进行转换，矩阵乘法正是实现这一点的。相关代码如下所示：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// llama.cpp (simplified to remove use of cache)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// `cur` contains the input to the self-attention mechanism</span></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">ggml_tensor</span> * K = <span class="built_in">ggml_mul_mat</span>(ctx0,</span><br><span class="line">    model.layers[il].wk, cur);</span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">ggml_tensor</span> * Q = <span class="built_in">ggml_mul_mat</span>(ctx0,</span><br><span class="line">    model.layers[il].wq, cur);</span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">ggml_tensor</span> * V = <span class="built_in">ggml_mul_mat</span>(ctx0,</span><br><span class="line">    model.layers[il].wv, cur);</span><br></pre></td></tr></table></figure>
+<p>最终，我们得到三个矩阵 K、Q 和 V，它们的大小均为 <code>n_tokens x n_embd</code>，分别包含每个词元的键（key）、查询（query）和值（value）向量堆叠在一起。</p>
+<p>自注意力机制的下一步是将包含查询向量的矩阵 Q 与包含键向量的矩阵 K 的转置相乘。对于不太熟悉矩阵操作的人来说，此操作实际上是为每对查询和键向量计算一个联合得分。我们使用符号 S(i,j) 来表示查询 i 与键 j 的得分。</p>
+<p>这个过程生成了 <code>n_tokens^2</code> 个得分，每个查询-键对都有一个得分，并将其打包在一个称为 KQ 的矩阵中。随后，该矩阵会进行掩码操作，以移除对角线以上的元素：</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126171037410.png" alt="image.png" /></p>
+<p>通过将矩阵 Q 与 K 的转置相乘，计算每个查询-键对的联合得分 S(i,j)。此处显示的是前四个词元的结果，以及每个得分所对应的词元。掩码步骤确保仅保留每个词元与其前面词元之间的得分。为了简化说明，省略了中间的缩放操作。</p>
+<p>掩码操作是一个关键步骤。对于每个词元，它只保留与其前面词元之间的得分。在训练阶段，这一约束确保LLM仅根据之前的词元预测当前词元，而不是未来的词元。此外，正如我们稍后将更详细探讨的，它还允许在预测未来词元时进行显著优化。</p>
+<p>自注意力机制的最后一步是将掩码后的得分矩阵<code>KQ_masked</code>与之前的值向量相乘。这样的矩阵乘法操作会生成所有前面词元值向量的加权和，其中权重是得分<code>S(i,j)</code>。例如，对于第四个词元“ics”，它会生成“Quant”、“um”、“▁mechan”和“ics”这几个词元的值向量的加权和，权重为<code>S(3,0)</code>到<code>S(3,3)</code>，这些得分是由“ics”的查询向量与之前所有词元的键向量计算出来的。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126171048245.png" alt="image.png" /></p>
+<p>KQV矩阵包含了值向量的加权和。例如，突出显示的最后一行是前四个值向量的加权和，权重为对应的突出显示的得分。</p>
+<p>KQV矩阵标志着自注意力机制的结束。之前我们已经在一般张量计算的上下文中介绍了实现自注意力机制的相关代码，但现在你能够更好地理解它。</p>
+<h3 id="transformer的层"><a class="markdownIt-Anchor" href="#transformer的层"></a> Transformer的层</h3>
+<p>自注意力机制是Transformer层的一个组成部分。每一层除了自注意力机制外，还包含多个其他的张量操作，主要是矩阵加法、乘法和激活函数操作，这些都是前馈神经网络的一部分。我们不会详细探讨这些操作，只需要注意以下几点：</p>
+<ul>
+<li>
+<p>前馈网络中使用了大型、固定的参数矩阵。在LLaMA-7B中，这些矩阵的大小为<code>n_embd x n_ff = 4096 x 11008</code>。</p>
+</li>
+<li>
+<p>除了自注意力机制之外，其他所有操作都可以看作是逐行或逐词元进行的。正如之前提到的，只有自注意力机制包含跨词元的计算。这一点在后面讨论kv缓存时会非常重要。</p>
+</li>
+<li>
+<p>输入和输出的大小始终为<code>n_tokens x n_embd</code>：每个词元对应一行，每行的大小等于模型的维度。</p>
+</li>
+</ul>
+<p>为完整起见，我还包含了LLaMA-7B中单个Transformer层的图示。请注意，未来的模型架构可能会稍有不同。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126171056771.png" alt="image.png" /></p>
+<p>LLaMA-7B中一个Transformer层的完整计算图，包含自注意力机制和前馈机制。每一层的输出作为下一层的输入。在自注意力阶段和前馈阶段都使用了大型参数矩阵，这些矩阵构成了该模型的大部分70亿个参数。</p>
+<p>在Transformer架构中有多个层。例如，在LLaMA-7B中有32个层（n_layers=32）。这些层是相同的，除了每层都有自己的一组参数矩阵（例如用于自注意力机制的各自的<code>wk</code>、<code>wq</code>和<code>wv</code>矩阵）。第一层的输入是上文描述的嵌入矩阵。第一层的输出随后被用作第二层的输入，依此类推。我们可以将其看作每一层都生成了一组嵌入，但这些嵌入不再直接与单个词元相关，而是与词元关系的某种更复杂的理解相关联。</p>
+<h3 id="计算logits"><a class="markdownIt-Anchor" href="#计算logits"></a> 计算logits</h3>
+<p>Transformer的最后一步是计算logits。logit是一个浮点数，表示某个特定词元是“正确”下一个词元的概率。logit值越高，表示相应词元是“正确”词元的可能性越大。</p>
+<p>logits的计算是通过将最后一个Transformer层的输出与一个固定的<code>n_embd x n_vocab</code>参数矩阵（在<code>llama.cpp</code>中也称为<code>output</code>）相乘来完成的。这个操作为词汇表中的每个词元生成一个logit。例如，在LLaMA中，它会生成<code>n_vocab=32000</code>个logits：</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126171103132.png" alt="image.png" /></p>
+<p>Transformer的最后一步通过将最后一层的输出与一个固定的参数矩阵（也称为'output'）相乘来计算logits。这里只关注结果的最后一行，它包含词汇表中每个可能的下一个词元的logit值。</p>
+<p>Logits是Transformer的输出，告诉我们最可能的下一个词元是什么。至此，所有的张量计算都已结束。以下是简化和带注释的<code>llm_build_llama()</code>函数版本，总结了本节中描述的所有步骤：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// llama.cpp (simplified and commented)</span></span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="keyword">struct</span> <span class="title class_">ggml_cgraph</span> * <span class="built_in">llm_build_llama</span>(</span><br><span class="line">         llama_context &amp; lctx,</span><br><span class="line">     <span class="type">const</span> llama_token * tokens,</span><br><span class="line">                   <span class="type">int</span>   n_tokens,</span><br><span class="line">                   <span class="type">int</span>   n_past) &#123;</span><br><span class="line">    ggml_cgraph * gf = <span class="built_in">ggml_new_graph</span>(ctx0);</span><br><span class="line">    <span class="keyword">struct</span> <span class="title class_">ggml_tensor</span> * cur;</span><br><span class="line">    <span class="keyword">struct</span> <span class="title class_">ggml_tensor</span> * inpL;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Create a tensor to hold the tokens.</span></span><br><span class="line">    <span class="keyword">struct</span> <span class="title class_">ggml_tensor</span> * inp_tokens = <span class="built_in">ggml_new_tensor_1d</span>(ctx0, GGML_TYPE_I32, N);</span><br><span class="line">    <span class="comment">// Copy the tokens into the tensor</span></span><br><span class="line">    <span class="built_in">memcpy</span>(</span><br><span class="line">        inp_tokens-&gt;data,</span><br><span class="line">        tokens,</span><br><span class="line">        n_tokens * <span class="built_in">ggml_element_size</span>(inp_tokens));</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Create the embedding matrix.</span></span><br><span class="line">    inpL = <span class="built_in">ggml_get_rows</span>(ctx0,</span><br><span class="line">        model.tok_embeddings,</span><br><span class="line">        inp_tokens);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Iteratively apply all layers.</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> il = <span class="number">0</span>; il &lt; n_layer; ++il) &#123;</span><br><span class="line">        <span class="keyword">struct</span> <span class="title class_">ggml_tensor</span> * K = <span class="built_in">ggml_mul_mat</span>(ctx0, model.layers[il].wk, cur);</span><br><span class="line">        <span class="keyword">struct</span> <span class="title class_">ggml_tensor</span> * Q = <span class="built_in">ggml_mul_mat</span>(ctx0, model.layers[il].wq, cur);</span><br><span class="line">        <span class="keyword">struct</span> <span class="title class_">ggml_tensor</span> * V = <span class="built_in">ggml_mul_mat</span>(ctx0, model.layers[il].wv, cur);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">struct</span> <span class="title class_">ggml_tensor</span> * KQ = <span class="built_in">ggml_mul_mat</span>(ctx0, K, Q);</span><br><span class="line">        <span class="keyword">struct</span> <span class="title class_">ggml_tensor</span> * KQ_scaled = <span class="built_in">ggml_scale_inplace</span>(ctx0, KQ, KQ_scale);</span><br><span class="line">        <span class="keyword">struct</span> <span class="title class_">ggml_tensor</span> * KQ_masked = <span class="built_in">ggml_diag_mask_inf_inplace</span>(ctx0,</span><br><span class="line">            KQ_scaled, n_past);</span><br><span class="line">        <span class="keyword">struct</span> <span class="title class_">ggml_tensor</span> * KQ_soft_max = <span class="built_in">ggml_soft_max_inplace</span>(ctx0, KQ_masked);</span><br><span class="line">        <span class="keyword">struct</span> <span class="title class_">ggml_tensor</span> * KQV = <span class="built_in">ggml_mul_mat</span>(ctx0, V, KQ_soft_max);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// Run feed-forward network.</span></span><br><span class="line">        <span class="comment">// Produces `cur`.</span></span><br><span class="line">        <span class="comment">// ...</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">// input for next layer</span></span><br><span class="line">        inpL = cur;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    cur = inpL;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Calculate logits from last layer&#x27;s output.</span></span><br><span class="line">    cur = <span class="built_in">ggml_mul_mat</span>(ctx0, model.output, cur);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Build and return the computation graph.</span></span><br><span class="line">    <span class="built_in">ggml_build_forward_expand</span>(gf, cur);</span><br><span class="line">    <span class="keyword">return</span> gf;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>为了实际执行推理，返回的计算图通过<code>ggml_graph_compute()</code>函数进行计算，如前所述。然后将最后一个张量的数据指针中的logits复制到一个浮点数组中，为下一步“采样”做好准备。</p>
+<h2 id="采样"><a class="markdownIt-Anchor" href="#采样"></a> 采样</h2>
+<p>拿到logits列表后，下一步是根据它们选择下一个词元。这个过程称为采样。针对不同的使用场景，有多种采样方法可用。在本节中，我们将介绍两种基本的采样方法，稍后会在未来的文章中讨论更高级的采样方法，如语法采样。</p>
+<h3 id="贪婪采样"><a class="markdownIt-Anchor" href="#贪婪采样"></a> 贪婪采样</h3>
+<p>贪婪采样是一种简单直接的方法，它选择与最高logit值相关联的词元。</p>
+<p>对于我们的示例提示，以下词元具有最高的logit值：</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>token</td>
+<td>logit</td>
+</tr>
+<tr>
+<td>▁describes</td>
+<td>18.990</td>
+</tr>
+<tr>
+<td>▁provides</td>
+<td>17.871</td>
+</tr>
+<tr>
+<td>▁explains</td>
+<td>17.403</td>
+</tr>
+<tr>
+<td>▁de</td>
+<td>16.361</td>
+</tr>
+<tr>
+<td>▁gives</td>
+<td>15.007</td>
+</tr>
+</tbody>
+</table>
+<p>因此，贪婪采样将确定性地选择<code>▁describes</code>作为下一个词元。贪婪采样在重新评估相同的提示时，最适合需要确定性输出的场景。</p>
+<h3 id="温度采样"><a class="markdownIt-Anchor" href="#温度采样"></a> <strong>温度采样</strong></h3>
+<p>温度采样是一种概率性方法，这意味着相同的提示在重新评估时可能会产生不同的输出。它使用一个称为温度（temperature）的参数，这个浮点值介于0到1之间，影响结果的随机性。过程如下：</p>
+<ol>
+<li>
+<p>对logits按从高到低排序，并使用<strong>softmax</strong>函数进行归一化，确保它们的总和为1。这种变换将每个logit转换为一个概率值。Softmax 的作用是将logits<strong>转换为概率</strong>：Softmax 将模型的输出（logits）转换为可以解释为概率的值。这在多分类问题中尤为重要，模型预测的结果可以解释为每个类别的概率。Softmax 函数确保所有输出值的和为 1，满足概率的定义。</p>
+</li>
+<li>
+<p>应用一个阈值（默认设置为0.95），只保留概率累加值低于阈值的前几个词元。这一步有效地移除了低概率的词元，防止“坏”或“错误”的词元被采样。</p>
+</li>
+<li>
+<p>剩余的logits除以温度参数并再次归一化，使它们的总和为1并代表概率。</p>
+</li>
+<li>
+<p>根据这些概率随机采样一个词元。例如，在我们的提示中，词元<code>▁describes</code>的概率为p=0.6，这意味着它大约有60%的概率被选择。在重新评估时，可能会选择不同的词元。</p>
+</li>
+</ol>
+<p>第3步中的温度参数用于增加或减少随机性。较低的温度值会抑制低概率词元，使得在重新评估时更有可能选择相同的词元。因此，较低的温度值减少了随机性。相反，较高的温度值会使概率分布趋于“平坦”，增加低概率词元的影响，从而增加每次重新评估时选择不同词元的可能性，增加随机性。他是softmax函数的一个参数。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126171132918.png" alt="image.png" /></p>
+<p>我们的示例提示的归一化下一个词元概率。较低的温度抑制低概率词元，而较高的温度则强调这些低概率词元。<code>temp=0</code>与贪婪采样基本相同。</p>
+<p>采样一个词元标志着LLM（大型语言模型）一次完整迭代的结束。在初始词元被采样后，它会被添加到词元列表中，整个过程再次运行。输出会随着每次迭代增加一个词元，逐步成为LLM的输入。</p>
+<p>理论上，后续的迭代可以以相同方式进行。然而，随着词元列表的增长，性能可能会下降，因此需要采用一些优化技术。这些技术将在接下来介绍。</p>
+<h2 id="优化推理"><a class="markdownIt-Anchor" href="#优化推理"></a> <strong>优化推理</strong></h2>
+<p>随着输入给LLM的词元列表增长，Transformer的自注意力阶段可能成为性能瓶颈。词元列表越长，意味着相乘的矩阵越大。每次矩阵乘法都由许多较小的数值运算组成，这些运算称为浮点运算，其性能受限于GPU的每秒浮点运算能力（FLOPS）。在Transformer推理计算中，计算得出对于一个52B参数的模型，在A100 GPU上，当词元数量达到208时，性能开始因为过多的浮点运算而下降。为解决这一瓶颈，最常用的优化技术是<strong>kv缓存</strong>。</p>
+<h3 id="kv缓存"><a class="markdownIt-Anchor" href="#kv缓存"></a> <strong>KV缓存</strong></h3>
+<p>回顾一下，每个词元都有一个关联的嵌入向量，该嵌入向量通过与参数矩阵<code>wk</code>和<code>wv</code>相乘进一步转化为键（key）和值（value）向量。<strong>KV缓存</strong>是用来缓存这些键和值向量的，通过缓存它们，我们可以节省每次迭代重新计算所需的浮点运算。</p>
+<p>缓存的工作方式如下：</p>
+<ol>
+<li>
+<p>在初始迭代期间，所有词元的键和值向量都会按照之前的描述进行计算，并保存到KV缓存中。</p>
+</li>
+<li>
+<p>在后续迭代中，仅需要计算最新词元的键和值向量。缓存的键值向量与新词元的键值向量一起被拼接，形成K和V矩阵。这避免了重新计算所有先前词元的键值向量，从而大大提高了效率。</p>
+</li>
+</ol>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126171139202.png" alt="image.png" /></p>
+<p>在后续迭代中，只计算最新词元的键向量，其他的从缓存中提取，并与新计算的键向量一起组成K矩阵。新计算的键向量也会被保存到缓存中。对于值向量，同样的过程也适用。</p>
+<p>能够使用键和值向量的缓存，是因为这些向量在迭代之间保持不变。例如，如果我们首先处理四个词元，然后处理五个词元，而最初的四个词元没有变化，那么前四个键和值向量在第一次和第二次迭代中将保持相同。因此，在第二次迭代中不需要重新计算前四个词元的键和值向量。</p>
+<p>这一原则在Transformer的所有层中都成立，而不仅仅是在第一层。在所有层中，每个词元的键和值向量仅依赖于先前的词元。因此，当在后续迭代中添加新词元时，现有词元的键和值向量保持不变。</p>
+<p>对于第一层，这一概念相对容易验证：词元的键向量是通过将词元的固定嵌入向量与固定的<code>wk</code>参数矩阵相乘确定的。因此，无论引入了多少新词元，在后续迭代中，它都保持不变。同样的道理也适用于值向量。</p>
+<p>对于第二层及后续层，这一原则虽然不那么显而易见，但仍然成立。为了理解其原因，我们可以考虑第一层自注意力阶段的KQV矩阵的输出。KQV矩阵中的每一行是一个加权和，取决于：</p>
+<ul>
+<li>
+<p>前面词元的值向量。</p>
+</li>
+<li>
+<p>由前面词元的键向量计算的得分。</p>
+</li>
+</ul>
+<p>因此，KQV矩阵中的每一行仅依赖于之前的词元。经过一些基于行的操作后，这个矩阵作为第二层的输入。这意味着，除了新增的行外，第二层的输入在未来的迭代中将保持不变。通过归纳法，这一逻辑可以延伸到剩余的各层。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126171150127.png" alt="image.png" /></p>
+<p>再来看看KQV矩阵的计算方式。突出显示的第三行仅由第三个查询向量以及前三个键和值向量（同样突出显示）决定。后续的词元不会对其产生影响。因此，在未来的迭代中，它将保持不变。</p>
+<h3 id="进一步优化后续迭代"><a class="markdownIt-Anchor" href="#进一步优化后续迭代"></a> 进一步优化后续迭代</h3>
+<p>你可能会疑惑，既然我们缓存了键和值向量，为什么不缓存查询向量呢？答案是，实际上，除了当前词元的查询向量外，后续迭代中不再需要之前词元的查询向量。有了<strong>kv缓存</strong>后，我们实际上只需要将最新词元的查询向量传入自注意力机制即可。这个查询向量将与缓存的K矩阵相乘，计算最后一个词元与所有之前词元的联合得分。然后，它与缓存的V矩阵相乘，只计算KQV矩阵的最新一行。</p>
+<p>事实上，在所有层中，我们现在传递的是大小为<code>1 x n_embd</code>的向量，而不是在第一次迭代中计算的<code>n_token x n_embd</code>矩阵。为了说明这一点，可以对比下图中显示的后续迭代与之前的图示：</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126171202988.png" alt="image.png" /></p>
+<p>后续迭代中的自注意力机制。在这个示例中，第一次迭代中有四个词元，第二次迭代中添加了第五个词元‘▁is’。最新词元的键、查询和值向量与缓存的键和值向量一起，用于计算KQV矩阵的最后一行，这也是预测下一个词元所需的全部内容。</p>
+<p>这个过程在所有层中重复，利用每一层的<strong>kv缓存</strong>。因此，在这种情况下，Transformer的输出是一个包含<code>n_vocab</code>个logit的向量，用于预测下一个词元。</p>
+<p>通过这种优化，我们节省了在KQ和KQV矩阵中计算不必要行的浮点运算，这种节省在词元列表增大时尤为显著。</p>
+<h3 id="kv缓存的实际应用"><a class="markdownIt-Anchor" href="#kv缓存的实际应用"></a> <strong>KV缓存的实际应用</strong></h3>
+<p>我们可以深入研究<code>llama.cpp</code>的代码，了解KV缓存是如何在实践中实现的。不出意外，它是使用张量构建的，一个用于键向量，一个用于值向量：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// llama.cpp (simplified)</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">llama_kv_cache</span> &#123;</span><br><span class="line">    <span class="comment">// cache of key vectors</span></span><br><span class="line">    <span class="keyword">struct</span> <span class="title class_">ggml_tensor</span> * k = <span class="literal">NULL</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// cache of value vectors</span></span><br><span class="line">    <span class="keyword">struct</span> <span class="title class_">ggml_tensor</span> * v = <span class="literal">NULL</span>;</span><br><span class="line"></span><br><span class="line">    <span class="type">int</span> n; <span class="comment">// number of tokens currently in the cache</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>在初始化缓存时，为每一层分配足够的空间，以容纳512个键和值向量：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// llama.cpp (simplified)</span></span><br><span class="line"><span class="comment">// n_ctx = 512 by default</span></span><br><span class="line"><span class="function"><span class="type">static</span> <span class="type">bool</span> <span class="title">llama_kv_cache_init</span><span class="params">(</span></span></span><br><span class="line"><span class="params"><span class="function">    <span class="keyword">struct</span> llama_kv_cache &amp; cache,</span></span></span><br><span class="line"><span class="params"><span class="function">    ggml_type   wtype,</span></span></span><br><span class="line"><span class="params"><span class="function">    <span class="type">int</span>   n_ctx)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// Allocate enough elements to hold n_ctx vectors for each layer.</span></span><br><span class="line">    <span class="type">const</span> <span class="type">int64_t</span> n_elements = n_embd*n_layer*n_ctx;</span><br><span class="line"></span><br><span class="line">    cache.k = <span class="built_in">ggml_new_tensor_1d</span>(cache.ctx, wtype, n_elements);</span><br><span class="line">    cache.v = <span class="built_in">ggml_new_tensor_1d</span>(cache.ctx, wtype, n_elements);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>回顾一下，在推理过程中，计算图是通过<code>llm_build_llama()</code>函数构建的。这个函数有一个之前忽略的参数<code>n_past</code>。在第一次迭代中，<code>n_tokens</code>参数包含词元的数量，而<code>n_past</code>被设置为0。在后续迭代中，<code>n_tokens</code>被设置为1，因为只处理最新的词元，而<code>n_past</code>包含之前的词元数量。<code>n_past</code>用于从kv缓存中提取正确数量的键和值向量。</p>
+<p>以下是该函数的相关部分，展示了如何使用缓存来计算K矩阵。我稍微简化了一下，忽略了多头注意力机制，并为每一步添加了注释：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// llama.cpp (simplified and commented)</span></span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="keyword">struct</span> <span class="title class_">ggml_cgraph</span> * <span class="built_in">llm_build_llama</span>(</span><br><span class="line">    llama_context &amp; lctx,</span><br><span class="line">    <span class="type">const</span> llama_token * tokens,</span><br><span class="line">    <span class="type">int</span>   n_tokens,</span><br><span class="line">    <span class="type">int</span>   n_past) &#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// Iteratively apply all layers.</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> il = <span class="number">0</span>; il &lt; n_layer; ++il) &#123;</span><br><span class="line">         <span class="comment">// Compute the key vector of the latest token.</span></span><br><span class="line">         <span class="keyword">struct</span> <span class="title class_">ggml_tensor</span> * Kcur = <span class="built_in">ggml_mul_mat</span>(ctx0, model.layers[il].wk, cur);</span><br><span class="line">         <span class="comment">// Build a view of size n_embd into an empty slot in the cache.</span></span><br><span class="line">         <span class="keyword">struct</span> <span class="title class_">ggml_tensor</span> * k = <span class="built_in">ggml_view_1d</span>(</span><br><span class="line">            ctx0,</span><br><span class="line">            kv_cache.k,</span><br><span class="line">            <span class="comment">// size</span></span><br><span class="line">            n_tokens*n_embd,</span><br><span class="line">            <span class="comment">// offset</span></span><br><span class="line">            (<span class="built_in">ggml_element_size</span>(kv_cache.k)*n_embd) * (il*n_ctx + n_past)</span><br><span class="line">         );</span><br><span class="line"></span><br><span class="line">         <span class="comment">// Copy latest token&#x27;s k vector into the empty cache slot.</span></span><br><span class="line">         <span class="built_in">ggml_cpy</span>(ctx0, Kcur, k);</span><br><span class="line"></span><br><span class="line">         <span class="comment">// Form the K matrix by taking a view of the cache.</span></span><br><span class="line">         <span class="keyword">struct</span> <span class="title class_">ggml_tensor</span> * K =</span><br><span class="line">             <span class="built_in">ggml_view_2d</span>(ctx0,</span><br><span class="line">                 kv_self.k,</span><br><span class="line">                 <span class="comment">// row size</span></span><br><span class="line">                 n_embd,</span><br><span class="line">                 <span class="comment">// number of rows</span></span><br><span class="line">                 n_past + n_tokens,</span><br><span class="line">                 <span class="comment">// stride</span></span><br><span class="line">                 <span class="built_in">ggml_element_size</span>(kv_self.k) * n_embd,</span><br><span class="line">                 <span class="comment">// cache offset</span></span><br><span class="line">                 <span class="built_in">ggml_element_size</span>(kv_self.k) * n_embd * n_ctx * il);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>首先，计算新的键向量。接着，使用<code>n_past</code>找到缓存中的下一个空位，并将新的键向量复制到那里。最后，通过在缓存中取一个包含正确数量词元（<code>n_past + n_tokens</code>）的视图来构建K矩阵。</p>
+<p><strong>KV缓存</strong>是LLM推理优化的基础。值得注意的是，目前在<code>llama.cpp</code>中实现的版本（截至撰写本文时）并不是最优化的。例如，它提前分配了大量内存来容纳支持的最大数量的键和值向量（此处为512个）。一些更高级的实现，如vLLM，旨在提高内存使用效率，并可能提供进一步的性能提升。这些高级技术将留待后续讨论。此外，随着该领域的快速发展，未来可能会出现新的、更优的优化技术。</p>
+<p><strong>总结</strong></p>
+<p>本文涵盖了大量内容，旨在为你提供对LLM推理过程的基本理解。掌握这些知识后，你可以进一步探索更高级的资源：</p>
+<ul>
+<li>
+<p><strong>LLM参数计数</strong>和<strong>Transformer推理算术</strong>深入分析LLM的性能。</p>
+</li>
+<li>
+<p><strong>vLLM</strong>是一个更高效管理kv缓存内存的库。</p>
+</li>
+<li>
+<p><strong>持续批处理</strong>是一种优化技术，用于将多个LLM提示批量处理。</p>
+</li>
+</ul>
+<p>我也希望在未来的文章中探讨更多高级主题的内部原理。以下是一些可能的选项：</p>
+<ul>
+<li>
+<p>量化模型</p>
+</li>
+<li>
+<p>使用<strong>LoRA</strong>微调的LLM</p>
+</li>
+<li>
+<p>各种注意力机制（多头注意力机制、分组查询注意力机制和滑动窗口注意力机制）</p>
+</li>
+<li>
+<p>LLM请求批处理</p>
+</li>
+<li>
+<p>语法采样</p>
+</li>
+</ul>
+<p>敬请期待！</p>
+<p><strong>脚注</strong></p>
+<ol>
+<li>
+<p><code>ggml</code> 还提供了 <code>ggml_build_backward()</code>，它通过从输出到输入的反向方式计算梯度。此函数仅在模型训练期间用于反向传播，而在推理中从未使用。</p>
+</li>
+<li>
+<p>这篇文章描述的是编码器-解码器模型。LLaMA 是一个仅解码器模型，因为它一次只预测一个词元。但核心概念是相同的。</p>
+</li>
+<li>
+<p>为简化起见，我在此描述了单头自注意力机制。LLaMA 使用的是多头自注意力机制。除了使张量运算稍微复杂一些外，这并不影响本节中的核心思想。</p>
+</li>
+<li>
+<p>更准确地说，嵌入向量首先经过一个归一化操作，缩放其值。我们忽略了这个步骤，因为它不影响核心思想的表达。</p>
+</li>
+<li>
+<p>得分还会经过<strong>softmax</strong>操作，缩放后每一行得分的总和为1。</p>
+</li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" rel="tag"># 大模型</a>
+              <a href="/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%8E%A8%E7%90%86/" rel="tag"># 大模型推理</a>
+              <a href="/tags/%E5%B7%A5%E7%A8%8B%E8%83%BD%E5%8A%9B%E6%8F%90%E5%8D%87/" rel="tag"># 工程能力提升</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/01/26/KV-Cache/" rel="prev" title="KV Cache">
+                  <i class="fa fa-angle-left"></i> KV Cache
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2025/01/26/LLM%E4%B8%AD%E7%9A%84%E6%90%9C%E7%B4%A2%E3%80%81%E9%87%87%E6%A0%B7%E7%AE%97%E6%B3%95%EF%BC%9Agreedy%E3%80%81beam-search%E3%80%81top-k%E3%80%81top-p%E3%80%81temperature/" rel="next" title="LLM中的搜索、采样算法：greedy、beam_search、top_k、top_p、temperature">
+                  LLM中的搜索、采样算法：greedy、beam_search、top_k、top_p、temperature <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Ronny Lu</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">197k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">11:56</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">false</script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" integrity="sha256-UF1fgpAiu3tPJN/uCqEUHNe7pnr+QR0SQDNfgglgtcM=" crossorigin="anonymous">
+  <script class="next-config" data-name="katex" type="application/json">{"copy_tex_js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/copy-tex.min.js","integrity":"sha256-Us54+rSGDSTvIhKKUs4kygE2ipA0RXpWWh0/zLqw3bs="}}</script>
+  <script src="/js/third-party/math/katex.js"></script>
+
+
+
+</body>
+</html>

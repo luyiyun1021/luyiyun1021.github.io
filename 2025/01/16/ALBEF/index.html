@@ -15,19 +15,19 @@
 
 
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha256-5eIC48iZUHmSlSUz9XtjRyK2mzQkHScZY1WdMaoz74E=" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-minimal.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
 
-<script class="next-config" data-name="main" type="application/json">{"hostname":"luyiyun1021.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.21.1","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+<script class="next-config" data-name="main" type="application/json">{"hostname":"luyiyun1021.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.22.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
 
-    <meta name="description" content="ALBEF来自于Align before Fuse，作者团队全自来自于Salesforce Research。 论文地址：Align before Fuse: Vision and Language Representation Learning with Momentum Distillation﻿ 论文代码：ALBEF 摘要最近图像文本的大规模的特征学习非常火爆，大部分已有的方法都是用一个Tr">
+    <meta name="description" content="ALBEF来自于Align before Fuse，作者团队全自来自于Salesforce Research。 论文地址：Align before Fuse: Vision and Language Representation Learning with Momentum Distillation 论文代码：ALBEF  摘要 最近图像文本的大规模的特征学习非常火爆，大部分已有的方法都是用一个T">
 <meta property="og:type" content="article">
 <meta property="og:title" content="ALBEF">
 <meta property="og:url" content="https://luyiyun1021.github.io/2025/01/16/ALBEF/index.html">
 <meta property="og:site_name" content="Ronny Lu&#39;s blog">
-<meta property="og:description" content="ALBEF来自于Align before Fuse，作者团队全自来自于Salesforce Research。 论文地址：Align before Fuse: Vision and Language Representation Learning with Momentum Distillation﻿ 论文代码：ALBEF 摘要最近图像文本的大规模的特征学习非常火爆，大部分已有的方法都是用一个Tr">
+<meta property="og:description" content="ALBEF来自于Align before Fuse，作者团队全自来自于Salesforce Research。 论文地址：Align before Fuse: Vision and Language Representation Learning with Momentum Distillation 论文代码：ALBEF  摘要 最近图像文本的大规模的特征学习非常火爆，大部分已有的方法都是用一个T">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116160941204.png">
 <meta property="article:published_time" content="2025-01-16T08:10:11.000Z">
@@ -145,14 +145,14 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%91%98%E8%A6%81"><span class="nav-number">1.</span> <span class="nav-text">摘要</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%9B%B8%E5%85%B3%E5%B7%A5%E4%BD%9C"><span class="nav-number">2.</span> <span class="nav-text">相关工作</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#ALBEF%E6%96%B9%E6%B3%95"><span class="nav-number">3.</span> <span class="nav-text">ALBEF方法</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A8%A1%E5%9E%8B%E7%BB%93%E6%9E%84"><span class="nav-number">3.1.</span> <span class="nav-text">模型结构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8D%9F%E5%A4%B1%E5%87%BD%E6%95%B0"><span class="nav-number">3.2.</span> <span class="nav-text">损失函数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#momentum-distillation-%E5%8A%A8%E9%87%8F%E8%92%B8%E9%A6%8F"><span class="nav-number">3.3.</span> <span class="nav-text">momentum distillation 动量蒸馏</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%8B%E6%B8%B8Vision-Language%E4%BB%BB%E5%8A%A1"><span class="nav-number">4.</span> <span class="nav-text">下游Vision Language任务</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">5.</span> <span class="nav-text">参考</span></a></li></ol></div>
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%91%98%E8%A6%81"><span class="nav-number">1.</span> <span class="nav-text"> 摘要</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%9B%B8%E5%85%B3%E5%B7%A5%E4%BD%9C"><span class="nav-number">2.</span> <span class="nav-text"> 相关工作</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#albef%E6%96%B9%E6%B3%95"><span class="nav-number">3.</span> <span class="nav-text"> ALBEF方法</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A8%A1%E5%9E%8B%E7%BB%93%E6%9E%84"><span class="nav-number">3.1.</span> <span class="nav-text"> 模型结构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8D%9F%E5%A4%B1%E5%87%BD%E6%95%B0"><span class="nav-number">3.2.</span> <span class="nav-text"> 损失函数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#momentum-distillation-%E5%8A%A8%E9%87%8F%E8%92%B8%E9%A6%8F"><span class="nav-number">3.3.</span> <span class="nav-text"> momentum distillation 动量蒸馏</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%8B%E6%B8%B8vision-language%E4%BB%BB%E5%8A%A1"><span class="nav-number">4.</span> <span class="nav-text"> 下游Vision Language任务</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">5.</span> <span class="nav-text"> 参考</span></a></li></ol></div>
         </div>
         <!--/noindex-->
 
         <div class="site-overview-wrap sidebar-panel">
           <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
     <img class="site-author-image" itemprop="image" alt="Ronny Lu"
-      src="/images/avatar.jpeg">
+      src="https://avatars.githubusercontent.com/u/55233584?v=4">
   <p class="site-author-name" itemprop="name">Ronny Lu</p>
   <div class="site-description" itemprop="description">Tech notes on LLM, LLM Infra, C++</div>
 </div>
@@ -160,18 +160,18 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">29</span>
+          <span class="site-state-item-count">50</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
           <a href="/categories/">
-        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-count">14</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-count">14</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -201,7 +201,7 @@
     <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/01/16/ALBEF/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpeg">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
       <meta itemprop="name" content="Ronny Lu">
     </span>
 
@@ -269,7 +269,7 @@
         <i class="far fa-clock"></i>
       </span>
       <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>3 分钟</span>
+      <span>12 分钟</span>
     </span>
 </div>
 
@@ -280,24 +280,31 @@
     
     
     <div class="post-body" itemprop="articleBody"><p>ALBEF来自于Align before Fuse，作者团队全自来自于Salesforce Research。</p>
-<p>论文地址：<a target="_blank" rel="noopener" href="https://arxiv.org/pdf/2107.07651.pdf">Align before Fuse: Vision and Language Representation Learning with Momentum Distillation</a>﻿</p>
+<p>论文地址：<a target="_blank" rel="noopener" href="https://arxiv.org/pdf/2107.07651.pdf">Align before Fuse: Vision and Language Representation Learning with Momentum Distillation</a></p>
 <p>论文代码：<a target="_blank" rel="noopener" href="https://github.com/salesforce/ALBEF">ALBEF</a></p>
-<h1 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h1><p>最近图像文本的大规模的特征学习非常火爆，大部分已有的方法都是用一个Transformer模型作为多模态的一个编码器，同时编码视觉的Token和文本的Token，视觉Token就是视觉特征，一般是region-based的图像特征。</p>
+<h1 id="摘要"><a class="markdownIt-Anchor" href="#摘要"></a> 摘要</h1>
+<p>最近图像文本的大规模的特征学习非常火爆，大部分已有的方法都是用一个Transformer模型作为多模态的一个编码器，同时编码视觉的Token和文本的Token，视觉Token就是视觉特征，一般是region-based的图像特征。</p>
 <p><strong>本文贡献1–ALign BEfore Fuse：</strong></p>
 <p>ViLT和ALBEF都认为不需要目标检测的模型，但ViLT只是说用了目标检测模型以后速度太慢，希望推理时间变得更快，但是ALBEF分析认为<strong>使用预训练的目标检测器之后，视觉特征和文本特征无法align对齐</strong>，因为目标检测器是提前训练好的，只抽取特征，没有再进行end-to-end的训练，所以导致视觉特征和文本特征可能相隔很远，此时将两个特征同时送入多模态的编码器之后，编码器学习图像文本之间的交互信息就会变得很有挑战。<strong>作者提出对比学习的ITC Loss，将图像和文本在Fusing之前实现Align，也就是他们论文的题目ALign BEfore Fuse。</strong></p>
 <p><strong>本文贡献2–自训练方式学习：</strong></p>
 <p>网上爬取的数据特别noisy，因为图片文本对里面的文本通常具备搜索属性，但不是好的描述性句子，甚至没有描述，这种noisy web data的问题影响模型有效地学习文本图像特征，所以作者<strong>使用Momentum Distillation也就是自训练的方式去学习</strong>，自训练就是用Pseudo Label伪标签去学习。<strong>作者采用Moco提出的Momentum Encoder的形式生成Pseudo Target，从而达到一个自训练的效果。</strong></p>
 <p>在图文检索的任务上，ALBEF的效果最好，性能反超之前的方法，尤其是在特别大的数据上训练过的模型CLIP和Align。在VQA和VR任务上，ALBEF也比之前state of art提升2.37%、3.84%的准确度，而且推理时间也更快。模型在4 million的训练数据集下，能做到一个8卡A100训练三四天的时间，训练门槛大大降低。</p>
 <span id="more"></span>
-<h1 id="相关工作"><a href="#相关工作" class="headerlink" title="相关工作"></a>相关工作</h1><p>参考 ViLT 综述部分</p>
-<h1 id="ALBEF方法"><a href="#ALBEF方法" class="headerlink" title="ALBEF方法"></a>ALBEF方法</h1><h2 id="模型结构"><a href="#模型结构" class="headerlink" title="模型结构"></a>模型结构</h2><p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116160941204.png" alt="image.png"></p>
-<p><strong>图像端：</strong>给定任何一张图片，按照Vision Transformer的做法，把它打成patch，然后通过patch embedding layer送给一个Vision Transformer。这里是一个非常标准的12层的Vision Transformer的base模型，如果图片是224x224，那这里的sequence length就是196，然后加上额外的一个CLS token就是197，它的特征维度是768，所以这里绿黄色的特征就是197乘以768。但论文在预训练阶段用的图片是256x256，所以这里绿色的sequence length就会相应的再长一些。它的预训练参数用的DEiT，也就是Data Efficient Vision Transformer在ImageNet 1K数据集上训练出来的初始化参数。</p>
-<p><strong>文本端：</strong>文本端为保持计算量与clip类似，并且增强模态融合的部分，用前六层做文本编码，剩下的六层transformer encoder作为multi-model fusion的过程。文本模型用BERT模型做初始化，它中间的特征维度也是768，它也有一个CLS token代表了整个句子的文本信息。</p>
-<p><strong>momentum model：</strong>ALBEF为了做momentum distillation，而且为了给ITC loss提供更多negative，增加了momentum model，这个模型参数由左边训练的模型参数通过moving average得到的（和MoCo一模一样），通过把moving average的参数设的非常高（论文里是0.995）来保证momentum model不会那么快更新，产生的特征更加稳定，不仅可以做更稳定的negative sample，而且还可以去做momentum distillation。</p>
-<h2 id="损失函数"><a href="#损失函数" class="headerlink" title="损失函数"></a>损失函数</h2><ul>
-<li><p><strong>ITC loss</strong>: 对比学习就是首先定义一个正样本对，然后定义很多负样本对，对比使正样本对之间的距离越来越近，正负样本对之间的距离越来越远。在ALBEF里首先将图像I通过vision transformer之后得到图像的全局特征，图中黄色CLS token作为全局特征，也就是一个768×1的向量，文本这边先做tokenize，将文本text变成tokenization的序列，再输入BERT的前六层，得到了一系列的特征，文本端的CLS token作为文本的全局特征，也是一个768×1的向量。接下来与MoCo相同，图像的特征向量先做一下downsample和normalization，将768×1变成了256×1的向量，文本特征向量也是768变成256×1。正样本这两个特征距离尽可能的近，它的负样本全都存在一个q里，含有65536个负样本（因为它由momentum model产生的，没有gradient，所以它并不占很多内存），正负样本之间的对比学习，使得这两个特征距离尽可能的远。这个过程就是align before fuse的align，也就是说在图像特征和这个文本特征输入Multi-model Fusion的encoder之前，就已经通过对比学习的ITC loss让这个图像特征和文本特征尽可能的拉近，在同一个embedding space里，具体使用了cross entropy loss。</p>
+<h1 id="相关工作"><a class="markdownIt-Anchor" href="#相关工作"></a> 相关工作</h1>
+<p>参考 ViLT 综述部分</p>
+<h1 id="albef方法"><a class="markdownIt-Anchor" href="#albef方法"></a> ALBEF方法</h1>
+<h2 id="模型结构"><a class="markdownIt-Anchor" href="#模型结构"></a> 模型结构</h2>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116160941204.png" alt="image.png" /></p>
+<p>**图像端：**给定任何一张图片，按照Vision Transformer的做法，把它打成patch，然后通过patch embedding layer送给一个Vision Transformer。这里是一个非常标准的12层的Vision Transformer的base模型，如果图片是224x224，那这里的sequence length就是196，然后加上额外的一个CLS token就是197，它的特征维度是768，所以这里绿黄色的特征就是197乘以768。但论文在预训练阶段用的图片是256x256，所以这里绿色的sequence length就会相应的再长一些。它的预训练参数用的DEiT，也就是Data Efficient Vision Transformer在ImageNet 1K数据集上训练出来的初始化参数。</p>
+<p>**文本端：**文本端为保持计算量与clip类似，并且增强模态融合的部分，用前六层做文本编码，剩下的六层transformer encoder作为multi-model fusion的过程。文本模型用BERT模型做初始化，它中间的特征维度也是768，它也有一个CLS token代表了整个句子的文本信息。</p>
+<p>**momentum model：**ALBEF为了做momentum distillation，而且为了给ITC loss提供更多negative，增加了momentum model，这个模型参数由左边训练的模型参数通过moving average得到的（和MoCo一模一样），通过把moving average的参数设的非常高（论文里是0.995）来保证momentum model不会那么快更新，产生的特征更加稳定，不仅可以做更稳定的negative sample，而且还可以去做momentum distillation。</p>
+<h2 id="损失函数"><a class="markdownIt-Anchor" href="#损失函数"></a> 损失函数</h2>
+<ul>
+<li>
+<p><strong>ITC loss</strong>: 对比学习就是首先定义一个正样本对，然后定义很多负样本对，对比使正样本对之间的距离越来越近，正负样本对之间的距离越来越远。在ALBEF里首先将图像I通过vision transformer之后得到图像的全局特征，图中黄色CLS token作为全局特征，也就是一个768×1的向量，文本这边先做tokenize，将文本text变成tokenization的序列，再输入BERT的前六层，得到了一系列的特征，文本端的CLS token作为文本的全局特征，也是一个768×1的向量。接下来与MoCo相同，图像的特征向量先做一下downsample和normalization，将768×1变成了256×1的向量，文本特征向量也是768变成256×1。正样本这两个特征距离尽可能的近，它的负样本全都存在一个q里，含有65536个负样本（因为它由momentum model产生的，没有gradient，所以它并不占很多内存），正负样本之间的对比学习，使得这两个特征距离尽可能的远。这个过程就是align before fuse的align，也就是说在图像特征和这个文本特征输入Multi-model Fusion的encoder之前，就已经通过对比学习的ITC loss让这个图像特征和文本特征尽可能的拉近，在同一个embedding space里，具体使用了cross entropy loss。</p>
 </li>
-<li><p><strong>ITM loss：Image Text Matching</strong>，属于一个二分类任务，就是给定一个图片，给定一个文本，图像文本通过ALBEF的模型之后输出一个特征，在这个特征之后加一个分类头，也就是一个FC层，然后去判断I和T是不是一个对，</p>
+<li>
+<p><strong>ITM loss：Image Text Matching</strong>，属于一个二分类任务，就是给定一个图片，给定一个文本，图像文本通过ALBEF的模型之后输出一个特征，在这个特征之后加一个分类头，也就是一个FC层，然后去判断I和T是不是一个对，</p>
 </li>
 </ul>
 <p>这个loss虽然很合理，但是实际操作的时候发现这个loss太简单，所以这个分类任务，很快它的准确度就提升得很高无法进一步优化。因此ALBEF通过某种方式选择最难的负样本（最接近于正样本的那个负样本），具体来说ALBEF的batch size是512，所以ITM loss正样本对就是512个，对于mini batch里的每一张图像，把这张图片和同一个batch里所有的文本都算一遍cos similarity，然后它在这里选择除了它自己之外相似度最高的文本当做negative，这样ITM loss就非常有难度</p>
@@ -305,8 +312,9 @@
 <li><strong>MLM：Mask Language Modeling</strong>，它把原来完整的句子text T变成一个T’，也就是有些单词被mask掉了, 然后它把缺失的句子和图片一起通过ALBEF的模型，最后把之前的完整的句子给预测出来，它这里也借助了图像的信息去更好的恢复被mask掉的单词。</li>
 </ul>
 <p>计算ITC loss和ITM loss的时候，输入都是原始的i和t，但是当计算MLM loss的时候，它的输入是原始的i和mask后的T’，所以模型每一个训练的iteration都做了两次模型的forward：一次模型的forward用了原始的i和t，另一次模型的forward用了原始的i和mask后的T’。为了计算不同的loss，这种多次前项在多模态学习中使用普遍。</p>
-<p><strong>ALBEF的目标函数:</strong>$\mathcal{L} &#x3D; \mathcal{L}<em>{itc} + \mathcal{L}</em>{mlm} + \mathcal{L}_{itm} $，也就是itc、mlm和itm的合体</p>
-<h2 id="momentum-distillation-动量蒸馏"><a href="#momentum-distillation-动量蒸馏" class="headerlink" title="momentum distillation 动量蒸馏"></a>momentum distillation 动量蒸馏</h2><p><strong>动机：</strong></p>
+<p><strong>ALBEF的目标函数:</strong>$\mathcal{L} = \mathcal{L}<em>{itc} + \mathcal{L}</em>{mlm} + \mathcal{L}_{itm} $，也就是itc、mlm和itm的合体</p>
+<h2 id="momentum-distillation-动量蒸馏"><a class="markdownIt-Anchor" href="#momentum-distillation-动量蒸馏"></a> momentum distillation 动量蒸馏</h2>
+<p><strong>动机：</strong></p>
 <p>由于从网上爬下来的数据噪声严重，图像文本对经常是弱相关，甚至不匹配，这种noisy的data会导致计算目标函数时有偏差。比如在算ITC的时候，某个负样本文本很有可能也描述了图像里的很多内容，它可能不是爬下来的image text pair，但文本甚至可能比Ground Truth描述的还好。若此时将其作为一个负样本，就会对ITC的学习造成很大的影响。</p>
 <p><strong>改进方式：</strong></p>
 <p>作者认为one hot label（就是图片和文本就是一对，其他跟它都不是一对）对于ITC和MLM这两个loss来说不好，因为有的负样本也包含了很多的信息。所以作者采取了自训练方式，先构建一个momentum model然后用这个动量模型去生成pseudo targets伪目标（其实就是一个softmax score），这样它就不再是一个one hot label。</p>
@@ -315,14 +323,18 @@
 <p><strong>最终结果：</strong></p>
 <p>最终ALBEF的训练loss有五个：两个ITC、两个MLM、一个ITM，其中：</p>
 <ul>
-<li><p>ITC有两个loss：一个是原始的ITC，一个是基于pseudo target的ITC，所以分别加权（1-α）和α的loss weight，最终得到momentum版本的ITC loss。</p>
+<li>
+<p>ITC有两个loss：一个是原始的ITC，一个是基于pseudo target的ITC，所以分别加权（1-α）和α的loss weight，最终得到momentum版本的ITC loss。</p>
 </li>
-<li><p>MLM loss有两个loss：一个是原始的MLM，一个是基于pseudo target的MLM，用新生成的pseudo target去代替了原来的ground truth，分别加权（1-α）和α的loss weight，最终得到momentum版本的MLM loss。</p>
+<li>
+<p>MLM loss有两个loss：一个是原始的MLM，一个是基于pseudo target的MLM，用新生成的pseudo target去代替了原来的ground truth，分别加权（1-α）和α的loss weight，最终得到momentum版本的MLM loss。</p>
 </li>
-<li><p>ITM有一个loss：ITM没有动量版本，因为本身它就是基于ground truth，它就是一个二分类任务，而且在ITM里又做了hard negative，这跟momentum model有冲突。</p>
+<li>
+<p>ITM有一个loss：ITM没有动量版本，因为本身它就是基于ground truth，它就是一个二分类任务，而且在ITM里又做了hard negative，这跟momentum model有冲突。</p>
 </li>
 </ul>
-<h1 id="下游Vision-Language任务"><a href="#下游Vision-Language任务" class="headerlink" title="下游Vision Language任务"></a>下游Vision Language任务</h1><p>ALBEF这篇论文做了五个任务：</p>
+<h1 id="下游vision-language任务"><a class="markdownIt-Anchor" href="#下游vision-language任务"></a> 下游Vision Language任务</h1>
+<p>ALBEF这篇论文做了五个任务：</p>
 <ol>
 <li><strong>图文检索（图像到文本、文本到图像、图像到图像、文本到文本）：</strong></li>
 </ol>
@@ -350,15 +362,19 @@
 <p><strong>消融实验</strong></p>
 <p>作者将用了MLM和ITM training loss的模型当做了baseline，因为基本上所有的之前的工作和现在的工作里面都会有这两个loss。</p>
 <ul>
-<li><p>增加ITC也就是Align Before Fuse里的Align，这个提升是非常巨大的，基本是两个多点，三个点，而且是在检索、VE、VR、VQA这么多任务上都有明显的提升，所以CLIP、MoCo这种对比学习的方式非常厉害</p>
+<li>
+<p>增加ITC也就是Align Before Fuse里的Align，这个提升是非常巨大的，基本是两个多点，三个点，而且是在检索、VE、VR、VQA这么多任务上都有明显的提升，所以CLIP、MoCo这种对比学习的方式非常厉害</p>
 </li>
-<li><p>增加ITM里提出的Hard Negative，大概都有0.5左右的提升</p>
+<li>
+<p>增加ITM里提出的Hard Negative，大概都有0.5左右的提升</p>
 </li>
-<li><p>增加Momentum Distillation（MoD），在预训练阶段的MoD提升可能只有0.3 0.4个点，但是这个研究方向还是很好的，就是怎么从Noise Data里去学习有效的表征。</p>
+<li>
+<p>增加Momentum Distillation（MoD），在预训练阶段的MoD提升可能只有0.3 0.4个点，但是这个研究方向还是很好的，就是怎么从Noise Data里去学习有效的表征。</p>
 </li>
 </ul>
-<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ul>
-<li>﻿<a target="_blank" rel="noopener" href="https://blog.csdn.net/lansebingxuan/article/details/131721728">多模态系列论文–ALBEF 详细解析-CSDN博客</a></li>
+<h1 id="参考"><a class="markdownIt-Anchor" href="#参考"></a> 参考</h1>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/lansebingxuan/article/details/131721728">多模态系列论文–ALBEF 详细解析-CSDN博客</a></li>
 </ul>
 
     </div>
@@ -417,14 +433,14 @@
       <i class="fa fa-chart-line"></i>
     </span>
       <span>站点总字数：</span>
-    <span title="站点总字数">75k</span>
+    <span title="站点总字数">197k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span>站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">1:08</span>
+    <span title="站点阅读时长">11:56</span>
   </span>
 </div>
 <div class="busuanzi-count">
@@ -445,8 +461,7 @@
       </span>
     </span>
 </div>
-  <div class="powered-by">
-    <!--由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动 -->
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
   </div>
 
     </div>
@@ -487,6 +502,13 @@
   <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 
 
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">false</script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" integrity="sha256-UF1fgpAiu3tPJN/uCqEUHNe7pnr+QR0SQDNfgglgtcM=" crossorigin="anonymous">
+  <script class="next-config" data-name="katex" type="application/json">{"copy_tex_js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/copy-tex.min.js","integrity":"sha256-Us54+rSGDSTvIhKKUs4kygE2ipA0RXpWWh0/zLqw3bs="}}</script>
+  <script src="/js/third-party/math/katex.js"></script>
 
 
 

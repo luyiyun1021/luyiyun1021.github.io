@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-minimal.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"luyiyun1021.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.22.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="论文链接: https:&#x2F;&#x2F;arxiv.org&#x2F;pdf&#x2F;2309.06180 论文作者 Presentation: https:&#x2F;&#x2F;www.youtube.com&#x2F;watch?v&#x3D;Oq2SN7uutbQ  LLM推理的两阶段 一个常规的LLM推理过程通常分为两个阶段：prefill和decode。通常会使用KV cache技术加速推理。  KV cache  KV Cache占用的显存空间 Q,">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PagedAttention">
+<meta property="og:url" content="https://luyiyun1021.github.io/2025/01/26/PagedAttention/index.html">
+<meta property="og:site_name" content="Ronny Lu&#39;s blog">
+<meta property="og:description" content="论文链接: https:&#x2F;&#x2F;arxiv.org&#x2F;pdf&#x2F;2309.06180 论文作者 Presentation: https:&#x2F;&#x2F;www.youtube.com&#x2F;watch?v&#x3D;Oq2SN7uutbQ  LLM推理的两阶段 一个常规的LLM推理过程通常分为两个阶段：prefill和decode。通常会使用KV cache技术加速推理。  KV cache  KV Cache占用的显存空间 Q,">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126153612578.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126153620319.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126153626947.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126153633933.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126153643116.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126153649549.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126153655368.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126153701635.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126153709241.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126153717004.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126153724678.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126153735588.png">
+<meta property="article:published_time" content="2025-01-26T09:28:06.000Z">
+<meta property="article:modified_time" content="2025-01-26T09:29:16.084Z">
+<meta property="article:author" content="Ronny Lu">
+<meta property="article:tag" content="大模型">
+<meta property="article:tag" content="大模型推理">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126153612578.png">
+
+
+<link rel="canonical" href="https://luyiyun1021.github.io/2025/01/26/PagedAttention/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://luyiyun1021.github.io/2025/01/26/PagedAttention/","path":"2025/01/26/PagedAttention/","title":"PagedAttention"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>PagedAttention | Ronny Lu's blog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<style>.darkmode--activated{--body-bg-color:#282828;--content-bg-color:#333;--card-bg-color:#555;--text-color:#ccc;--blockquote-color:#bbb;--link-color:#ccc;--link-hover-color:#eee;--brand-color:#ddd;--brand-hover-color:#ddd;--table-row-odd-bg-color:#282828;--table-row-hover-bg-color:#363636;--menu-item-bg-color:#555;--btn-default-bg:#222;--btn-default-color:#ccc;--btn-default-border-color:#555;--btn-default-hover-bg:#666;--btn-default-hover-color:#ccc;--btn-default-hover-border-color:#666;--highlight-background:#282b2e;--highlight-foreground:#a9b7c6;--highlight-gutter-background:#34393d;--highlight-gutter-foreground:#9ca9b6}.darkmode--activated img{opacity:.75}.darkmode--activated img:hover{opacity:.9}.darkmode--activated code{color:#69dbdc;background:0 0}button.darkmode-toggle{z-index:9999}.darkmode-ignore,img{display:flex!important}.beian img{display:inline-block!important}</style></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Ronny Lu's blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#llm%E6%8E%A8%E7%90%86%E7%9A%84%E4%B8%A4%E9%98%B6%E6%AE%B5"><span class="nav-number">1.</span> <span class="nav-text"> LLM推理的两阶段</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#kv-cache"><span class="nav-number">1.1.</span> <span class="nav-text"> KV cache</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#kv-cache%E5%8D%A0%E7%94%A8%E7%9A%84%E6%98%BE%E5%AD%98%E7%A9%BA%E9%97%B4"><span class="nav-number">1.1.0.0.1.</span> <span class="nav-text"> KV Cache占用的显存空间</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#kv-cache%E8%83%BD%E7%9C%81%E4%B8%8B%E7%9A%84flops"><span class="nav-number">1.1.0.0.2.</span> <span class="nav-text"> KV Cache能省下的FLOPs</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#llm%E6%8E%A8%E7%90%86"><span class="nav-number">1.2.</span> <span class="nav-text"> LLM推理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#prefill"><span class="nav-number">1.2.1.</span> <span class="nav-text"> Prefill</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#decode"><span class="nav-number">1.2.2.</span> <span class="nav-text"> Decode</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%BAkv-cache%E5%88%86%E9%85%8D%E5%AD%98%E5%82%A8%E7%A9%BA%E9%97%B4%E7%9A%84%E5%B8%B8%E8%A7%84%E6%96%B9%E5%BC%8F"><span class="nav-number">2.</span> <span class="nav-text"> 为KV cache分配存储空间的常规方式</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#pagedattention%E5%8E%9F%E7%90%86"><span class="nav-number">3.</span> <span class="nav-text"> PagedAttention原理</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#31-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%9A%84%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98"><span class="nav-number">3.1.</span> <span class="nav-text"> 3.1 操作系统的虚拟内存</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1%E4%B8%8D%E4%BD%BF%E7%94%A8%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98"><span class="nav-number">3.1.0.0.1.</span> <span class="nav-text"> （1）不使用虚拟内存</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98%E7%9A%84%E5%88%86%E6%AE%B5%E7%AE%A1%E7%90%86"><span class="nav-number">3.1.0.0.2.</span> <span class="nav-text"> （2）虚拟内存的分段管理</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98%E7%9A%84%E5%88%86%E9%A1%B5%E7%AE%A1%E7%90%86"><span class="nav-number">3.1.0.0.3.</span> <span class="nav-text"> （3）虚拟内存的分页管理</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#32-pagedattention"><span class="nav-number">3.2.</span> <span class="nav-text"> 3.2 PagedAttention</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1%E5%A4%84%E7%90%86%E5%8D%95%E4%B8%AA%E8%AF%B7%E6%B1%82"><span class="nav-number">3.2.0.0.1.</span> <span class="nav-text"> （1）处理单个请求</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#i-prefill%E9%98%B6%E6%AE%B5"><span class="nav-number">3.2.0.0.1.1.</span> <span class="nav-text"> (i) Prefill阶段</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#iidecode%E9%98%B6%E6%AE%B5-%E7%94%9F%E6%88%90%E7%AC%AC1%E4%B8%AA%E8%AF%8D"><span class="nav-number">3.2.0.0.1.2.</span> <span class="nav-text"> （ii）Decode阶段-生成第1个词</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#iiideocde%E9%98%B6%E6%AE%B5-%E7%94%9F%E6%88%90%E7%AC%AC2%E4%B8%AA%E8%AF%8D"><span class="nav-number">3.2.0.0.1.3.</span> <span class="nav-text"> （iii）Deocde阶段-生成第2个词</span></a></li></ol></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2%E5%A4%84%E7%90%86%E5%A4%9A%E4%B8%AA%E8%AF%B7%E6%B1%82"><span class="nav-number">3.2.0.0.2.</span> <span class="nav-text"> （2）处理多个请求</span></a></li></ol></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#pagedattention%E5%9C%A8%E4%B8%8D%E5%90%8C%E8%A7%A3%E7%A0%81%E5%9C%BA%E6%99%AF%E4%B8%8B%E7%9A%84%E4%BE%8B%E5%AD%90"><span class="nav-number">4.</span> <span class="nav-text"> PagedAttention在不同解码场景下的例子</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#41-parallel-sampling"><span class="nav-number">4.1.</span> <span class="nav-text"> 4.1 Parallel Sampling</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#42-beam-search"><span class="nav-number">4.1.1.</span> <span class="nav-text"> 4.2 Beam Search</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%B0%83%E5%BA%A6%E5%92%8C%E6%8A%A2%E5%8D%A0"><span class="nav-number">5.</span> <span class="nav-text"> 调度和抢占</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#51-%E6%80%BB%E5%8E%9F%E5%88%99"><span class="nav-number">5.0.1.</span> <span class="nav-text"> 5.1 总原则</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#52-%E7%BB%88%E6%AD%A2%E5%92%8C%E6%81%A2%E5%A4%8D%E8%A2%AB%E6%8A%A2%E5%8D%A0%E7%9A%84%E8%AF%B7%E6%B1%82"><span class="nav-number">5.0.2.</span> <span class="nav-text"> 5.2 终止和恢复被抢占的请求</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1swapping"><span class="nav-number">5.0.2.0.1.</span> <span class="nav-text"> （1）Swapping</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2recomputation"><span class="nav-number">5.0.2.0.2.</span> <span class="nav-text"> （2）Recomputation</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3%E6%80%BB%E7%BB%93"><span class="nav-number">5.0.2.0.3.</span> <span class="nav-text"> （3）总结</span></a></li></ol></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E7%AE%A1%E7%90%86"><span class="nav-number">6.</span> <span class="nav-text"> 分布式管理</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="nav-number">7.</span> <span class="nav-text"> 参考资料</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Ronny Lu"
+      src="https://avatars.githubusercontent.com/u/55233584?v=4">
+  <p class="site-author-name" itemprop="name">Ronny Lu</p>
+  <div class="site-description" itemprop="description">Tech notes on LLM, LLM Infra, C++</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">50</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">14</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">14</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/01/26/PagedAttention/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
+      <meta itemprop="name" content="Ronny Lu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ronny Lu's blog">
+      <meta itemprop="description" content="Tech notes on LLM, LLM Infra, C++">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="PagedAttention | Ronny Lu's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          PagedAttention
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-01-26 17:28:06 / 修改时间：17:29:16" itemprop="dateCreated datePublished" datetime="2025-01-26T17:28:06+08:00">2025-01-26</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">大模型</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E6%8E%A8%E7%90%86%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index"><span itemprop="name">推理技术</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>12k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>43 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>论文链接: <a target="_blank" rel="noopener" href="https://arxiv.org/pdf/2309.06180">https://arxiv.org/pdf/2309.06180</a></p>
+<p>论文作者 Presentation: <a target="_blank" rel="noopener" href="https://www.youtube.com/watch?v=Oq2SN7uutbQ">https://www.youtube.com/watch?v=Oq2SN7uutbQ</a></p>
+<h1 id="llm推理的两阶段"><a class="markdownIt-Anchor" href="#llm推理的两阶段"></a> LLM推理的两阶段</h1>
+<p>一个常规的LLM推理过程通常分为两个阶段：<strong>prefill和decode</strong>。<strong>通常会使用KV cache技术加速推理</strong>。</p>
+<h2 id="kv-cache"><a class="markdownIt-Anchor" href="#kv-cache"></a> KV cache</h2>
+<h5 id="kv-cache占用的显存空间"><a class="markdownIt-Anchor" href="#kv-cache占用的显存空间"></a> KV Cache占用的显存空间</h5>
+<p>Q, K的形状为:[b,head_num,s,per_head_hidden_size], 那么对于每个decoder layer，每个 token 的 K、V 矩阵都是 embedding_size=num_heads * head_size，再乘上 seqlen和 batch size，那就是每个layer的 kv Cache 所需的存储容量了。</p>
+<p><strong>例如，在 LLaMA 2-13B 中，head_num = 40, layer_num = 40, dimension = 5120, 对于1个token的 KV Cache 一共需要 2 (key and value vectors) × 5120 (hidden state size) × 40 (number of layers) × 2 (bytes per FP16) = 800KB</strong>。</p>
+<p><strong>以模型支持的最大的上下文长度4096为例，对于4096个token, 需要800KB * 4096 = 3.2GB的KV cache, 每增加一个batch则需要3.2GB显存，对于一张A100 40GB来说，在加载完模型26GB之后，余下的显存也仅能支持4个batch</strong></p>
+<ul>
+<li><strong>Activation</strong>：Activation在整个Self-Attention的计算过程中，最大的Activation是qkv的MatMul计算，Q,K,V的形状为：[b,head_num,s,per_head_hidden_size], 占用显存大小为2 * batch_size * seq_len * embedding_size, K^T的形状为：[b,head_num,per_head_hidden_size,s], QK^T的形状为：[b,head_num,s,s]，占用显存大小为2 * batch_size * head_num * seq_len^2, <strong>以模型支持的最大的上下文长度4096为例，对于4096个token, 每一层需要保存的峰值激活为大小为QK^T和V的输入, 大小为Q的输出, 4 * batch_size * seq_len * embedding_size + 2 * batch_size * head_num * seq_len^2 = 4 * 4096 * 5120 + 2 * 40 * 4096^2 = 1.3GB</strong></li>
+</ul>
+<h5 id="kv-cache能省下的flops"><a class="markdownIt-Anchor" href="#kv-cache能省下的flops"></a> KV Cache能省下的FLOPs</h5>
+<p><strong>每个token的 K、V 矩阵计算一共需要 2 (K+V) * 2 (mul+add) * embedding size * embedding size = 4 * 5120 * 5120 这么多计算量，乘以seqlen、num_layer和 batch size，一共省了 4096 * 40 * 4 * 5120 * 5120 = 17 TFLOPs的计算量</strong>，当然，因seqlen和embedding size和num layer而异。</p>
+<h2 id="llm推理"><a class="markdownIt-Anchor" href="#llm推理"></a> LLM推理</h2>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126153612578.png" alt="image.png" /></p>
+<h3 id="prefill"><a class="markdownIt-Anchor" href="#prefill"></a> Prefill</h3>
+<p><strong>预填充阶段。在这个阶段中，我们把整段prompt喂给模型做forward计算。如果采用KV cache技术，在这个阶段中我们会把prompt过后得到的保存在cache</strong> <em><strong>k和cache</strong></em> **v中。**这样在对后面的token计算attention时，我们就不需要对前面的token重复计算了，可以帮助我们节省推理时间。</p>
+<p>在上面的图例中，我们假设prompt中含有3个token，prefill阶段结束后，这三个token相关的KV值都被装进了cache。</p>
+<h3 id="decode"><a class="markdownIt-Anchor" href="#decode"></a> Decode</h3>
+<p><strong>生成response的阶段</strong>。在这个阶段中，<strong>我们根据prompt的prefill结果，一个token一个token地生成response。</strong></p>
+<span id="more"></span>
+<p>同样，如果采用了KV cache，则每走完一个decode过程，我们就把对应response token的KV值存入cache中，以便能加速计算。例如对于图中的t4，它与cache中t0~t3的KV值计算完attention后，就把自己的KV值也装进cache中。对t6也是同理。</p>
+<p><strong>由于Decode阶段的是逐一生成token的，因此它不能像prefill阶段那样能做大段prompt的并行计算，所以在LLM推理过程中，Decode阶段的耗时一般是更大的。</strong></p>
+<p>从上述过程中，我们可以发现使用KV cache做推理时的一些特点：</p>
+<ul>
+<li>
+<p><strong>随着prompt数量变多和序列变长，KV cache也变大，对gpu显存造成压力</strong></p>
+</li>
+<li>
+<p><strong>由于输出的序列长度无法预先知道，所以我们很难提前为KV cache量身定制存储空间</strong></p>
+</li>
+</ul>
+<p>下图展示了一个13B的模型在A100 40GB的gpu上做推理时的显存占用分配（others表示forward过程中产生的activation的大小，这些activation你可以认为是转瞬即逝的，即用完则废，因此它们占据的显存不大），从这张图中我们可以直观感受到推理中KV cache对显存的占用。<strong>因此，如何优化KV cache，节省显存，提高推理吞吐量，就成了LLM推理框架需要解决的重点问题。</strong></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126153620319.png" alt="image.png" /></p>
+<h1 id="为kv-cache分配存储空间的常规方式"><a class="markdownIt-Anchor" href="#为kv-cache分配存储空间的常规方式"></a> 为KV cache分配存储空间的常规方式</h1>
+<p>对于训练好的模型，一种常用的部署方式是将其打包成一个推理服务（server），它接收客户端发送来的请求（request），读取请求中的数据（prompt）来做推理。一个请求中可以只有1个prompt，也可以包含多个prompt。</p>
+<p>在常规的推理框架中，当我们的服务接收到一条请求时，它会为这条请求中的prompts分配gpu显存空间，其中就包括对KV cache的分配。由于推理所生成的序列长度大小是无法事先预知的，所以<strong>大部分框架会按照(batch_size, max_seq_len)这样的固定尺寸，在gpu显存上预先为一条请求开辟一块连续的矩形存储空间</strong>。然而，这样的分配方法很容易引起“gpu显存利用不足”的问题，进而影响模型推理时的吞吐量。你可能觉得这个描述有点抽象，别着急，我们来具体看一个例子。</p>
+<p>下图展示了一个常规的推理框架是如何为请求中的prompt在gpu显存上分配KV cache的。在本例中，我们假设一个请求只发送1条prompt（本例中共有3条请求）：</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126153626947.png" alt="image.png" /></p>
+<p>我们假设<code>max_seq_len = 8</code>，所以当第1条请求(prompt1)过来时，我们的推理框架为它安排了(1, 8)大小的连续存储空间。</p>
+<p>当第2条请求（prompt2）过来时，同样也需要1块(1, 8)大小的存储空间。但此时prompt1所在的位置上，只剩3个空格子了，所以它只能另起一行做存储。对prompt3也是同理。</p>
+<p><strong>仔细观察这3条prompt的KV cache排布，你是不是隐约觉得这种排布似乎没有充分利用起gpu的显存？</strong>：</p>
+<ul>
+<li>
+<p><strong>浅色块</strong>：观察图中的浅色块，它是prefill阶段prompt的KV cache，是无论如何都会被使用的空间，它不存在浪费。</p>
+</li>
+<li>
+<p><strong>中色块</strong>：观察图中的中色块，它是decode阶段的KV cache，其中<code>&lt;eos&gt;</code>表示序列生成的截止符。虽然这些中色块最终都会被我们用上，但是在decode阶段一个个token生成时，我们并不能预知哪些块会被最终用上。例如对于prompt2，当你生成when的时候，你无法知道下一个会生成<code>&lt;eos&gt;</code>，还是会生成别的词。<strong>所以这些中色块都是一种“潜在的浪费”，我们称中色块的部分为预留碎片（reservation fragment）。</strong></p>
+</li>
+<li>
+<p><strong>深色块</strong>：观察图中的深色块，它也是decode阶段的KV cache，但直到序列生成完毕，它都没有被用上。<strong>由于这些深色块是预留的KV cache的一部分，所以我们称其为内部碎片（internal fragment）。</strong></p>
+</li>
+<li>
+<p><strong>灰色块</strong>：观察图中的灰色块，它不是我们预留的KV cache的一部分，且最终也没有被用上，<strong>我们称这些灰色块为外部碎片（external fragment）</strong>。想象一下，此时新来了一条prompt4，它也要求显存中的8个格子作为KV cache。**此时你的显存上明明有9个空格子，但因为它们是不连续的碎片，所以无法被prompt4所使用。**这时prompt4的这条请求只好在队列中等待，直到gpu上有足够显存资源时再进行推理，这不就对模型推理的吞吐量造成显著影响了吗？</p>
+</li>
+</ul>
+<p>**观察整个KV cache排布，你会发现它们的毛病在于太过“静态化”。**当你无法预知序列大小时，你为什么一定要死板地为每个序列预留KV cache空间呢？**为什么不能做得更动态化一些，即“用多少占多少”呢？**这样我们就能减少上述这些存储碎片，使得每一时刻推理服务能处理的请求更多，提高吞吐量，这就是vLLM在做的核心事情，我们先通过一张实验图来感受下vLLM在显存利用上的改进效果（VS 其它推理框架）：</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126153633933.png" alt="image.png" /></p>
+<p>不难发现，相比于别的推理框架，vLLM几乎能做到将显存完全打满。</p>
+<p>读到这里，你可能会有以下疑问：</p>
+<ul>
+<li>
+<p><strong>问题1：vLLM是通过什么技术，动态地为请求分配KV cache显存，提升显存利用率的？</strong></p>
+</li>
+<li>
+<p><strong>问题2: 当采用动态分配显存的办法时，虽然明面上同一时刻能处理更多的prompt了，但因为没有为每个prompt预留充足的显存空间，如果在某一时刻整个显存被打满了，而此时所有的prompt都没做完推理，那该怎么办？</strong></p>
+</li>
+</ul>
+<p>在后文的第三～四章，我们将回答问题1。第五章回答问题2。</p>
+<h1 id="pagedattention原理"><a class="markdownIt-Anchor" href="#pagedattention原理"></a> PagedAttention原理</h1>
+<p>在本节中，<strong>我们先来回答问题1：vLLM通过一种名为PagedAttention的技术，动态地为请求分配KV cache显存，提升显存利用率。</strong></p>
+<p><strong>整体上来说，PagedAttention的设计灵感来自操作系统中虚拟内存的分页管理技术</strong>。所以本节会先通过通俗易懂的方式，和大家一起快速回顾操作系统的虚拟内存技术，在这个过程中和大家一起具象化感受PagedAttention的设计思想。然后再来详细介绍PagedAttention的运作流程。</p>
+<h2 id="31-操作系统的虚拟内存"><a class="markdownIt-Anchor" href="#31-操作系统的虚拟内存"></a> 3.1 操作系统的虚拟内存</h2>
+<h5 id="1不使用虚拟内存"><a class="markdownIt-Anchor" href="#1不使用虚拟内存"></a> （1）不使用虚拟内存</h5>
+<p>我们知道程序运行时，会将代码、数据等内容存放在物理内存上。<strong>在最原始的做法中（没有操作系统，例如单片机），程序直接对物理内存进行操作，决定使用它的哪些存储地址。</strong></p>
+<p><strong>如果你只跑一个进程，那还好说。但如果需要运行多个进程时，麻烦就来了</strong>：由于我直接操作了物理内存地址，所以我在为自己的进程分配物理内存时，还要考虑别的进程是如何分配物理内存的（别人已经占用的我不能用）。这样不同进程间的耦合性太高了，给开发带来难度。</p>
+<p><strong>有没有一种办法，让各个进程间的开发能够相互独立呢？一种直觉的做法是：</strong></p>
+<ul>
+<li>
+<p><strong>给每个进程分配一个虚拟内存</strong>。每个进程在开发和运行时，可以假设这个虚拟内存上只有自己在跑，这样它就能大胆操作。</p>
+</li>
+<li>
+<p><strong>虚拟内存负责统一规划代码、数据等如何在物理内存上最终落盘</strong>。这个过程对所有进程来说都是透明的，进程无需操心</p>
+</li>
+</ul>
+<p>虚拟内存的核心思想可简化成下图：</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126153643116.png" alt="image.png" /></p>
+<h5 id="2虚拟内存的分段管理"><a class="markdownIt-Anchor" href="#2虚拟内存的分段管理"></a> （2）虚拟内存的分段管理</h5>
+<p><strong>在分段式内存管理中，虚拟内存会尽量为每个进程在物理内存上找到一块连续的存储空间，让进程加载自己的全部代码、数据等内容</strong>。我们来看一个具体的例子：</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126153649549.png" alt="image.png" /></p>
+<p>在这个例子中，3个进程的虚拟内存各自为它们在物理内存上映射了一块连续的存储空间。在某一时刻，我释放了进程2，同时想运行进程4。这时我尴尬地发现，<strong>虽然物理内存上有640M的空间剩余，但因为是碎片化的，我的进程4无法加载进去</strong>，因此它只能等待（回想一下本文第二部分对传统KV cache显存分配的分析）。</p>
+<p>在这个情况下，如果我硬要运行进程4，也是有办法的：我可以先把进程3从物理内存上<strong>交换（swap）<strong>到磁盘上，然后把进程4装进来，然后再把进程3从磁盘上加载回来。通过这种方法我</strong>重新整合了碎片</strong>，让进程4能够运行。</p>
+<p>**但这种办法的显著缺点是：**如果进程3过大，同时内存到磁盘的带宽又不够，整个交换的过程就会非常卡顿。这就是分段式内存管理的缺陷。</p>
+<p>这时，我自然而然会想到：**我为什么要给所有进程都预分配一个固定的存储块（段）呢？**假设这个进程是一个浏览器，我难道会一下就用到这个进程里所有的功能吗？就不能进程运行到哪里，或者我想用哪个具体功能时，再加载这部分相关的内容去内存，以此让整个内存分配更加动态？</p>
+<h5 id="3虚拟内存的分页管理"><a class="markdownIt-Anchor" href="#3虚拟内存的分页管理"></a> （3）虚拟内存的分页管理</h5>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126153655368.png" alt="image.png" /></p>
+<p>**我们可以将进程1、进程2想成是两本书。代码分布在书的不同page上。我们希望想读哪一页，就加载哪一页，而不是一下把两本书都加载进来。**同时，当我们不想读某些页的时候，我们也能根据页码将其清空。</p>
+<p>现在，我们希望读进程1和进程2的page1，我们就将其加载到物理内存上。虚拟内存会帮我们做好映射，把来自不同进程的这两页分别加载到物理内存对应位置。</p>
+<p><strong>虚拟内存的分业管理技术总结起来就是：</strong></p>
+<ul>
+<li>
+<p><strong>将物理内存划分为固定大小的块，我们称每一块为页（page）</strong>。从物理内存中模拟出来的虚拟内存也按相同的方式做划分</p>
+</li>
+<li>
+<p>对于1个进程，我们不需要静态加载它的全部代码、数据等内容。我们想用哪部分，或者它当前跑到哪部分，我们就动态加载这部分到虚拟内存上，然后由虚拟内存帮我们做物理内存的映射。</p>
+</li>
+<li>
+<p>对于1个进程，虽然它在物理内存上的存储不连续（可能分布在不同的page中），但它在自己的虚拟内存上是连续的。<strong>通过模拟连续内存的方式，既解决了物理内存上的碎片问题，也方便了进程的开发和运行。</strong></p>
+</li>
+</ul>
+<h2 id="32-pagedattention"><a class="markdownIt-Anchor" href="#32-pagedattention"></a> 3.2 PagedAttention</h2>
+<h5 id="1处理单个请求"><a class="markdownIt-Anchor" href="#1处理单个请求"></a> （1）处理单个请求</h5>
+<p>现在，你已经知道虚拟内存分页管理的基本原理和优势，趁热打铁，我们马上来看以其为灵感的PagedAttention技术是如何操作的。我们还是从具体的例子讲起。</p>
+<p>假设现在你向模型server发送一条请求，prompt为<code>Four score and seven years ago our</code>，你希望模型能做续写。PagedAttention的运作流程如下图：</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126153701635.png" alt="image.png" /></p>
+<p>在图中：</p>
+<ul>
+<li>
+<p><strong>请求（request）可理解为操作系统中的一个进程</strong></p>
+</li>
+<li>
+<p><strong>逻辑内存（logical KV blocks）可理解为操作系统中的虚拟内存，每个block类比于虚拟内存中的一个page。每个block的大小是固定的，在vLLM中默认大小为16，即可装16个token的K/V值</strong></p>
+</li>
+<li>
+<p><strong>块表（block table）可理解为操作系统中的虚拟内存到物理内存的映射表</strong></p>
+</li>
+<li>
+<p><strong>物理内存（physical KV blocks）可理解为操作系统中的物理内存，物理块在gpu显存上，每个block类比于虚拟内存中的一个page</strong></p>
+</li>
+</ul>
+<p>图中带圈的序号表示操作步骤，我们就按这个顺序来看看。</p>
+<h6 id="i-prefill阶段"><a class="markdownIt-Anchor" href="#i-prefill阶段"></a> (i) Prefill阶段</h6>
+<ul>
+<li>
+<p><strong>划分逻辑块</strong>：vLLM拿到这条prompt，先按照设定好的block大小B（本例中B=4），为prompt划分逻辑块（Logical KV blocks）。由于prompt中有7个token，所以vLLM用2个逻辑块（block 0， block 1）来装它们的KV值。其中，在逻辑块1中目前只装了&quot;years&quot;, “ago”, &quot;hour&quot;这3个token的KV值，有1个位置是空余的。这个位置就被称为保留位（reservation）</p>
+</li>
+<li>
+<p><strong>划分物理块</strong>：划分好逻辑块后，我们就可以将其映射到物理块中去了。物理块是实际存放KV值的地方。我们通过一张block table来记录逻辑块和物理块的映射关系，block table的主要内容包括：</p>
+</li>
+<li>
+<p><strong>逻辑块和物理块的映射关系（physical block number）</strong>：例如逻辑块0对应物理块7</p>
+</li>
+<li>
+<p><strong>每个物理块上被填满的槽位（# filled）</strong>：例如在prefill阶段，对物理块7，其4个槽位都被填满；对物理块1，其3个槽位被填满。</p>
+</li>
+<li>
+<p><strong>正常计算prompt的KV值，并通过划分好的关系填入物理块中。</strong></p>
+</li>
+</ul>
+<h6 id="iidecode阶段-生成第1个词"><a class="markdownIt-Anchor" href="#iidecode阶段-生成第1个词"></a> （ii）Decode阶段-生成第1个词</h6>
+<ul>
+<li>
+<p><strong>使用KV cache计算attention，生成第1个词fathers</strong>。不难发现，当我们计算时，我们使用的是逻辑块，即形式上这些token都是连续的。与此同时，vLLM后台会通过block table这个映射关系，帮我们从物理块上获取数据做实际计算。<strong>通过这种方式，每个request都会认为自己在一个连续且充足的存储空间上操作，尽管物理上这些数据的存储并不是连续的。</strong></p>
+</li>
+<li>
+<p><strong>基于新生成的词，更新逻辑块、物理块和block table</strong>。对于block table，vLLM将它filled字段由3更新至4。</p>
+</li>
+<li>
+<p><strong>分配新的逻辑块和物理块</strong>。当fathers更新进去后，逻辑块已装满。所以vLLM将开辟新的逻辑块2，并同时更新对应的block table和物理块。</p>
+</li>
+</ul>
+<h6 id="iiideocde阶段-生成第2个词"><a class="markdownIt-Anchor" href="#iiideocde阶段-生成第2个词"></a> （iii）Deocde阶段-生成第2个词</h6>
+<p>类比步骤（2）来进行。</p>
+<h5 id="2处理多个请求"><a class="markdownIt-Anchor" href="#2处理多个请求"></a> （2）处理多个请求</h5>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126153709241.png" alt="image.png" /></p>
+<p>有了（1）的解释，大家看懂这张图应该不难。通过多个请求（prompt）同时做推理的例子，大家可以更好感受到PagedAttention是如何通过动态存储KV cache的方式，来更充分利用gpu显存的。</p>
+<h1 id="pagedattention在不同解码场景下的例子"><a class="markdownIt-Anchor" href="#pagedattention在不同解码场景下的例子"></a> PagedAttention在不同解码场景下的例子</h1>
+<p>通过前文的解释，我们已经基本掌握了PagedAttention的设计思想、运作流程。你可能隐隐能感受到它在显存管理上的“灵活性”，和减少碎片化显存的能力。<strong>但可能你觉得还不够具象，所以在本节中，我们通过更具体的场景，再假设一下对PagedAttention优势的理解。</strong></p>
+<p><strong>我们知道，根据实际需求，大模型的解码方式也比较复杂</strong>，例如：</p>
+<ul>
+<li>
+<p><strong>Parallel Sampling</strong>：我给模型发送一个请求，希望它对prompt做续写，并给出三种不同的回答。我们管这个场景叫parallel sampling。在这个场景中，我们可以将prompt复制3次后拼接成1个batch喂给模型，让它做推理。但我们也需注意到，这种方式会产生prompt部分KV cache的重复存储。</p>
+</li>
+<li>
+<p><strong>Beam Search</strong>：束搜索，这是LLM常用的deocde策略之一，即在每个decode阶段，我不是只产生1个token，而是产生top k个token（这里k也被称为束宽）。top k个token必然对应着此刻的top k个序列。我把这top k个序列喂给模型，假设词表的大小为|V|，那么在下一时刻，我就要在k * |V|个候选者中再选出top k，以此类推。不难想象每一时刻我把top k序列喂给模型时，它们的前置token中有大量的KV cache是重复的。</p>
+</li>
+<li>
+<p><strong>Shared prefix</strong>：在某些大模型中，所有请求可能都会共享一个前置信息（比如system message: “假设你是一个有帮助的AI助手…&quot;），这些前置信息没有必要重复存储KV cache</p>
+</li>
+<li>
+<p><strong>其余一般场景</strong>：在一些更通用的场景中，虽然两个prompt可能完全没有关系，但它们中某些KV cache却是可以共用的。例如两个prompt的相同位置（position）恰好出现了完全一样的序列，比如它们的结尾都是好想下班。假设这个相同序列已经存在于KV cache中，那也没有必要重复计算和存储了。</p>
+</li>
+</ul>
+<p><strong>在下文里，我们会详细解释PagedAttention在Parallel Sampling和Beam Search场景上的优势。剩余两个场景读者可以自行做类比分析。</strong></p>
+<h2 id="41-parallel-sampling"><a class="markdownIt-Anchor" href="#41-parallel-sampling"></a> 4.1 Parallel Sampling</h2>
+<p>下面说明在parallel sampling的场景下，vLLM（PagedAttention）是怎么做到节省显存的。</p>
+<p>**传统KV cache怎么做：**假设模型的max_seq_len = 2048。传统KV cache可能在显存中分配两块长度是2048的空间。由于prompt一致，这两块2048的空间中存在大量重复的KV cache。</p>
+<p><strong>vLLM怎么做：</strong></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126153717004.png" alt="image.png" /></p>
+<p>假定我们发给模型1个request，这个request中包含2个prompt/sample，记为Sample A1和Sample A2，这两个prompt完全一致，都为<code>Four score and seven years ago our</code>，我们希望模型对这两个prompt分别做续写任务。</p>
+<p><strong>（1）首先，Prefill阶段，vLLM拿到Sample A1和Sample A2，根据其中的文字内容，为其分配逻辑块和物理块。</strong></p>
+<ul>
+<li>
+<p><strong>分配逻辑块</strong>：对于A1，vLLM为其分配逻辑块block0和block1；对于A2，vLLM为其分配逻辑块block0和block1。<strong>需要注意的是，A1的逻辑块和A2的逻辑块是独立的（尽管它们都叫block0和block1）</strong>，你可以将A1和A2视作操作系统中两个独立运行的进程。</p>
+</li>
+<li>
+<p><strong>分配物理块</strong>：对于A1和A2，虽然逻辑块独立，但因为它们的文字完全相同，所以可以<strong>在物理内存上共享相同的空间</strong>。所以A1的逻辑块block0/1分别指向物理块block7/1；A2的逻辑块block0/1分别指向物理块block7/1。我们设每个物理块下映射的逻辑块数量为ref count，所以对物理块block7/1来说，它们的ref count都为2。</p>
+</li>
+</ul>
+<p><strong>（2）然后，进入decode阶段，A1和A2各自做推理，得到第一个token，分别为fathers和mothers。</strong></p>
+<ul>
+<li>
+<p><strong>将生成的token装入逻辑块</strong>：对于A1和A2来说，将其生成的token装入各自的逻辑块block1。</p>
+</li>
+<li>
+<p><strong>触发物理块copy-on-write机制</strong>：由于fathers/mothers是两个完全不同的token，因此对物理块block1触发复制机制，即在物理内存上新开辟一块空间。此时物理块block1只和A2的逻辑块block1映射，将其ref count减去1；物理块block3只和A1的逻辑块block1映射，将其ref count设为1。</p>
+</li>
+</ul>
+<p>总结起来，vLLM节省KV cache显存的核心思想是，对于相同数据对应的KV cache，能复用则尽量复用；无法复用时，再考虑开辟新的物理空间。</p>
+<h3 id="42-beam-search"><a class="markdownIt-Anchor" href="#42-beam-search"></a> 4.2 Beam Search</h3>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126153724678.png" alt="image.png" /></p>
+<p><strong>我们从右往左来看这张图。虚线位置表示“当前decoding时刻”，beam width = 4。图中所有的block皆为逻辑块。</strong></p>
+<p>因为beam width = 4，这意味着根据beam search算法，在当前阶段我们生成了top 4个概率最大的token（我们记这4个token为beam candidate 0/1/2/3），它们分别装在block5，block6，block7和block8中。</p>
+<p>现在我们继续使用beam search算法做decoding，继续找出top 4个最可能的next token。经过我们的计算，这top 4 next token，有2个来自beam candidate 1，有2个来自beam candidate 2。因此我们在block6中引出block9和block10，用于装其中两个top 2 next token；对block7也是同理。</p>
+<p>现在，block9/10/11/12中装的top 4 next token，就成为新的beam candidates，可以按照和上述一样的方式继续做beam search算法。<strong>而对于block5和block8，它们已经在beam search的搜索算法中被淘汰了，后续生成的token也不会和它们产生关系，所以可以清除掉这两个逻辑块，并释放它们对应的物理块的内存空间。</strong></p>
+<p>好，我们继续往左边来看这幅图。block3引出block5/6/7，block4引出block8，这意味着当前这4个top4 token，是上一个timestep下candidate1和candidate3相关序列生成的（candidate0和2的block没有画出，是因为它们所在的序列被beam search算法淘汰了，因此没有画出的必要）。<strong>由于block8已经被淘汰，所以block4也相继被淘汰，并释放对应的物理内存空间。</strong></p>
+<p><strong>由此往左一路推，直到block0为止（block0代表着prompt，因此被beam seach中所有的序列共享）。这一路上，我们都根据最新时刻的beam search decoding结果，释放掉不再被需要的逻辑块和对应的物理内存空间，达到节省显存的目的。</strong></p>
+<h1 id="调度和抢占"><a class="markdownIt-Anchor" href="#调度和抢占"></a> 调度和抢占</h1>
+<p>到目前为止，我们已经回答了“vLLM是如何优化KV cache显存分配”的问题，现在我们来回答另一个重要的问题：</p>
+<ul>
+<li><strong>当采用动态分配显存的办法时，虽然明面上同一时刻能处理更多的prompt了，但因为没有为每个prompt预留充足的显存空间，如果在某一时刻整个显存被打满了，而此时所有的prompt都没做完推理，那该怎么办？</strong></li>
+</ul>
+<h3 id="51-总原则"><a class="markdownIt-Anchor" href="#51-总原则"></a> 5.1 总原则</h3>
+<p>当有一堆请求来到vLLM服务器上时，vLLM需要一个调度原则来安排如何执行这些请求，这个调度原则概括如下：</p>
+<ul>
+<li>
+<p><strong>先来的请求先被服务（First-Come-First-Serve, FCFS）</strong></p>
+</li>
+<li>
+<p><strong>如有抢占的需要，后来的请求先被抢占（preemption）</strong></p>
+</li>
+</ul>
+<p><strong>（1）先来的请求先被服务</strong>这个很好理解，当有一堆请求到达vLLM服务器时，vLLM肯定优先处理来得早的请求</p>
+<p><strong>（2）后来的请求先被抢占</strong>想象一下，当一堆请求来到vLLM服务器做推理，导致gpu显存不足时，vLLM会怎么做呢？</p>
+<p><strong>最直接的办法，就是暂停这堆请求中最后到达的那些请求的推理，同时将它们相关的KV cache从gpu上释放掉，以便为更早到达的请求留出足够的gpu空间，让它们完成推理任务</strong>。如果不这样做的话，各个请求间相互争夺gpu资源，最终将导致没有任何一个请求能完成推理任务。等到先来的请求做完了推理，vLLM调度器认为gpu上有足够的空间了，就能恢复那些被中断的请求的执行了。</p>
+<p><strong>在资源不足的情况下，暂时中断一些任务的执行，这样的举动就被称为“抢占（preemption）”。</strong></p>
+<h3 id="52-终止和恢复被抢占的请求"><a class="markdownIt-Anchor" href="#52-终止和恢复被抢占的请求"></a> 5.2 终止和恢复被抢占的请求</h3>
+<p>对于这些因gpu资源不足而被抢占的任务，vLLM要完成两件事：</p>
+<ul>
+<li>
+<p><strong>暂停它们的执行，同时将与之相关的KV cache从gpu上释放掉</strong></p>
+</li>
+<li>
+<p><strong>等gpu资源充足时，重新恢复它们的执行</strong></p>
+</li>
+</ul>
+<p>针对这两件事，vLLM分别设计了**Swapping（交换策略）和Recomputation（重计算策略）**来解决。我们来细看这两个策略。</p>
+<h5 id="1swapping"><a class="markdownIt-Anchor" href="#1swapping"></a> （1）Swapping</h5>
+<p>对于被抢占的请求，vLLM要将其KV cache从gpu上释放掉，那么：</p>
+<ul>
+<li>
+<p><strong>问题1：该释放哪些KV cache？</strong></p>
+</li>
+<li>
+<p><strong>问题2：要把这些KV cache释放到哪里去？</strong></p>
+</li>
+</ul>
+<p>**先看问题1。**由前文PagedAttention原理可知，一个请求可能对应多个block。我们既可以选择释放掉部分block，也可以选择释放掉全部block，或者更科学地，我们可以预测一下哪些block被使用的频率最低，然后释放掉这些低频block（但这种方式实现起来难度较大，性价比不是很高）。在vLLM中，采取的是all-or-nothing策略，即释放被抢占请求的所有block。</p>
+<p>**再来看问题2。**对于这些被选中要释放的KV block，如果将它们直接丢掉，那未免过于浪费。vLLM采用的做法是将其从gpu上交换（Swap）到cpu上。这样等到gpu显存充份时，再把这些block从cpu上重载回来。</p>
+<h5 id="2recomputation"><a class="markdownIt-Anchor" href="#2recomputation"></a> （2）Recomputation</h5>
+<p>知道了Swapping机制，重计算的过程也很好理解了：当vLLM调度器任务gpu资源充足时，对于那些被抢占的请求，它会将其卸载到cpu上的KV block重新加载进gpu中，继续完成推理任务。</p>
+<h5 id="3总结"><a class="markdownIt-Anchor" href="#3总结"></a> （3）总结</h5>
+<p>好，到这里，<strong>我们总结一下vLLM对请求的调度处理流程：</strong></p>
+<ul>
+<li>
+<p>当一堆请求来到vLLM服务器上时，按照**First-Come-First-Serve（FCFS）**原则，优先处理那些最早到来的请求。</p>
+</li>
+<li>
+<p>当gpu资源不足时，为了让先来的请求能尽快做完推理，<strong>vLLM会对那些后到来的请求执行“抢占”</strong>，即暂时终止它们的执行。</p>
+</li>
+<li>
+<p>**一旦vLLM决定执行抢占操作，它会暂停处理新到来的请求。**在此期间，它会将被抢占的请求相关的KV block全部交换（swap）至cpu上。<strong>等交换完成后，vLLM才会继续处理新到来的请求。</strong></p>
+</li>
+<li>
+<p>当vLLM认为gpu有足够资源时，它会将cpu上的KV block重新加载回gpu，恢复被抢占请求的执行（recomputation）</p>
+</li>
+</ul>
+<h1 id="分布式管理"><a class="markdownIt-Anchor" href="#分布式管理"></a> 分布式管理</h1>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126153735588.png" alt="image.png" /></p>
+<p>在本文的最后部分，我们再来看看分布式环境下vLLM的整体架构。本文不再对vLLM的性能实验部分做说明，感兴趣的朋友可以自行阅读。</p>
+<p>在LLM推理实操中，某些场景下单卡是完成不了推理的，需要多卡。那么对于多gpu这种更普适性的情况，vLLM是怎么处理的呢？</p>
+<p>上图显示了在分布式场景下，vLLM的整体运作流程：</p>
+<ul>
+<li>
+<p>首先，vLLM有一个中央调度器（Scheduler），它负责计算和管理每张卡上KV cache从逻辑块到物理块的映射表(block tables)</p>
+</li>
+<li>
+<p>在做分布式计算时，Schedular会将映射表广播到各张卡上，每张卡上的Cache engine接收到相关信息后，负责管理各卡上的KV block</p>
+</li>
+</ul>
+<p>上图中给出的例子，是用张量模型并行（megatron-lm）做分布式推理时的情况，所以图中每个worker上写的是model shard。<strong>在张量并行中，各卡上的输入数据相同，只是各卡负责计算不同head的KV cache</strong>。所以这种情况下，各卡上的逻辑块-物理块的映射关系其实是相同的（用的同一张block table），只是各卡上物理块中实际存储的数据不同而已。</p>
+<h1 id="参考资料"><a class="markdownIt-Anchor" href="#参考资料"></a> 参考资料</h1>
+<ul>
+<li>
+<p><a target="_blank" rel="noopener" href="https://aijishu.com/a/1060000000458185">https://aijishu.com/a/1060000000458185</a></p>
+</li>
+<li>
+<p><a target="_blank" rel="noopener" href="https://my.oschina.net/IDP/blog/11046053">https://my.oschina.net/IDP/blog/11046053</a></p>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" rel="tag"># 大模型</a>
+              <a href="/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%8E%A8%E7%90%86/" rel="tag"># 大模型推理</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/01/26/Mooncake%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0%EF%BC%9A%E6%B7%B1%E5%85%A5%E5%AD%A6%E4%B9%A0%E4%BB%A5Cache%E4%B8%BA%E4%B8%AD%E5%BF%83%E7%9A%84%E8%B0%83%E5%BA%A6%E6%80%9D%E6%83%B3%EF%BC%8C%E8%B0%B1%E5%86%99LLM%E6%9C%8D%E5%8A%A1%E9%99%8D%E6%9C%AC%E5%A2%9E%E6%95%88%E6%96%B0%E7%AF%87%E7%AB%A0/" rel="prev" title="Mooncake阅读笔记：深入学习以Cache为中心的调度思想，谱写LLM服务降本增效新篇章">
+                  <i class="fa fa-angle-left"></i> Mooncake阅读笔记：深入学习以Cache为中心的调度思想，谱写LLM服务降本增效新篇章
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2025/01/26/RadixAttention/" rel="next" title="RadixAttention">
+                  RadixAttention <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Ronny Lu</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">197k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">11:56</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">false</script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" integrity="sha256-UF1fgpAiu3tPJN/uCqEUHNe7pnr+QR0SQDNfgglgtcM=" crossorigin="anonymous">
+  <script class="next-config" data-name="katex" type="application/json">{"copy_tex_js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/copy-tex.min.js","integrity":"sha256-Us54+rSGDSTvIhKKUs4kygE2ipA0RXpWWh0/zLqw3bs="}}</script>
+  <script src="/js/third-party/math/katex.js"></script>
+
+
+
+</body>
+</html>

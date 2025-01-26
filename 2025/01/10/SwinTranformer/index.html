@@ -15,12 +15,12 @@
 
 
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha256-5eIC48iZUHmSlSUz9XtjRyK2mzQkHScZY1WdMaoz74E=" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-minimal.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
 
-<script class="next-config" data-name="main" type="application/json">{"hostname":"luyiyun1021.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.21.1","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+<script class="next-config" data-name="main" type="application/json">{"hostname":"luyiyun1021.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.22.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
 
     <meta name="description" content="《Swin Transformer: Hierarchical Vision Transformer using Shifted Windows》作为2021 ICCV最佳论文，屠榜了各大CV任务，性能优于DeiT、ViT和EfficientNet等主干网络，已经替代经典的CNN架构，成为了计算机视觉领域通用的通用骨干网络。它基于了ViT模型的思想，创新性的引入了滑动窗口机制，让模型能够学习到跨窗">
 <meta property="og:type" content="article">
@@ -149,14 +149,14 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%83%8C%E6%99%AF"><span class="nav-number">1.</span> <span class="nav-text">背景</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E4%BB%8ECNN%E5%88%B0Transformer"><span class="nav-number">1.0.0.1.</span> <span class="nav-text">从CNN到Transformer</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E4%BB%8ETransformer%E5%88%B0Swin-Transformer"><span class="nav-number">1.0.0.2.</span> <span class="nav-text">从Transformer到Swin Transformer</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A8%A1%E5%9E%8B%E7%BB%93%E6%9E%84"><span class="nav-number">2.</span> <span class="nav-text">模型结构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Window-Attention-%E5%92%8C-Shift-Window-Attention"><span class="nav-number">2.1.</span> <span class="nav-text">Window Attention 和 Shift Window Attention</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5"><span class="nav-number">3.</span> <span class="nav-text">参考链接</span></a></li></ol></div>
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%83%8C%E6%99%AF"><span class="nav-number">1.</span> <span class="nav-text"> 背景</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E4%BB%8Ecnn%E5%88%B0transformer"><span class="nav-number">1.0.0.1.</span> <span class="nav-text"> 从CNN到Transformer</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E4%BB%8Etransformer%E5%88%B0swin-transformer"><span class="nav-number">1.0.0.2.</span> <span class="nav-text"> 从Transformer到Swin Transformer</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A8%A1%E5%9E%8B%E7%BB%93%E6%9E%84"><span class="nav-number">2.</span> <span class="nav-text"> 模型结构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#window-attention-%E5%92%8C-shift-window-attention"><span class="nav-number">2.1.</span> <span class="nav-text"> Window Attention 和 Shift Window Attention</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5"><span class="nav-number">3.</span> <span class="nav-text"> 参考链接</span></a></li></ol></div>
         </div>
         <!--/noindex-->
 
         <div class="site-overview-wrap sidebar-panel">
           <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
     <img class="site-author-image" itemprop="image" alt="Ronny Lu"
-      src="/images/avatar.jpeg">
+      src="https://avatars.githubusercontent.com/u/55233584?v=4">
   <p class="site-author-name" itemprop="name">Ronny Lu</p>
   <div class="site-description" itemprop="description">Tech notes on LLM, LLM Infra, C++</div>
 </div>
@@ -164,18 +164,18 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">29</span>
+          <span class="site-state-item-count">50</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
           <a href="/categories/">
-        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-count">14</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-count">14</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -205,7 +205,7 @@
     <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/01/10/SwinTranformer/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpeg">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
       <meta itemprop="name" content="Ronny Lu">
     </span>
 
@@ -273,7 +273,7 @@
         <i class="far fa-clock"></i>
       </span>
       <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>1 分钟</span>
+      <span>5 分钟</span>
     </span>
 </div>
 
@@ -284,47 +284,62 @@
     
     
     <div class="post-body" itemprop="articleBody"><p>《<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2103.14030">Swin Transformer: Hierarchical Vision Transformer using Shifted Windows</a>》作为2021 ICCV最佳论文，屠榜了各大CV任务，性能优于DeiT、ViT和EfficientNet等主干网络，已经替代经典的CNN架构，成为了<strong>计算机视觉领域通用的通用骨干网络</strong>。它基于了ViT模型的思想，创新性的引入了<strong>滑动窗口机制</strong>，让模型能够学习到跨窗口的信息，同时也。同时通过<strong>下采样层</strong>，使得模型能够处理超分辨率的图片，节省计算量以及能够关注全局和局部的信息。</p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110182640059.png" alt="image.png"></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110182640059.png" alt="image.png" /></p>
 <span id="more"></span>
-
-<h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><h5 id="从CNN到Transformer"><a href="#从CNN到Transformer" class="headerlink" title="从CNN到Transformer"></a>从CNN到Transformer</h5><ul>
-<li><p><strong>CNN的局限性：</strong> 虽然CNN在图像识别任务中取得了巨大成功，但它们通常局限于局部感受野，这限制了它们捕获长距离依赖的能力。此外，CNN在处理高分辨率图像时面临着效率和性能的挑战。</p>
+<h2 id="背景"><a class="markdownIt-Anchor" href="#背景"></a> 背景</h2>
+<h5 id="从cnn到transformer"><a class="markdownIt-Anchor" href="#从cnn到transformer"></a> 从CNN到Transformer</h5>
+<ul>
+<li>
+<p><strong>CNN的局限性：</strong> 虽然CNN在图像识别任务中取得了巨大成功，但它们通常局限于局部感受野，这限制了它们捕获长距离依赖的能力。此外，CNN在处理高分辨率图像时面临着效率和性能的挑战。</p>
 </li>
-<li><p><strong>Transformer的优势：</strong> Transformer结构，最初用于NLP任务，以其自注意力机制著称，可以有效处理长距离的依赖关系。这一特性使得Transformer在理解复杂的、全局性的数据结构方面表现出色。</p>
+<li>
+<p><strong>Transformer的优势：</strong> Transformer结构，最初用于NLP任务，以其自注意力机制著称，可以有效处理长距离的依赖关系。这一特性使得Transformer在理解复杂的、全局性的数据结构方面表现出色。</p>
 </li>
 </ul>
-<h5 id="从Transformer到Swin-Transformer"><a href="#从Transformer到Swin-Transformer" class="headerlink" title="从Transformer到Swin Transformer"></a>从Transformer到Swin Transformer</h5><ul>
-<li><p><strong>尺度变化和分辨率问题：</strong> 在计算机视觉领域，尤其是处理高分辨率图像时，面临的主要挑战之一是视觉实体尺度的大变化和像素的高分辨率。这些特点与语言处理中的情况截然不同，因为在文本中，词汇的“分辨率”（即明确性和区分度）相对较低。</p>
+<h5 id="从transformer到swin-transformer"><a class="markdownIt-Anchor" href="#从transformer到swin-transformer"></a> 从Transformer到Swin Transformer</h5>
+<ul>
+<li>
+<p><strong>尺度变化和分辨率问题：</strong> 在计算机视觉领域，尤其是处理高分辨率图像时，面临的主要挑战之一是视觉实体尺度的大变化和像素的高分辨率。这些特点与语言处理中的情况截然不同，因为在文本中，词汇的“分辨率”（即明确性和区分度）相对较低。</p>
 </li>
-<li><p><strong>传统Transformer结构的局限：</strong> 由于这些差异，传统的Transformer结构（如在自然语言处理中使用的那样）直接应用于视觉任务时会遇到效率和性能的挑战。尤其是在处理需要细致像素级预测的高分辨率图像时，传统Transformer的全局自注意力机制导致计算复杂度过高，不适合直接应用于视觉任务。</p>
+<li>
+<p><strong>传统Transformer结构的局限：</strong> 由于这些差异，传统的Transformer结构（如在自然语言处理中使用的那样）直接应用于视觉任务时会遇到效率和性能的挑战。尤其是在处理需要细致像素级预测的高分辨率图像时，传统Transformer的全局自注意力机制导致计算复杂度过高，不适合直接应用于视觉任务。</p>
 </li>
 </ul>
 <p>Swin Transformer 提出了一种基于<strong>滑动窗口机制，具有层级设计（下采样层）</strong> 的模型结构。其中<strong>滑窗操作</strong>包括<strong>不重叠的 local window，和重叠的 cross-window</strong>。将注意力计算限制在一个窗口（window size固定）中，<strong>一方面能引入 CNN 卷积操作的局部性，另一方面能大幅度节省计算量</strong>，它只和窗口数量成线性关系。通过<strong>下采样</strong>的层级设计，能够逐渐增大感受野，从而使得注意力机制也能够注意到<strong>全局</strong>的特征。</p>
-<h2 id="模型结构"><a href="#模型结构" class="headerlink" title="模型结构"></a>模型结构</h2><p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110182648835.png" alt="image.png"></p>
+<h2 id="模型结构"><a class="markdownIt-Anchor" href="#模型结构"></a> 模型结构</h2>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110182648835.png" alt="image.png" /></p>
 <p>整个模型采取层次化的设计，一共包含 4 个 Stage，除第一个 stage 外，每个 stage 都会先通过 <strong>Patch Merging</strong> 层缩小输入特征图的分辨率，进行<strong>下采样操作</strong>，像 CNN 一样逐层扩大感受野，以便获取到全局的信息。</p>
 <ul>
-<li><p>在输入开始的时候，做了一个<code>Patch Partition</code>，即ViT中<code>Patch Embedding</code>操作，通过 <strong>Patch_size</strong> 为4的卷积层将图片切成一个个 <strong>Patch</strong> ，并嵌入到<code>Embedding</code>，将 <strong>embedding_size</strong> 转变为48（可以将 CV 中图片的<strong>通道数</strong>理解为NLP中token的<strong>词嵌入长度</strong>），以swin-s为例，具体是将图像先分割成4 × 4 的小块，然后将每一个小块通过映射成一个像素点，进行了通道上的扩充，输入的224 × 224 图像经过这一步操作就变成了56 × 56的特征图。</p>
+<li>
+<p>在输入开始的时候，做了一个<code>Patch Partition</code>，即ViT中<code>Patch Embedding</code>操作，通过 <strong>Patch_size</strong> 为4的卷积层将图片切成一个个 <strong>Patch</strong> ，并嵌入到<code>Embedding</code>，将 <strong>embedding_size</strong> 转变为48（可以将 CV 中图片的<strong>通道数</strong>理解为NLP中token的<strong>词嵌入长度</strong>），以swin-s为例，具体是将图像先分割成4 × 4 的小块，然后将每一个小块通过映射成一个像素点，进行了通道上的扩充，输入的224 × 224 图像经过这一步操作就变成了56 × 56的特征图。</p>
 </li>
-<li><p>随后在第一个Stage中，通过<code>Linear Embedding</code>调整通道数为C。然后Transformer的输入和输出维度是相同的，所以进入下一个stage的大小是不变的。</p>
+<li>
+<p>随后在第一个Stage中，通过<code>Linear Embedding</code>调整通道数为C。然后Transformer的输入和输出维度是相同的，所以进入下一个stage的大小是不变的。</p>
 </li>
-<li><p>在每个 Stage 里（除第一个 Stage ），均由<code>Patch Merging</code>和多个<code>Swin Transformer Block</code>组成。</p>
+<li>
+<p>在每个 Stage 里（除第一个 Stage ），均由<code>Patch Merging</code>和多个<code>Swin Transformer Block</code>组成。</p>
 </li>
-<li><p>其中<code>Patch Merging</code>模块主要在每个 Stage 一开始降低图片分辨率，进行下采样的操作。H和W各变为二分之一，总共是缩小4分之一，然后通道数增加了4倍（用空间换深度），经过一个全连接层再调整通道维度为原来的2倍，也就是说每经过一个stage，总的数据量变为原来的1&#x2F;2。可以参考下面的示意图（输入张量N&#x3D;1, H&#x3D;W&#x3D;8, C&#x3D;1，不包含最后的全连接层调整）。</p>
+<li>
+<p>其中<code>Patch Merging</code>模块主要在每个 Stage 一开始降低图片分辨率，进行下采样的操作。H和W各变为二分之一，总共是缩小4分之一，然后通道数增加了4倍（用空间换深度），经过一个全连接层再调整通道维度为原来的2倍，也就是说每经过一个stage，总的数据量变为原来的1/2。可以参考下面的示意图（输入张量N=1, H=W=8, C=1，不包含最后的全连接层调整）。</p>
 </li>
 </ul>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110182658508.png" alt="image.png"></p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110182704756.png" alt="image.png"></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110182658508.png" alt="image.png" /></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110182704756.png" alt="image.png" /></p>
 <ul>
 <li>而<code>Swin Transformer Block</code>具体结构如右图所示，主要是<code>LayerNorm</code>，<code>Window Attention</code> ，<code>Shifted Window Attention</code>和<code>MLP</code>组成 。</li>
 </ul>
-<h3 id="Window-Attention-和-Shift-Window-Attention"><a href="#Window-Attention-和-Shift-Window-Attention" class="headerlink" title="Window Attention 和 Shift Window Attention"></a><strong>Window Attention 和 Shift Window Attention</strong></h3><p>这是这篇文章的关键。传统的Transformer都是基于全局来计算注意力的，因此计算复杂度十分高。而Swin Transformer则将注意力的计算限制在每个窗口内，进而减少了计算量。</p>
+<h3 id="window-attention-和-shift-window-attention"><a class="markdownIt-Anchor" href="#window-attention-和-shift-window-attention"></a> <strong>Window Attention 和 Shift Window Attention</strong></h3>
+<p>这是这篇文章的关键。传统的Transformer都是基于全局来计算注意力的，因此计算复杂度十分高。而Swin Transformer则将注意力的计算限制在每个窗口内，进而减少了计算量。</p>
 <p>window attention就是按照一定的尺寸将图像划分为不同的window，每次transformer的attention只在window内部进行计算。</p>
 <p>那么如果只有window attention就会带来每一个像素点的感受野得不到提升的问题，为了更好的和其他 window 进行信息交互，所以它又设计了一个shift window attention（下移两个patchs）的方法，就是换一下window划分的方式，让每一个像素点做attention计算的window块处于变化之中。那么就起到了提升感受野的作用。</p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110182712651.png" alt="image.png"></p>
-<h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><ul>
-<li><p>﻿<a target="_blank" rel="noopener" href="https://blog.csdn.net/gailj/article/details/123664828">经典论文阅读笔记——VIT、Swin Transformer、MAE、CILP_clip与vit的关系-CSDN博客</a>﻿</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110182712651.png" alt="image.png" /></p>
+<h2 id="参考链接"><a class="markdownIt-Anchor" href="#参考链接"></a> 参考链接</h2>
+<ul>
+<li>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/gailj/article/details/123664828">经典论文阅读笔记——VIT、Swin Transformer、MAE、CILP_clip与vit的关系-CSDN博客</a></p>
 </li>
-<li><p>﻿<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/367111046">https://zhuanlan.zhihu.com/p/367111046</a></p>
+<li>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/367111046">https://zhuanlan.zhihu.com/p/367111046</a></p>
 </li>
 </ul>
 
@@ -384,14 +399,14 @@
       <i class="fa fa-chart-line"></i>
     </span>
       <span>站点总字数：</span>
-    <span title="站点总字数">75k</span>
+    <span title="站点总字数">197k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span>站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">1:08</span>
+    <span title="站点阅读时长">11:56</span>
   </span>
 </div>
 <div class="busuanzi-count">
@@ -412,8 +427,7 @@
       </span>
     </span>
 </div>
-  <div class="powered-by">
-    <!--由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动 -->
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
   </div>
 
     </div>
@@ -454,6 +468,13 @@
   <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 
 
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">false</script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" integrity="sha256-UF1fgpAiu3tPJN/uCqEUHNe7pnr+QR0SQDNfgglgtcM=" crossorigin="anonymous">
+  <script class="next-config" data-name="katex" type="application/json">{"copy_tex_js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/copy-tex.min.js","integrity":"sha256-Us54+rSGDSTvIhKKUs4kygE2ipA0RXpWWh0/zLqw3bs="}}</script>
+  <script src="/js/third-party/math/katex.js"></script>
 
 
 
