@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="https://avatars.githubusercontent.com/u/55233584?v=4">
+  <link rel="icon" type="image/png" sizes="32x32" href="https://avatars.githubusercontent.com/u/55233584?v=4">
+  <link rel="icon" type="image/png" sizes="16x16" href="https://avatars.githubusercontent.com/u/55233584?v=4">
+  <link rel="mask-icon" href="https://avatars.githubusercontent.com/u/55233584?v=4" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-minimal.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"luyiyun1021.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.22.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="github仓库: https:&#x2F;&#x2F;github.com&#x2F;deepseek-ai&#x2F;DeepSeek-R1 论文链接: https:&#x2F;&#x2F;github.com&#x2F;deepseek-ai&#x2F;DeepSeek-R1&#x2F;blob&#x2F;main&#x2F;DeepSeek_R1.pdf  1.背景  2025年01月20日，DeepSeek 发布了两个参数为 660B 的 DeepSeek-R1-Zero 和 DeepSeek-">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Deepseek-R">
+<meta property="og:url" content="https://luyiyun1021.github.io/2025/02/12/Deepseek-R/index.html">
+<meta property="og:site_name" content="Ronny Lu&#39;s blog">
+<meta property="og:description" content="github仓库: https:&#x2F;&#x2F;github.com&#x2F;deepseek-ai&#x2F;DeepSeek-R1 论文链接: https:&#x2F;&#x2F;github.com&#x2F;deepseek-ai&#x2F;DeepSeek-R1&#x2F;blob&#x2F;main&#x2F;DeepSeek_R1.pdf  1.背景  2025年01月20日，DeepSeek 发布了两个参数为 660B 的 DeepSeek-R1-Zero 和 DeepSeek-">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250212180418096.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250212180427508.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250212180435310.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250212180450592.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250212180459577.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250212180509155.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250212180519778.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250212180528404.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250212181210593.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250212181218431.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250212181230011.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250212181236877.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250212181243368.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250212181249836.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250212181256260.png">
+<meta property="article:published_time" content="2025-02-12T10:13:21.000Z">
+<meta property="article:modified_time" content="2025-02-12T11:33:25.136Z">
+<meta property="article:author" content="Ronny Lu">
+<meta property="article:tag" content="大模型">
+<meta property="article:tag" content="论文精读">
+<meta property="article:tag" content="nlp">
+<meta property="article:tag" content="Deepseek">
+<meta property="article:tag" content="强化学习">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250212180418096.png">
+
+
+<link rel="canonical" href="https://luyiyun1021.github.io/2025/02/12/Deepseek-R/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://luyiyun1021.github.io/2025/02/12/Deepseek-R/","path":"2025/02/12/Deepseek-R/","title":"Deepseek-R"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Deepseek-R | Ronny Lu's blog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<style>.darkmode--activated{--body-bg-color:#282828;--content-bg-color:#333;--card-bg-color:#555;--text-color:#ccc;--blockquote-color:#bbb;--link-color:#ccc;--link-hover-color:#eee;--brand-color:#ddd;--brand-hover-color:#ddd;--table-row-odd-bg-color:#282828;--table-row-hover-bg-color:#363636;--menu-item-bg-color:#555;--btn-default-bg:#222;--btn-default-color:#ccc;--btn-default-border-color:#555;--btn-default-hover-bg:#666;--btn-default-hover-color:#ccc;--btn-default-hover-border-color:#666;--highlight-background:#282b2e;--highlight-foreground:#a9b7c6;--highlight-gutter-background:#34393d;--highlight-gutter-foreground:#9ca9b6}.darkmode--activated img{opacity:.75}.darkmode--activated img:hover{opacity:.9}.darkmode--activated code{color:#69dbdc;background:0 0}button.darkmode-toggle{z-index:9999}.darkmode-ignore,img{display:flex!important}.beian img{display:inline-block!important}</style></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Ronny Lu's blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#1%E8%83%8C%E6%99%AF"><span class="nav-number">1.</span> <span class="nav-text"> 1.背景</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2deepseek%E4%B8%BA%E4%BB%80%E4%B9%88%E7%81%AB"><span class="nav-number">2.</span> <span class="nav-text"> 2.DeepSeek为什么火</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%AE%BA%E6%96%87"><span class="nav-number">3.</span> <span class="nav-text"> 论文</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E7%A0%94%E7%A9%B6%E8%83%8C%E6%99%AF%E4%B8%8E%E5%8A%A8%E6%9C%BA"><span class="nav-number">3.1.</span> <span class="nav-text"> 1. 研究背景与动机</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E7%A0%94%E7%A9%B6%E6%96%B9%E6%B3%95"><span class="nav-number">3.2.</span> <span class="nav-text"> 2. 研究方法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#21-deepseek-r1-zero%E5%9F%BA%E4%BA%8E%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0%E7%9A%84%E6%8E%A8%E7%90%86%E8%83%BD%E5%8A%9B%E6%8F%90%E5%8D%87"><span class="nav-number">3.2.1.</span> <span class="nav-text"> 2.1 DeepSeek-R1-Zero：基于强化学习的推理能力提升</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E4%BA%9B%E6%84%9F%E5%8F%97"><span class="nav-number">3.3.</span> <span class="nav-text"> 一些感受</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#22-deepseek-r1%E7%BB%93%E5%90%88%E5%86%B7%E5%90%AF%E5%8A%A8%E6%95%B0%E6%8D%AE%E7%9A%84%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0"><span class="nav-number">3.3.1.</span> <span class="nav-text"> 2.2 DeepSeek-R1：结合冷启动数据的强化学习</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%98%B6%E6%AE%B51-%E5%86%B7%E5%90%AF%E5%8A%A8"><span class="nav-number">3.3.2.</span> <span class="nav-text"> 阶段1: 冷启动</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%98%B6%E6%AE%B52-%E6%8E%A8%E7%90%86%E5%AF%BC%E5%90%91%E7%9A%84%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0"><span class="nav-number">3.3.3.</span> <span class="nav-text"> 阶段2: 推理导向的强化学习</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%98%B6%E6%AE%B53-%E6%8B%92%E7%BB%9D%E9%87%87%E6%A0%B7%E5%92%8C-sft"><span class="nav-number">3.3.4.</span> <span class="nav-text"> 阶段3: 拒绝采样和 SFT</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%98%B6%E6%AE%B54-%E6%89%80%E6%9C%89%E5%9C%BA%E6%99%AF%E4%B8%8B%E7%9A%84%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0"><span class="nav-number">3.3.5.</span> <span class="nav-text"> 阶段4: 所有场景下的强化学习</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A4%9A%E9%98%B6%E6%AE%B5%E8%AE%AD%E7%BB%83%E7%9A%84%E6%A0%B8%E5%BF%83%E8%A7%81%E8%A7%A3"><span class="nav-number">3.3.6.</span> <span class="nav-text"> 多阶段训练的核心见解</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#23-deepseek-r1%E7%9F%A5%E8%AF%86%E8%92%B8%E9%A6%8F%E5%B0%86%E6%8E%A8%E7%90%86%E8%83%BD%E5%8A%9B%E8%B5%8B%E4%BA%88%E5%B0%8F%E5%9E%8B%E6%A8%A1%E5%9E%8B"><span class="nav-number">3.3.7.</span> <span class="nav-text"> 2.3 DeepSeek-R1知识蒸馏：将推理能力赋予小型模型</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%92%B8%E9%A6%8F%E5%B0%8F%E6%A8%A1%E5%9E%8B"><span class="nav-number">3.4.</span> <span class="nav-text"> 蒸馏小模型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E5%AE%9E%E9%AA%8C%E7%BB%93%E6%9E%9C"><span class="nav-number">3.5.</span> <span class="nav-text"> 3. 实验结果</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#31-deepseek-r1-zero%E8%AF%84%E4%BC%B0"><span class="nav-number">3.5.1.</span> <span class="nav-text"> 3.1 DeepSeek-R1-Zero评估</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#32-deepseek-r1%E8%AF%84%E4%BC%B0"><span class="nav-number">3.5.2.</span> <span class="nav-text"> 3.2 DeepSeek-R1评估</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#33-deepseek-r1%E8%92%B8%E9%A6%8F%E6%A8%A1%E5%9E%8B%E8%AF%84%E4%BC%B0"><span class="nav-number">3.5.3.</span> <span class="nav-text"> 3.3 DeepSeek-R1蒸馏模型评估</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E8%AE%A8%E8%AE%BA"><span class="nav-number">3.6.</span> <span class="nav-text"> 4. 讨论</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#41-%E7%9F%A5%E8%AF%86%E8%92%B8%E9%A6%8F%E4%B8%8E%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0"><span class="nav-number">3.6.1.</span> <span class="nav-text"> 4.1 知识蒸馏与强化学习</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#42-%E6%9C%AA%E6%88%90%E5%8A%9F%E7%9A%84%E5%B0%9D%E8%AF%95"><span class="nav-number">3.6.2.</span> <span class="nav-text"> 4.2 未成功的尝试</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88-prm-%E5%92%8C-mcts-%E6%B2%A1%E6%9C%89%E6%88%90%E5%8A%9F"><span class="nav-number">3.6.2.1.</span> <span class="nav-text"> 为什么 PRM 和 MCTS 没有成功？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#prm-%E7%9A%84%E6%8C%91%E6%88%98"><span class="nav-number">3.6.2.2.</span> <span class="nav-text"> PRM 的挑战</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#mcts-%E7%9A%84%E6%8C%91%E6%88%98"><span class="nav-number">3.6.2.3.</span> <span class="nav-text"> MCTS 的挑战</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#43-%E7%BB%93%E8%AE%BA-%E9%99%90%E5%88%B6%E4%B8%8E%E6%9C%AA%E6%9D%A5%E5%B7%A5%E4%BD%9C"><span class="nav-number">3.6.3.</span> <span class="nav-text"> 4.3 结论、限制与未来工作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#44-r1-zero%E5%90%AF%E7%94%A8%E4%BA%86%E6%96%B0%E7%9A%84%E8%AE%AD%E7%BB%83%E8%8C%83%E5%BC%8F%E5%8F%AA%E4%BD%BF%E7%94%A8rl%E7%9C%81%E7%95%A5sft"><span class="nav-number">3.6.4.</span> <span class="nav-text"> 4.4 R1-Zero启用了新的训练范式：只使用RL，省略SFT</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E5%B0%8F%E7%BB%93%E4%B8%8E%E6%80%9D%E8%80%83"><span class="nav-number">3.7.</span> <span class="nav-text"> 5. 小结与思考</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-%E9%99%84%E5%BD%95"><span class="nav-number">3.8.</span> <span class="nav-text"> 6… 附录</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#61-deepseek-r1%E7%9F%A5%E8%AF%86%E8%92%B8%E9%A6%8F%E6%88%90%E6%9C%AC%E9%A2%84%E4%BC%B0"><span class="nav-number">3.8.1.</span> <span class="nav-text"> 6.1 DeepSeek-R1知识蒸馏成本预估</span></a></li></ol></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Ronny Lu"
+      src="https://avatars.githubusercontent.com/u/55233584?v=4">
+  <p class="site-author-name" itemprop="name">Ronny Lu</p>
+  <div class="site-description" itemprop="description">Tech notes on LLM, LLM Infra, and others</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">55</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">14</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/02/12/Deepseek-R/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
+      <meta itemprop="name" content="Ronny Lu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ronny Lu's blog">
+      <meta itemprop="description" content="Tech notes on LLM, LLM Infra, and others">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Deepseek-R | Ronny Lu's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Deepseek-R
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-02-12 18:13:21 / 修改时间：19:33:25" itemprop="dateCreated datePublished" datetime="2025-02-12T18:13:21+08:00">2025-02-12</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">大模型</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E8%AE%BA%E6%96%87%E7%B2%BE%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">论文精读</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E8%AE%BA%E6%96%87%E7%B2%BE%E8%AF%BB/nlp/" itemprop="url" rel="index"><span itemprop="name">nlp</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>5.2k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>19 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>github仓库: <a target="_blank" rel="noopener" href="https://github.com/deepseek-ai/DeepSeek-R1">https://github.com/deepseek-ai/DeepSeek-R1</a></p>
+<p>论文链接: <a target="_blank" rel="noopener" href="https://github.com/deepseek-ai/DeepSeek-R1/blob/main/DeepSeek_R1.pdf">https://github.com/deepseek-ai/DeepSeek-R1/blob/main/DeepSeek_R1.pdf</a></p>
+<h1 id="1背景"><a class="markdownIt-Anchor" href="#1背景"></a> 1.背景</h1>
+<hr />
+<p>2025年01月20日，DeepSeek 发布了两个参数为 660B 的 DeepSeek-R1-Zero 和 DeepSeek-R1，并选择开源了模型权重，同时允许用户使用 R1 来训练其他模型。</p>
+<ul>
+<li>
+<p>开源 <strong>DeepSeek-R1</strong> 推理大模型，与 o1 性能相近。‍‍</p>
+</li>
+<li>
+<p>开源 <strong>DeepSeek-R1-Zero</strong>，预训练模型直接 RL，不走 SFT。</p>
+</li>
+<li>
+<p>开源用 R1 <strong>数据蒸馏</strong>的 Qwen、Llama 系列小模型，蒸馏模型超过 o1-mini 和 QWQ。</p>
+</li>
+</ul>
+<p>模型开源的同时，技术报告也同步放出： <a href="https://link.zhihu.com/?target=https%3A//github.com/deepseek-ai/DeepSeek-R1/blob/main/DeepSeek_R1.pdf">DeepSeek-R1: Incentivizing Reasoning Capability in LLMs viaReinforcement Learning</a></p>
+<p>在技术层面，R1 在后训练阶段大规模使用了强化学习（RL）技术，在仅用非常少标注数据的情况下，极大提升了模型推理能力。下图为 R1 与 o1-1217、o1-mini、自家 DeepSeek-V3 在多个数据集上的性能比较，可以看到，R1 与 o1-1217 不相上下、互有胜负。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250212180418096.png" alt="image.png" /></p>
+<p>另外，使用 DeepSeek-R1 整理的 <strong>80 万个样本</strong>对 Qwen 和 Llama 等开源模型进行了微调，蒸馏出了六个小模型，参数从小到大分别为 1.5B、7B、8B、14B、32B 以及 70B。这六个模型同样完全开源，旨在回馈开源社区，推动「Open AI」的边界。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250212180427508.png" alt="image.png" /></p>
+<p>模型下载地址：<a target="_blank" rel="noopener" href="https://huggingface.co/deepseek-ai?continueFlag=f18057c998f54575cb0608a591c993fb">https://huggingface.co/deepseek-ai?continueFlag=f18057c998f54575cb0608a591c993fb</a></p>
+<p>性能方面，蒸馏后的 R1 32B 和 70B 版本远远超过了 GPT-4o、Claude 3.5 Sonnet 和 QwQ-32B，并逼近 o1-mini。<br />
+<img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250212180435310.png" alt="image.png" /></p>
+<p>至于很多开发者关心的 DeepSeek-R1 API 价格，可以说是一如既往地给力。</p>
+<p>DeepSeek-R1 API 服务的定价为每百万输入 tokens 1 元（缓存命中）/ 4 元（缓存未命中），每百万输出 tokens 16 元。</p>
+<p>与 o1 的 API 定价比起来（每百万输入 tokens 15 美元、每百万输出 tokens 60 美元），DeepSeek 具有极高的性价比。</p>
+<span id="more"></span>
+<h1 id="2deepseek为什么火"><a class="markdownIt-Anchor" href="#2deepseek为什么火"></a> 2.DeepSeek为什么火</h1>
+<p>一个是证明了一众小模型（低至1.5B）也可以实现深度推理，这也就意味着没有显卡储备的普通的学生也可以在自己电脑上做实验。</p>
+<p>其次，对于企业而言，价格低到几乎可以忽略不计的使用成本，完全可以打消投入产出比的顾虑。</p>
+<ul>
+<li>DeepSeek 同步上线的 R1 模型的 API，价格只有 o1 模型的 5%。</li>
+</ul>
+<p>第三，推理模型的开源，代码流程公开透明，使得不管是普通开发者还是企业部署，都有了灵活可定制自身推理模型的潜力。</p>
+<p>第四，DeepSeek-R1的爆火，已经冲击了全球的算力的逻辑。</p>
+<blockquote>
+<p>“大型科技公司在AI上投入了大量资金，几乎达到了一国政府预算的规模，但一直存在一个问题，即产生的回报能否与其投资规模相匹配。“</p>
+</blockquote>
+<p>据报道，DeepSeek实验室只花了560万美元来建造DeepSeek V3。相比之下，OpenAI每年花费50亿美元，而谷歌预计2024年的资本支出将飙升至超过500亿美元。还有微软，仅投资OpenAI就花费了超过130亿美元。</p>
+<p>所以总结来看，R1的爆火在于解决了以o1为代表的大模型现存的几大问题：太贵、部署门槛高、不透明、灵活性差（不可定制）。R1 解决了所有问题。</p>
+<h1 id="论文"><a class="markdownIt-Anchor" href="#论文"></a> 论文</h1>
+<h2 id="1-研究背景与动机"><a class="markdownIt-Anchor" href="#1-研究背景与动机"></a> 1. 研究背景与动机</h2>
+<p>近年来，大型语言模型（LLMs）在人工智能领域快速发展，逐渐接近人工通用智能（AGI）。</p>
+<p>然而，尽管模型规模不断扩大，其<strong>推理能力</strong>仍面临挑战。</p>
+<ul>
+<li>
+<p>推理能力：指模型在解决复杂问题时，能够通过<strong>逻辑思考</strong>、<strong>多步骤分析</strong>等方式得出正确答案的能力。</p>
+</li>
+<li>
+<p>数学问题、编程任务和科学推理等领域</p>
+</li>
+</ul>
+<p>以往的研究通常依赖于大量的监督数据来提升模型的推理能力，但这种方法存在局限性：</p>
+<ul>
+<li>
+<p>收集和标注监督数据需要大量的<strong>人力和时间成本</strong>；</p>
+</li>
+<li>
+<p>监督学习可能无法充分发挥模型的<strong>自我进化能力</strong>。</p>
+</li>
+</ul>
+<h2 id="2-研究方法"><a class="markdownIt-Anchor" href="#2-研究方法"></a> <strong>2. 研究方法</strong></h2>
+<h3 id="21-deepseek-r1-zero基于强化学习的推理能力提升"><a class="markdownIt-Anchor" href="#21-deepseek-r1-zero基于强化学习的推理能力提升"></a> 2.1 DeepSeek-R1-Zero：基于强化学习的推理能力提升</h3>
+<p>DeepSeek-R1-Zero是通过强化学习直接对基础模型进行训练，而无需监督微调（SFT）作为预处理步骤。</p>
+<p>作者采用了GRPO算法，这是一种高效的强化学习算法，通过比较同一问题的不同回答来优化模型的策略。</p>
+<ul>
+<li>
+<p>**出处：**DeepSeekMath: Pushing the Limits of Mathematical Reasoning in Open Language Models中提出，主要目的是降低RL的训练算力消耗和简化主流RL算法例如PPO。</p>
+</li>
+<li>
+<p>GRPO算法的核心思想是通过采样一组输出，计算这些输出的奖励，并根据奖励的相对值来更新模型参数。</p>
+</li>
+<li>
+<p>不需要Value Model的训练。</p>
+</li>
+<li>
+<p>**直观理解：**模型奖励好于群体平均的策略，打压差于群体平均的策略。</p>
+</li>
+</ul>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250212180450592.png" alt="image.png" /></p>
+<p><strong>2.1.2 奖励建模</strong></p>
+<p>为了训练DeepSeek-R1-Zero，作者设计了一个基于规则的奖励系统，主要包括<strong>准确性</strong>和<strong>格式</strong>两个方面的奖励。</p>
+<ul>
+<li>
+<p><strong>准确率奖励</strong>：准确率奖励模型评估响应是否正确。例如，</p>
+<ul>
+<li>
+<p>在具有确定性结果的数学问题中，模型需要以指定的格式提供最终答案，从而能够通过基于规则的验证来可靠地确认正确性。</p>
+</li>
+<li>
+<p>对于 LeetCode 问题，可以使用编译器根据预定义的测试用例生成反馈。</p>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>格式奖励</strong>: 要求模型将思考过程放在特定的标签（如<code>&lt;think&gt;</code>和<code>&lt;/think&gt;</code>）之间</p>
+</li>
+</ul>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250212180459577.png" alt="image.png" /></p>
+<p><strong>在没有大量带「过程标签」（step-by-step annotation）的数据支撑下，模型如何知道自己的推理过程是否正确？</strong></p>
+<ul>
+<li>这里主要通过「结果判定」的方式：对于数学题、编程题等有客观正确答案的任务，可以把最终答案与标准结果对比给出奖励。</li>
+</ul>
+<p><strong>2.1.3 训练模板</strong></p>
+<p>作者设计了一个简单的模板来指导模型的输出格式：模型首先需要生成一个推理过程，然后给出最终答案。</p>
+<p>这种模板设计避免了对内容的具体限制，以便观察模型在强化学习过程中的自然演变。</p>
+<p><strong>2.1.4 性能表现与自我进化</strong></p>
+<p>DeepSeek-R1-Zero在训练过程中表现出显著的性能提升。</p>
+<ul>
+<li>
+<p>在AIME 2024基准测试中，模型的Pass@1分数从15.6%提升到71.0%，并且通过多数投票进一步提升到86.7%，与OpenAI的o1-0912模型相当。</p>
+</li>
+<li>
+<p>此外，模型在训练过程中自然地发展出了复杂的推理行为，如反思和探索多种解题方法。</p>
+</li>
+</ul>
+<p>不过 DeepSeek-R1-Zero 仍然存在一些局限性，如<strong>回答的可读性差、语言混杂</strong>等问题。</p>
+<p><strong>强化学习可以不依赖人类反馈，纯 RL 也能训练出最强的 Reasoning 模型</strong>。</p>
+<h2 id="一些感受"><a class="markdownIt-Anchor" href="#一些感受"></a> 一些感受</h2>
+<p><strong>想要超越人类，必须让模型摆脱人类经验、好恶判断的限制</strong>，只有这样才能让模型 真正超越人类的束缚。</p>
+<p>AI 终于除掉了人类反馈的枷锁。DeepSeek R1-Zero 展示了如何使用几乎不使用人类反馈来提升模型性能的方法。很多人曾说“人工智能，有多少人工就有多少智能”，这个观点可能不再正确了。如果模型能根据直角三角形推导出勾股定理，我们有理由相信它终有一天，能推导出现有数学家尚未发现的定理。</p>
+<h3 id="22-deepseek-r1结合冷启动数据的强化学习"><a class="markdownIt-Anchor" href="#22-deepseek-r1结合冷启动数据的强化学习"></a> 2.2 DeepSeek-R1：结合冷启动数据的强化学习</h3>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250212180509155.png" alt="image.png" /></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250212180519778.png" alt="image.png" /></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250212180528404.png" alt="image.png" /></p>
+<p>整体流程：</p>
+<p>DeepSeek-R1 使用了冷启动 + 多阶段训练的方式：</p>
+<ul>
+<li>
+<p>阶段1：使用少量高质量的 CoT 数据进行冷启动，预热模型。</p>
+</li>
+<li>
+<p>阶段2：进行面向推理的强化学习，提升模型在推理任务上的性能。</p>
+</li>
+<li>
+<p>阶段3：使用拒绝采样和监督微调，进一步提升模型的综合能力。</p>
+</li>
+<li>
+<p>阶段4：再次进行强化学习，使模型在所有场景下都表现良好。</p>
+</li>
+</ul>
+<h3 id="阶段1-冷启动"><a class="markdownIt-Anchor" href="#阶段1-冷启动"></a> 阶段1: 冷启动</h3>
+<p>冷启动阶段使用少量高质量的 CoT 数据对基础模型进行微调，作为 RL 训练的初始起点。侧重点是让模型掌握基本的 CoT 推理能力，并使模型的输出更具可读性。</p>
+<p><strong>数据收集：</strong></p>
+<p>为了获取这些数据，deepseek 探索了几种策略：</p>
+<ul>
+<li>
+<p>利用长思维回答作为 few-shot 示例</p>
+</li>
+<li>
+<p>直接提示模型生成包含反思和验证步骤的详细答案</p>
+</li>
+<li>
+<p>收集 DeepSeek-R1-Zero 的输出并通过人工标注者进行细化</p>
+</li>
+</ul>
+<p>最终收集了数千条冷启动数据，用以微调 DeepSeek-V3-Base 作为 RL 训练的起点。DeepSeek-R1 创建的冷启动数据采用了一种可读模式，明确将输出格式定义为：<code>|special_token|&lt;reasoning_process&gt;|special_token|&lt;summary&gt;</code>。</p>
+<p><strong>训练重点：</strong></p>
+<ul>
+<li>
+<p><strong>可读性</strong>：冷启动数据使用更易于理解的格式，输出内容更适合人类阅读，避免了 DeepSeek-R1-Zero 输出的语言混合、格式混乱等问题。</p>
+</li>
+<li>
+<p><strong>潜在性能</strong>：通过精心设计冷启动数据的模式，可以引导模型产生更好的推理能力。</p>
+</li>
+<li>
+<p><strong>稳定训练</strong>：使用 SFT 数据作为起始点，可以避免 RL 训练早期阶段的不稳定问题。</p>
+</li>
+</ul>
+<p><strong>阶段成果：</strong></p>
+<ul>
+<li><strong>强化学习的稳固基础</strong> ，减少后续训练中的不稳定性。</li>
+</ul>
+<h3 id="阶段2-推理导向的强化学习"><a class="markdownIt-Anchor" href="#阶段2-推理导向的强化学习"></a> 阶段2: 推理导向的强化学习</h3>
+<p>在冷启动模型的基础上进行 RL 训练，侧重点是提升模型在推理任务上的性能。</p>
+<p>在该阶段，引入 <strong>GRPO</strong> 以提升模型在 <strong>数学、编程和结构化问题求解</strong> 方面的推理能力。</p>
+<ul>
+<li>
+<p><strong>奖励函数: 推理任务的准确性 + 语言一致性奖励</strong></p>
+</li>
+<li>
+<p><strong>规则奖励（Rule-Based Rewards）</strong> ：</p>
+<ul>
+<li>
+<p>强调 <strong>准确性</strong> （如解决编程问题、验证数学结果）。</p>
+</li>
+<li>
+<p>设定 <strong>格式化规则</strong> ，确保清晰表达（如用特定标签 <code>&lt;reasoning&gt;</code> 包围思考过程）。</p>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>新奖励信号（New Reward Signal）</strong> ：</p>
+<ul>
+<li><strong>“语言一致性”奖励</strong> ，鼓励模型在整个输出过程中保持相同语言风格。根据思维链（CoT）中<strong>目标语言单词的比例</strong>来计算，以减少推理过程中的语言混合问题。</li>
+</ul>
+</li>
+<li>
+<p><strong>阶段成果：</strong></p>
+<ul>
+<li><strong>推理能力显著提升</strong> ，在 <strong>AIME 2024</strong> 竞赛中 <strong>pass@1 分数提升至 71.0%</strong> 。</li>
+</ul>
+</li>
+</ul>
+<h3 id="阶段3-拒绝采样和-sft"><a class="markdownIt-Anchor" href="#阶段3-拒绝采样和-sft"></a> 阶段3: 拒绝采样和 SFT</h3>
+<p>与初期主要关注推理能力的冷启动数据不同，这一阶段加入了其他领域的数据，旨在增强模型在写作、角色扮演以及其他<strong>通用任务</strong>上的表现。</p>
+<p>当 RL 训练接近收敛时，使用中间的 checkpoint 来采样监督微调（SFT）数据。具体步骤如下：</p>
+<ul>
+<li>
+<p>对于推理数据，构建推理 prompt，并从上述 RL 训练的 checkpoint 中进行拒绝采样，以生成推理轨迹。</p>
+<ul>
+<li>
+<p>在之前的阶段，仅使用了基于规则的奖励来评估数据。然而，在这个阶段，通过添加其他数据来丰富数据集，其中部分数据使用了<strong>生成奖励模型</strong>，通过将真实值和模型预测输入 DeepSeek-V3 进行判断。</p>
+</li>
+<li>
+<p>为了提升数据质量，过滤掉混合语言、长段落的思维链。</p>
+</li>
+<li>
+<p>对于每个提示，采样多个响应，并仅保留正确的响应。最终，收集了大约<strong>60万</strong>个与推理相关的训练样本。</p>
+</li>
+</ul>
+</li>
+<li>
+<p>对于非推理数据，如写作、问答、翻译等任务，使用 DeepSeek-V3 SFT 数据集的一部分。</p>
+<ul>
+<li>
+<p>对于简单的 query，如“你好”，不使用思维链作为回答。</p>
+</li>
+<li>
+<p>经过筛选和整理，最终收集了大约<strong>20万</strong>个与推理无关的训练样本。</p>
+</li>
+</ul>
+</li>
+</ul>
+<p>最终，使用大约<strong>80万</strong>个样本（60w推理+20w通用）对 DeepSeek-v3-Base 模型进行了两轮的 SFT。</p>
+<ul>
+<li>
+<p><strong>阶段成果：</strong></p>
+<ul>
+<li><strong>模型在更广泛任务上的通用性和连贯性增强</strong> 。</li>
+</ul>
+</li>
+</ul>
+<h3 id="阶段4-所有场景下的强化学习"><a class="markdownIt-Anchor" href="#阶段4-所有场景下的强化学习"></a> 阶段4: 所有场景下的强化学习</h3>
+<p>为了进一步使模型与人类偏好保持一致，这里还要实施第二阶段强化学习，旨在提高模型的<strong>有用性和无害性</strong>，同时完善其推理能力。</p>
+<p>具体来说，研究人员使用<strong>奖励信号和各种提示分布的组合</strong>来训练模型:</p>
+<ul>
+<li>
+<p>对于推理数据，遵循 DeepSeek-R1-Zero 中概述的方法，该方法利用基于规则的奖励来指导数学、代码和逻辑推理领域的学习过程；</p>
+</li>
+<li>
+<p>对于一般数据，则采用奖励模型来捕捉复杂而微妙的场景中的人类偏好。</p>
+</li>
+</ul>
+<h3 id="多阶段训练的核心见解"><a class="markdownIt-Anchor" href="#多阶段训练的核心见解"></a> <strong>多阶段训练的核心见解</strong></h3>
+<p>早期 SFT 稳定 RL 训练：</p>
+<ul>
+<li>在强化学习前进行 <strong>监督微调</strong> 可 <strong>减少训练不稳定性</strong> ，加速收敛。</li>
+</ul>
+<p>规则奖励机制高效：</p>
+<ul>
+<li><strong>简单、针对性的奖励</strong> （如准确性、格式要求）往往 <strong>比复杂奖励模型更有效</strong> 。</li>
+</ul>
+<p>拒绝采样提升模型适应性：</p>
+<ul>
+<li>通过 <strong>拒绝采样生成合成数据</strong> ，可以 <strong>增强模型的泛化能力</strong> ，适应不同任务。</li>
+</ul>
+<p>通过 <strong>在 SFT 和 RL 之间</strong> <strong>交替训练</strong> ，DeepSeek 团队成功 <strong>解决了强化学习的冷启动问题及任务过拟合问题</strong> ，使 DeepSeek R1 在推理和更广泛的应用场景中都能表现卓越。</p>
+<h3 id="23-deepseek-r1知识蒸馏将推理能力赋予小型模型"><a class="markdownIt-Anchor" href="#23-deepseek-r1知识蒸馏将推理能力赋予小型模型"></a> 2.3 DeepSeek-R1知识蒸馏：将推理能力赋予小型模型</h3>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250212181210593.png" alt="image.png" /></p>
+<h2 id="蒸馏小模型"><a class="markdownIt-Anchor" href="#蒸馏小模型"></a> 蒸馏小模型</h2>
+<p>为了获得更高效的小模型，并使其具有 DeekSeek-R1 的推理能力，直接对 Qwen 和 Llama 等开源模型进行了微调，使用的是上面 SFT DeepSeek-R1 的80万数据。研究结果表明，这种直接蒸馏方法显著提高了小模型的推理能力。</p>
+<ul>
+<li>在这里使用的基座模型是 Qwen2.5-Math-1.5B、Qwen2.5-Math-7B、Qwen2.5-14B、Qwen2.5-32B、Llama-3.1-8B 和 Llama-3.3-70B-Instruct。</li>
+</ul>
+<p><strong>为什么在蒸馏到小模型时，直接用 RL 在小模型上训练不如先做大模型再蒸馏？</strong></p>
+<ul>
+<li>
+<p>大模型在 RL 阶段可能出现许多高阶推理模式。而小模型因为容量和表示能力有限，很难在无监督或纯 RL 情境下学到相似水平的推理模式。</p>
+</li>
+<li>
+<p>蒸馏可将「大模型的推理轨迹」直接转移给小模型，小模型只需要模仿大模型相对完备的推理流程，可以在较小训练/推理开销下取得远胜于自身独立强化学习的效果。</p>
+</li>
+</ul>
+<p>在蒸馏模型的实现中，仅采用了 SFT 阶段，而未包含 RL 阶段，尽管 RL 的加入能显著提升模型性能。</p>
+<ul>
+<li>核心目的在于展示<strong>蒸馏技术的有效性</strong>。</li>
+</ul>
+<h2 id="3-实验结果"><a class="markdownIt-Anchor" href="#3-实验结果"></a> 3. 实验结果</h2>
+<h3 id="31-deepseek-r1-zero评估"><a class="markdownIt-Anchor" href="#31-deepseek-r1-zero评估"></a> 3.1 DeepSeek-R1-Zero评估</h3>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250212181218431.png" alt="image.png" /></p>
+<p><strong>3.1.1 推理任务性能</strong></p>
+<ul>
+<li>
+<p><strong>AIME 2024</strong>：DeepSeek-R1-Zero 在 AIME 2024 基准测试中的 <strong>Pass@1 分数从 15.6% 提升到 71.0%</strong>，通过多数投票进一步提升到 <strong>86.7%</strong>，与 OpenAI-o1-0912 的性能相当（见表 2 和图 2）。</p>
+</li>
+<li>
+<p><strong>MATH-500</strong>：DeepSeek-R1-Zero 在 MATH-500 任务中的 <strong>Pass@1 分数达到 86.7%</strong>，表现非常出色（见表 2）。</p>
+</li>
+<li>
+<p><strong>Codeforces</strong>：DeepSeek-R1-Zero 在 Codeforces 编程任务中达到了 <strong>1444 的 Elo 评分</strong>，超过了 50.0% 的人类参赛者（见表 2）。</p>
+</li>
+<li>
+<p><strong>GPQA Diamond</strong>：在 GPQA Diamond 任务中，DeepSeek-R1-Zero 的 <strong>Pass@1 分数为 95.9%</strong>，表现出色（见表 2）。</p>
+</li>
+</ul>
+<p><strong>3.1.2 推理能力的自我进化</strong></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250212181230011.png" alt="image.png" /></p>
+<p><strong>推理过程的复杂性</strong>：DeepSeek-R1-Zero 在训练过程中自然地发展出了复杂的推理行为，例如 <strong>反思（reflection）</strong> 和 <strong>重新评估（reevaluation）</strong>。模型会通过增加思考时间（生成更多的推理 token）来解决更复杂的推理任务。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250212181236877.png" alt="image.png" /></p>
+<ul>
+<li><strong>“Aha Moment”</strong>：在训练过程中，DeepSeek-R1-Zero 展示了一些有趣的“顿悟时刻”，例如在解决数学问题时，模型会重新评估其初始方法，并尝试不同的解题策略</li>
+</ul>
+<p><strong>3.1.3 语言和可读性问题</strong></p>
+<p>尽管 DeepSeek-R1-Zero 在推理任务上表现出色，但它在语言表达和可读性方面存在一些问题：</p>
+<ul>
+<li>
+<p><strong>语言混合</strong></p>
+</li>
+<li>
+<p><strong>格式问题</strong></p>
+</li>
+</ul>
+<h3 id="32-deepseek-r1评估"><a class="markdownIt-Anchor" href="#32-deepseek-r1评估"></a> 3.2 DeepSeek-R1评估</h3>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250212181243368.png" alt="image.png" /></p>
+<p>DeepSeek-R1在多个推理任务上取得了与OpenAI的o1-1217相当甚至更好的性能。例如:</p>
+<ul>
+<li>
+<p>在AIME 2024基准测试中，DeepSeek-R1的Pass@1分数达到了79.8%，略高于OpenAI-o1-1217。</p>
+</li>
+<li>
+<p>在MATH-500任务中，DeepSeek-R1的Pass@1分数达到了97.3%，与OpenAI-o1-1217相当。</p>
+</li>
+<li>
+<p>DeepSeek-R1在编程任务（如Codeforces）上也表现出色，其Elo评分达到了2029，超过了96.3%的人类参赛者。</p>
+</li>
+</ul>
+<h3 id="33-deepseek-r1蒸馏模型评估"><a class="markdownIt-Anchor" href="#33-deepseek-r1蒸馏模型评估"></a> 3.3 DeepSeek-R1蒸馏模型评估</h3>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250212181249836.png" alt="image.png" /></p>
+<p>经过DeepSeek-R1蒸馏的小型模型在推理任务上表现出色。例如:</p>
+<ul>
+<li>
+<p>DeepSeek-R1-Distill-Qwen-7B在AIME 2024任务上的Pass@1分数达到了55.5%，超过了QwQ-32B-Preview。</p>
+</li>
+<li>
+<p>DeepSeek-R1-Distill-Qwen-32B在AIME 2024任务上的Pass@1分数达到了72.6%，在MATH-500任务上的Pass@1分数达到了94.3%，显著优于其他开源模型。</p>
+</li>
+</ul>
+<h2 id="4-讨论"><a class="markdownIt-Anchor" href="#4-讨论"></a> 4. 讨论</h2>
+<h3 id="41-知识蒸馏与强化学习"><a class="markdownIt-Anchor" href="#41-知识蒸馏与强化学习"></a> 4.1 知识蒸馏与强化学习</h3>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250212181256260.png" alt="image.png" /></p>
+<p>论文指出，尽管强化学习可以显著提升模型的推理能力，但直接在小型模型上进行大规模强化学习可能需要巨大的计算资源，并且效果不如知识蒸馏。知识蒸馏是一种更经济且有效的方法，可以将大型模型的推理能力传递给小型模型。</p>
+<h3 id="42-未成功的尝试"><a class="markdownIt-Anchor" href="#42-未成功的尝试"></a> 4.2 未成功的尝试</h3>
+<h4 id="为什么-prm-和-mcts-没有成功"><a class="markdownIt-Anchor" href="#为什么-prm-和-mcts-没有成功"></a> 为什么 PRM 和 MCTS 没有成功？</h4>
+<p>论文中提到，基于过程奖励模型（PRM）和蒙特卡洛树搜索（MCTS）并不适合 LLM 的推理。</p>
+<h4 id="prm-的挑战"><a class="markdownIt-Anchor" href="#prm-的挑战"></a> PRM 的挑战</h4>
+<ul>
+<li>
+<p>难以定义通用的、细粒度的推理步骤。</p>
+</li>
+<li>
+<p>难以准确判断中间步骤的正确性，且自动标注方法效果不佳，人工标注又难以扩展。</p>
+</li>
+<li>
+<p>模型化的 PRM 容易导致<strong>奖励黑客</strong>（Agent 利用奖励函数或环境中的漏洞来获取高奖励，而并未真正学习到预期行为），并且会增加额外的训练成本。</p>
+</li>
+</ul>
+<h4 id="mcts-的挑战"><a class="markdownIt-Anchor" href="#mcts-的挑战"></a> MCTS 的挑战</h4>
+<ul>
+<li>
+<p>LLM 的 token 生成搜索空间巨大，远远超出棋类游戏，容易陷入局部最优解。</p>
+</li>
+<li>
+<p>价值模型的训练非常困难，导致难以迭代提升。</p>
+</li>
+</ul>
+<h3 id="43-结论-限制与未来工作"><a class="markdownIt-Anchor" href="#43-结论-限制与未来工作"></a> 4.3 结论、限制与未来工作</h3>
+<p>DeepSeek-R1在一些任务上（如函数调用、多轮对话等）的表现仍不如DeepSeek-V3。</p>
+<p>模型在处理非中文和英文查询时可能会出现语言混合问题。</p>
+<p>未来的工作将致力于解决这些问题，并进一步提升模型的通用性和推理能力。</p>
+<h3 id="44-r1-zero启用了新的训练范式只使用rl省略sft"><a class="markdownIt-Anchor" href="#44-r1-zero启用了新的训练范式只使用rl省略sft"></a> 4.4 R1-Zero启用了新的训练范式：只使用RL，省略SFT</h3>
+<p>Q：为什么省略SFT是好事？</p>
+<p>A：因为找到大量符合CoT模版的高质量数据并不容易。以DeepSeek-Math-7B为例，用到了776K条样本做SFT。而DeepSeek-R1几乎不用这样的样本（用到了几千条做冷起）。</p>
+<p>Q：更器重RL的好处？</p>
+<p>A：RL面对复杂问题具有很大的潜力，具有self-evolution的能力，也许可以激发出pre-train里的高质量回答。</p>
+<h2 id="5-小结与思考"><a class="markdownIt-Anchor" href="#5-小结与思考"></a> 5. 小结与思考</h2>
+<p>小结：这篇论文通过详细的实验和分析，展示了如何通过强化学习提升LLMs的推理能力，并通过知识蒸馏将这些能力传递给小型模型。这一研究为未来开发更智能、更高效的LLMs提供了重要的参考和启示。</p>
+<h2 id="6-附录"><a class="markdownIt-Anchor" href="#6-附录"></a> 6… 附录</h2>
+<h3 id="61-deepseek-r1知识蒸馏成本预估"><a class="markdownIt-Anchor" href="#61-deepseek-r1知识蒸馏成本预估"></a> 6.1 DeepSeek-R1知识蒸馏成本预估</h3>
+<p>deepseek-R1对比成本如下：</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>模型</td>
+<td>类型</td>
+<td>最新更新时间</td>
+<td>输入(命中缓存)</td>
+<td>输入（未命中缓存）</td>
+<td>输出</td>
+</tr>
+<tr>
+<td>deepseek-R1</td>
+<td>慢思考模型</td>
+<td>2025-01-30</td>
+<td>1元/百万tokens</td>
+<td>4元/百万tokens</td>
+<td>16元/百万tokens</td>
+</tr>
+<tr>
+<td>o1-mini(o1-mini-2024-09-12)</td>
+<td>慢思考模型</td>
+<td>2025-01-30</td>
+<td>10.78元/百万tokens</td>
+<td>21.56元/百万tokens</td>
+<td>86.24元/百万tokens</td>
+</tr>
+<tr>
+<td>o1-preview(o1-preview-2024-09-12)</td>
+<td>慢思考模型</td>
+<td>2025-01-30</td>
+<td>53.90元/百万tokens</td>
+<td>107.8元/百万tokens</td>
+<td>431.18元/百万tokens</td>
+</tr>
+<tr>
+<td>o1(o1-2024-12-17)</td>
+<td>慢思考模型</td>
+<td>2025-01-30</td>
+<td>53.90元/百万tokens</td>
+<td>107.8元/百万tokens</td>
+<td>431.18元/百万tokens</td>
+</tr>
+<tr>
+<td>gpt-4o(gpt-4o-2024-08-06)</td>
+<td>快思考模型</td>
+<td>2025-01-30</td>
+<td>8.98元/百万tokens</td>
+<td>17.97元/百万tokens</td>
+<td>71.86元/百万tokens</td>
+</tr>
+<tr>
+<td>deepseek-V3</td>
+<td>快思考模型</td>
+<td>2024-12-01</td>
+<td>?元/百万tokens</td>
+<td>1元/百万tokens</td>
+<td>2元/百万tokens</td>
+</tr>
+</tbody>
+</table>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" rel="tag"># 大模型</a>
+              <a href="/tags/%E8%AE%BA%E6%96%87%E7%B2%BE%E8%AF%BB/" rel="tag"># 论文精读</a>
+              <a href="/tags/nlp/" rel="tag"># nlp</a>
+              <a href="/tags/Deepseek/" rel="tag"># Deepseek</a>
+              <a href="/tags/%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/" rel="tag"># 强化学习</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/02/12/Deepseek-V3/" rel="prev" title="Deepseek-V3">
+                  <i class="fa fa-angle-left"></i> Deepseek-V3
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2025/02/12/RLHF-PPO-Deepseek-R%E4%B8%AD%E7%9A%84%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0-GRPO/" rel="next" title="RLHF & PPO & Deepseek-R中的强化学习 (GRPO)">
+                  RLHF & PPO & Deepseek-R中的强化学习 (GRPO) <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Ronny Lu</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">194k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">11:46</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">false</script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" integrity="sha256-UF1fgpAiu3tPJN/uCqEUHNe7pnr+QR0SQDNfgglgtcM=" crossorigin="anonymous">
+  <script class="next-config" data-name="katex" type="application/json">{"copy_tex_js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/copy-tex.min.js","integrity":"sha256-Us54+rSGDSTvIhKKUs4kygE2ipA0RXpWWh0/zLqw3bs="}}</script>
+  <script src="/js/third-party/math/katex.js"></script>
+
+
+
+</body>
+</html>

@@ -50,8 +50,10 @@
 <meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126155058820.png">
 <meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126155108487.png">
 <meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126155120150.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250127150607067.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250127150620045.png">
 <meta property="article:published_time" content="2025-01-26T09:15:02.000Z">
-<meta property="article:modified_time" content="2025-01-26T09:15:39.067Z">
+<meta property="article:modified_time" content="2025-01-27T07:07:12.197Z">
 <meta property="article:author" content="Ronny Lu">
 <meta property="article:tag" content="大模型">
 <meta property="article:tag" content="大模型推理">
@@ -164,7 +166,7 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%80-%E8%83%8C%E6%99%AF"><span class="nav-number">1.</span> <span class="nav-text"> 一、背景</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BA%8C-%E8%87%AA%E5%9B%9E%E5%BD%92%E8%A7%A3%E7%A0%81autoregressive-decoding"><span class="nav-number">2.</span> <span class="nav-text"> 二、自回归解码（Autoregressive Decoding）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#21-%E6%A6%82%E8%BF%B0"><span class="nav-number">2.0.1.</span> <span class="nav-text"> 2.1. 概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#22-kv-cache"><span class="nav-number">2.0.2.</span> <span class="nav-text"> 2.2 KV Cache</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%80-%E8%83%8C%E6%99%AF-2"><span class="nav-number">3.</span> <span class="nav-text"> 一、背景</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BA%8C-%E8%87%AA%E5%9B%9E%E5%BD%92%E8%A7%A3%E7%A0%81autoregressive-decoding-2"><span class="nav-number">4.</span> <span class="nav-text"> 二、自回归解码（Autoregressive Decoding）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#21-%E6%A6%82%E8%BF%B0-2"><span class="nav-number">4.0.1.</span> <span class="nav-text"> 2.1. 概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#22-kv-cache-2"><span class="nav-number">4.0.2.</span> <span class="nav-text"> 2.2 KV Cache</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#23-%E8%AE%BF%E5%AD%98%E7%93%B6%E9%A2%88"><span class="nav-number">4.0.3.</span> <span class="nav-text"> 2.3 访存瓶颈</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#24-decoding-%E9%98%B6%E6%AE%B5%E4%BC%98%E5%8C%96"><span class="nav-number">4.0.4.</span> <span class="nav-text"> 2.4 Decoding 阶段优化</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%89-%E5%B9%B6%E8%A1%8C%E8%A7%A3%E7%A0%81parallel-decoding"><span class="nav-number">5.</span> <span class="nav-text"> 三、并行解码（Parallel Decoding）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#31-%E6%96%B9%E6%A1%88%E6%A6%82%E8%BF%B0"><span class="nav-number">5.0.1.</span> <span class="nav-text"> 3.1 方案概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#32-%E5%AE%9E%E7%8E%B0%E7%BB%86%E8%8A%82"><span class="nav-number">5.0.2.</span> <span class="nav-text"> 3.2 实现细节</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#33-%E8%AF%84%E4%BC%B0%E7%BB%93%E6%9E%9C"><span class="nav-number">5.0.3.</span> <span class="nav-text"> 3.3. 评估结果</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9B%9B-%E6%8A%95%E6%9C%BA%E8%A7%A3%E7%A0%81speculative-decoding"><span class="nav-number">6.</span> <span class="nav-text"> 四、投机解码（Speculative Decoding）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#41-%E6%96%B9%E6%A1%88%E6%A6%82%E8%BF%B0"><span class="nav-number">6.0.1.</span> <span class="nav-text"> 4.1. 方案概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#42-%E5%AE%9E%E7%8E%B0%E7%BB%86%E8%8A%82"><span class="nav-number">6.0.2.</span> <span class="nav-text"> 4.2 实现细节</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#43-%E8%AF%84%E4%BC%B0%E7%BB%93%E6%9E%9C"><span class="nav-number">6.0.3.</span> <span class="nav-text"> 4.3. 评估结果</span></a></li></ol></li></ol></li></ol></div>
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%80-%E8%83%8C%E6%99%AF"><span class="nav-number">1.</span> <span class="nav-text"> 一、背景</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BA%8C-%E8%87%AA%E5%9B%9E%E5%BD%92%E8%A7%A3%E7%A0%81autoregressive-decoding"><span class="nav-number">2.</span> <span class="nav-text"> 二、自回归解码（Autoregressive Decoding）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#21-%E6%A6%82%E8%BF%B0"><span class="nav-number">2.0.1.</span> <span class="nav-text"> 2.1. 概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#22-kv-cache"><span class="nav-number">2.0.2.</span> <span class="nav-text"> 2.2 KV Cache</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%80-%E8%83%8C%E6%99%AF-2"><span class="nav-number">3.</span> <span class="nav-text"> 一、背景</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BA%8C-%E8%87%AA%E5%9B%9E%E5%BD%92%E8%A7%A3%E7%A0%81autoregressive-decoding-2"><span class="nav-number">4.</span> <span class="nav-text"> 二、自回归解码（Autoregressive Decoding）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#21-%E6%A6%82%E8%BF%B0-2"><span class="nav-number">4.0.1.</span> <span class="nav-text"> 2.1. 概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#22-kv-cache-2"><span class="nav-number">4.0.2.</span> <span class="nav-text"> 2.2 KV Cache</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#23-%E8%AE%BF%E5%AD%98%E7%93%B6%E9%A2%88"><span class="nav-number">4.0.3.</span> <span class="nav-text"> 2.3 访存瓶颈</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#24-decoding-%E9%98%B6%E6%AE%B5%E4%BC%98%E5%8C%96"><span class="nav-number">4.0.4.</span> <span class="nav-text"> 2.4 Decoding 阶段优化</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%89-%E5%B9%B6%E8%A1%8C%E8%A7%A3%E7%A0%81parallel-decoding"><span class="nav-number">5.</span> <span class="nav-text"> 三、并行解码（Parallel Decoding）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#31-%E6%96%B9%E6%A1%88%E6%A6%82%E8%BF%B0"><span class="nav-number">5.0.1.</span> <span class="nav-text"> 3.1 方案概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#32-%E5%AE%9E%E7%8E%B0%E7%BB%86%E8%8A%82"><span class="nav-number">5.0.2.</span> <span class="nav-text"> 3.2 实现细节</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#33-%E8%AF%84%E4%BC%B0%E7%BB%93%E6%9E%9C"><span class="nav-number">5.0.3.</span> <span class="nav-text"> 3.3. 评估结果</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9B%9B-%E6%8A%95%E6%9C%BA%E8%A7%A3%E7%A0%81speculative-decoding"><span class="nav-number">6.</span> <span class="nav-text"> 四、投机解码（Speculative Decoding）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#41-%E6%96%B9%E6%A1%88%E6%A6%82%E8%BF%B0"><span class="nav-number">6.0.1.</span> <span class="nav-text"> 4.1. 方案概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#42-%E5%AE%9E%E7%8E%B0%E7%BB%86%E8%8A%82"><span class="nav-number">6.0.2.</span> <span class="nav-text"> 4.2 实现细节</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#43-%E8%AF%84%E4%BC%B0%E7%BB%93%E6%9E%9C"><span class="nav-number">6.0.3.</span> <span class="nav-text"> 4.3. 评估结果</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BA%94-medusa"><span class="nav-number">7.</span> <span class="nav-text"> 五、Medusa</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#medusa-heads"><span class="nav-number">7.1.</span> <span class="nav-text"> Medusa heads</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#tree-attention"><span class="nav-number">7.2.</span> <span class="nav-text"> Tree Attention</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#typical-acceptance"><span class="nav-number">7.3.</span> <span class="nav-text"> Typical Acceptance</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">7.4.</span> <span class="nav-text"> 总结</span></a></li></ol></li></ol></div>
         </div>
         <!--/noindex-->
 
@@ -179,7 +181,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">50</span>
+          <span class="site-state-item-count">55</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -190,7 +192,7 @@
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">14</span>
+        <span class="site-state-item-count">17</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -245,9 +247,15 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">发表于</span>
-      
 
-      <time title="创建时间：2025-01-26 17:15:02 / 修改时间：17:15:39" itemprop="dateCreated datePublished" datetime="2025-01-26T17:15:02+08:00">2025-01-26</time>
+      <time title="创建时间：2025-01-26 17:15:02" itemprop="dateCreated datePublished" datetime="2025-01-26T17:15:02+08:00">2025-01-26</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2025-01-27 15:07:12" itemprop="dateModified" datetime="2025-01-27T15:07:12+08:00">2025-01-27</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -277,14 +285,14 @@
         <i class="far fa-file-word"></i>
       </span>
       <span class="post-meta-item-text">本文字数：</span>
-      <span>4.7k</span>
+      <span>6.8k</span>
     </span>
     <span class="post-meta-item" title="阅读时长">
       <span class="post-meta-item-icon">
         <i class="far fa-clock"></i>
       </span>
       <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>17 分钟</span>
+      <span>25 分钟</span>
     </span>
 </div>
 
@@ -618,6 +626,47 @@
 </li>
 </ul>
 <p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126155120150.png" alt="image.png" /></p>
+<h1 id="五-medusa"><a class="markdownIt-Anchor" href="#五-medusa"></a> 五、Medusa</h1>
+<p>咱们先来了解一下自回归解码的三种主流方式，摘抄自huggingface的博客。</p>
+<p><strong>Greedy Search</strong>：它选择概率最高的词作为其下一个词。优点是快，缺点是会错过隐藏在低概率词后面的高概率词，并且很容易生成重复的短语。</p>
+<p><strong>Beam search</strong>：它在每个step保持最可能的num_beams个生成候选束，并最终选择具有最高整体概率的候选束，来降低错过隐藏的高概率词序列的风险。这样会找到一个比Greedy Search概率更高的输出序列，但也不能保证找到联合概率最高的输出。它的缺陷是会重复，并且生成的句子太死板，因为高质量的人类语言并不遵循高概率下一个词的分布。</p>
+<p><strong>Sampling</strong>：以条件概率随机挑选下一个词。使用Sampling时文本生成本身不再是确定性的，小概率的token也有机会被生成。在 <em>Top-K</em> 采样中，概率最大的 <em>K</em> 个词会被选出，然后这 <em>K</em> 个词的概率会被重新归一化，最后就在这重新被归一化概率后的 <em>K</em> 个词中采样。在 <em>Top-p</em> 中，采样不只是在最有可能的 <em>K</em> 个单词中进行，而是在累积概率超过概率 <em>p</em> 的最小单词集中进行。top-p和top-K采样可以结合使用，在开放式语言生成上产生比Greedy Search和Beam Search更为流畅的文本。</p>
+<p>如果只支持Greedy Search生成句子的联合概率远非全局最优。如何使Parallel Decoding支持Sampling类的解码呢？这是美杜莎想做文章的地方。</p>
+<p>美杜莎设计三个核心点</p>
+<h2 id="medusa-heads"><a class="markdownIt-Anchor" href="#medusa-heads"></a> <strong>Medusa heads</strong></h2>
+<p>和原始论文类似，就是用在decoder后面增加多个lm_head（也称project layer）。将lm_head变成k个，可以预测后k个 tokens。如下图所示，Medusa在原始模型基础上，增加了3个额外的Head，可以并行预测出后4个token的候选。</p>
+<p>训练这些Head非常简单。 作者选择在训练阶段，原始模型保持frozen，只有Medusa Head经过微调。计算量比较少，微调起来比较快。</p>
+<p>加上Medusa Heads，如果我们每个Head都选择top-1的预测做验证，就和Parallel Decoding一样了。作者通过测试的Vicuna模型发现，top-1 head在预测next next token上只有的60%准确率，这个效率其实很低。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250127150607067.png" alt="image.png" /></p>
+<p>Overview of Medusa. Medusa introduces multiple heads on top of the last hidden states of the LLM, enabling the prediction of several subsequent tokens in parallel.</p>
+<h2 id="tree-attention"><a class="markdownIt-Anchor" href="#tree-attention"></a> <strong>Tree Attention</strong></h2>
+<p>作者发现：尽管预测next next token的top-1准确率徘徊在60%左右，但如果每个head选取top-5 token做笛卡尔积，从中找到和原始模型解码相同的候选概率飙升到80%以上。这样，候选token集合组成一个树状数据结构，我们把这个集合塞进模型预测时候，需要一种新的Attention机制，即Tree Attention。</p>
+<p>下图展示了Tree Attention的例子。其中我们使用来自第一个Head的前2个预测，和来自第二个的前3个预测，如下所示。在这种情况下，第一个头部的任何预测都可以与第二个头部的任何预测配对，最终形成一个多层树结构。这棵树的每一层都对应于一个Medusa Head的预测。在这棵树内，Attention Mask需要新的设计，该Mask只限制对一个token的前面token的注意力。如下例子中，Attention Mask大小是（2 + 2 * 3）*（ 2 + 2 * 3 ) =8 * 8。”is , the“这三个token分别attention to It和I两个token。 同时，要为相应地为position embedding设置正确的位置索引。</p>
+<p>如示例所示，第一个medusa heads的 top-2 预测和第二个medusa heads的 top-3 预测产生 2*3=6 个候选。假设原始的LLM输出是[0]，第一个头是[1,2]，第二个头是[3,4,5]。期望直接能把[0,1,2,3,4,5]，输入模型就能得到一些概率的信息，但是不同的头对应的token的父节点是不同的，所以需要冗余一些token，方便添加mask变成[0,1,2,3,4,5,3,4,5]，对应到右上的mask矩阵，每个节点只有父节点以及当前节点是1，这样其实就能得到一个树的路径关系。</p>
+<p>第一次用美杜莎头解码的时候，是看不到前面i个token的，而再次输入模型可以看到完整的上文，得到完整的概率之后，可以通过头计算得到树的路径信息<br />
+<img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250127150620045.png" alt="image.png" /></p>
+<p>到目前为止，使用Tree Attention做Parallel Decoding的Verify阶段，可以让每个head从top-1候选增加到top-k，从而增大和串行解码结果重合的概率，增加mean block size从而提升并行度。即使这样，解码方法仍然属于Greedy Search，只是通过增加大候选集合来增加命中概率。</p>
+<h2 id="typical-acceptance"><a class="markdownIt-Anchor" href="#typical-acceptance"></a> <strong>Typical Acceptance</strong></h2>
+<p>Typical Acceptance优化旨在突破Greedy Search解码能力限制，使之支持top-k，top-p方式的采样方法。因为涉及Sampling解码，所以Medusa作者们在此抒发了一番对投机采样议论，</p>
+<blockquote>
+<p>作者发现，在投机采样中，importance sampling技术被用来生成与原始模型的预测概率分布相同的多样化输出。然而，后来的研究表明，当你调高top-p的采样温度时，这种方法往往会变得效率较低。<br />
+简单来说，如果你的draft模型与你的target模型一样好，理想情况下，你应该接受它的所有输出，使得过程超级高效。<strong>然而，top-p采样可能会拒绝draft模型生成，从而导致并行解码长度很短。</strong><br />
+在现实世界中，我们经常调整采样温度，只是为了控制模型的创造性，不一定要匹配原始模型的分布。那么，为什么不只是专注于接受似乎合理（plausible）的候选token呢？<br />
+接下来，作者从truncation sampling工作中汲取灵感，旨在选择原始模型可能接受的候选项。根据原始模型的预测概率设定一个阈值，如果候选项超过了这个阈值，就会被接受。<br />
+具体来说，作者采取hard threshold和entropy-dependent threshold的最小值来决定是否像在truncation sampling中那样接受一个候选token。这确保了在解码过程中选择有意义的token和合理的延续。作者总是使用Greedy Decoding接受第一个token，确保每一步至少生成一个token。最终的输出则是通过acceptance test的最长序列。<br />
+这种方法的好处是其适应性。如果你将采样温度设为零，它就简单地回归到最高效的形式Greedy Search。当你提高温度时，我们的方法变得更加高效，允许更长的接受序列，这一点作者通过严格测试得到了确认。</p>
+</blockquote>
+<p>作者尝试把只适用于Greedy Search的Blockwise Decoding方法扩展到Sampling领域。既然采样就是追求创造性，我们干脆咱们别保证和原始模型Sampling解码同样分布了。所以，不像投机采样可以保证同等分布，作者用了一个听起来很朴素的方法，就是将超过一定概率阈值的token保留，并在这些token中做Greedy采样选择top-k。而这个阈值由原始模型的预测概率相关。</p>
+<h2 id="总结"><a class="markdownIt-Anchor" href="#总结"></a> 总结</h2>
+<p>Medusa对Parallel Decoding的发扬在于两点</p>
+<ol>
+<li>
+<p>top-1贪心解码不容易和原始模型解码结果重合，因此它让每个Head解码top-k个候选，不同head的候选集合组成一个树状的笛卡尔集。原始模型验证这个笛卡尔集使用改进Mask的Tree Attention方法，从而增大并行解码被验证接受的概率。</p>
+</li>
+<li>
+<p>突破贪心解码限制，让Parallel Decoding支持类似sampling方法。Medusa不保证和原始top-p相同Sampling分布，而是设计一个朴素地基于阈值的方法。因为这种方法并不和创新解码等价，大家对它的接收程度还有待验证。</p>
+</li>
+</ol>
 
     </div>
 
@@ -674,14 +723,14 @@
       <i class="fa fa-chart-line"></i>
     </span>
       <span>站点总字数：</span>
-    <span title="站点总字数">156k</span>
+    <span title="站点总字数">194k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span>站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">9:26</span>
+    <span title="站点阅读时长">11:46</span>
   </span>
 </div>
 <div class="busuanzi-count">
