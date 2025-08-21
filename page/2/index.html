@@ -153,18 +153,18 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">55</span>
+          <span class="site-state-item-count">75</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
           <a href="/categories/">
-        <span class="site-state-item-count">14</span>
+        <span class="site-state-item-count">16</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-count">19</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -190,7 +190,7 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/01/26/LLM%E4%B8%AD%E7%9A%84%E6%90%9C%E7%B4%A2%E3%80%81%E9%87%87%E6%A0%B7%E7%AE%97%E6%B3%95%EF%BC%9Agreedy%E3%80%81beam-search%E3%80%81top-k%E3%80%81top-p%E3%80%81temperature/">
+    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/08/20/%E4%BB%A5-KV-Cache-%E4%B8%BA%E4%B8%AD%E5%BF%83%E7%9A%84-PD-%E5%88%86%E7%A6%BB%E5%BC%8F%E6%9E%B6%E6%9E%84/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
@@ -208,7 +208,7 @@
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/2025/01/26/LLM%E4%B8%AD%E7%9A%84%E6%90%9C%E7%B4%A2%E3%80%81%E9%87%87%E6%A0%B7%E7%AE%97%E6%B3%95%EF%BC%9Agreedy%E3%80%81beam-search%E3%80%81top-k%E3%80%81top-p%E3%80%81temperature/" class="post-title-link" itemprop="url">LLM中的搜索、采样算法：greedy、beam_search、top_k、top_p、temperature</a>
+          <a href="/2025/08/20/%E4%BB%A5-KV-Cache-%E4%B8%BA%E4%B8%AD%E5%BF%83%E7%9A%84-PD-%E5%88%86%E7%A6%BB%E5%BC%8F%E6%9E%B6%E6%9E%84/" class="post-title-link" itemprop="url">以 KV-Cache 为中心的 PD 分离式架构</a>
         </h2>
 
         <div class="post-meta-container">
@@ -220,7 +220,7 @@
       <span class="post-meta-item-text">发表于</span>
       
 
-      <time title="创建时间：2025-01-26 17:26:13 / 修改时间：17:26:48" itemprop="dateCreated datePublished" datetime="2025-01-26T17:26:13+08:00">2025-01-26</time>
+      <time title="创建时间：2025-08-20 15:58:21 / 修改时间：16:03:04" itemprop="dateCreated datePublished" datetime="2025-08-20T15:58:21+08:00">2025-08-20</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -234,115 +234,9 @@
         <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
           <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E6%8E%A8%E7%90%86%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index"><span itemprop="name">推理技术</span></a>
         </span>
-    </span>
-
-  
-    <span class="post-meta-break"></span>
-    <span class="post-meta-item" title="本文字数">
-      <span class="post-meta-item-icon">
-        <i class="far fa-file-word"></i>
-      </span>
-      <span class="post-meta-item-text">本文字数：</span>
-      <span>4k</span>
-    </span>
-    <span class="post-meta-item" title="阅读时长">
-      <span class="post-meta-item-icon">
-        <i class="far fa-clock"></i>
-      </span>
-      <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>14 分钟</span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote>
-<p>随着chatGPT，chatGLM、Llama等LLM模型的火爆，生成式模型逐渐被大家所熟知和认可。</p>
-<p>LLM看似很神奇，但究其本质还是一个概率相关的问题：神经网络根据输入的文本，执行多轮decoder。 每次decoder时候从预训练的模型里面生成一堆候选词（及其概率/分数），按照指定的解码算法或者说后处理算法，选择出候选词，知道满足结束🔚条件为止。</p>
-<p>同样的LLM模型，如果采用的后处理算法、算法的参数设置不同，生成的结果很可能也会不同。</p>
-<p>目前LLM模型中常见的后处理算法有：greedy、beam_search、topp、topk等。</p>
-</blockquote>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2025/01/26/LLM%E4%B8%AD%E7%9A%84%E6%90%9C%E7%B4%A2%E3%80%81%E9%87%87%E6%A0%B7%E7%AE%97%E6%B3%95%EF%BC%9Agreedy%E3%80%81beam-search%E3%80%81top-k%E3%80%81top-p%E3%80%81temperature/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/01/26/llama-cpp/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
-      <meta itemprop="name" content="Ronny Lu">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ronny Lu's blog">
-      <meta itemprop="description" content="Tech notes on LLM, LLM Infra, and others">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="undefined | Ronny Lu's blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2025/01/26/llama-cpp/" class="post-title-link" itemprop="url">llama.cpp</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2025-01-26 17:18:26 / 修改时间：17:38:08" itemprop="dateCreated datePublished" datetime="2025-01-26T17:18:26+08:00">2025-01-26</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">分类于</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">大模型</span></a>
-        </span>
           ，
         <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E6%8E%A8%E7%90%86%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index"><span itemprop="name">推理技术</span></a>
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E6%8E%A8%E7%90%86%E6%8A%80%E6%9C%AF/Sglang/" itemprop="url" rel="index"><span itemprop="name">Sglang</span></a>
         </span>
     </span>
 
@@ -353,14 +247,14 @@
         <i class="far fa-file-word"></i>
       </span>
       <span class="post-meta-item-text">本文字数：</span>
-      <span>11k</span>
+      <span>684</span>
     </span>
     <span class="post-meta-item" title="阅读时长">
       <span class="post-meta-item-icon">
         <i class="far fa-clock"></i>
       </span>
       <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>39 分钟</span>
+      <span>2 分钟</span>
     </span>
 </div>
 
@@ -371,395 +265,44 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <blockquote>
-<p>🔗 原文链接：<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/996110863">https://zhuanlan.zhihu.com/p/996110863</a></p>
-</blockquote>
-<p>原文： <a href="https://link.zhihu.com/?target=https%3A//www.omrimallis.com/posts/understanding-how-llm-inference-works-with-llama-cpp/">Understanding how LLM inference works with llama.cpp</a></p>
-<p><em>译者的话: llama.cpp出道以来，很少有官方文档，但是本文通过代码驱动的讲解， 讲清楚了llama.cpp的原理，个人推荐一读。</em></p>
-<p>在这篇文章中，我们将深入探讨大型语言模型（LLMs）的内部结构，以便更好地理解它们是如何工作的。为帮助我们进行这次探索，我们将使用 llama.cpp 的源码，它是 Meta 的 LLaMA 模型的纯 C++ 实现。作者个人认为，llama.cpp 是理解 LLM 深层原理的一个优秀学习工具，它的代码简洁明了，不涉及过多的抽象。我们将使用特定的提交版本。</p>
-<p>本文的重点是 LLM 的推理部分，即：已训练好的模型如何基于用户输入的提示生成响应。这篇文章主要写给那些非机器学习和人工智能领域的工程师，旨在帮助他们更好地理解 LLM，<strong>本文从工程角度而非 AI 角度探讨 LLM 的内部工作原理，因此不要求读者具备深厚的数学或深度学习知识</strong>。（<em>译者：这正是本文最妙的地方</em>）在文章中，我们将从头到尾介绍 LLM 的推理过程，涵盖以下主题：</p>
+          <h1 id="kv-cache-的用途"><a class="markdownIt-Anchor" href="#kv-cache-的用途"></a> KV Cache 的用途</h1>
 <ol>
 <li>
-<p><a href="https://link.zhihu.com/?target=https%3A//www.omrimallis.com/posts/understanding-how-llm-inference-works-with-llama-cpp/%23understanding-tensors-with-ggml">张量</a>：概述数学运算如何以张量的形式实现， 并可能潜在转移到 GPU 上处理。</p>
+<p>KV Cache 是推理的中间结果</p>
 </li>
 <li>
-<p><a href="https://link.zhihu.com/?target=https%3A//www.omrimallis.com/posts/understanding-how-llm-inference-works-with-llama-cpp/%23tokenization">分词</a>：将用户输入的提示分解为令牌列表，LLM 使用这些令牌作为输入。</p>
+<p>KV Cache 可以复用，以存储代计算</p>
 </li>
 <li>
-<p><strong>嵌入Embedding：将令牌转换为高维向量的过程。</strong></p>
+<p>复用场景：</p>
+<ul>
+<li>
+<p>Prefix Cache:请复用，节省算力</p>
 </li>
 <li>
-<p>Transformer：大语言模型架构的核心部分，负责实际的推理过程，我们将重点介绍自注意力机制。</p>
+<p>P/D分离：跨机复用，推理分布式化</p>
 </li>
-<li>
-<p><a href="https://link.zhihu.com/?target=https%3A//www.omrimallis.com/posts/understanding-how-llm-inference-works-with-llama-cpp/%23sampling">采样</a>：选择下一个预测令牌的过程，我们将探讨两种采样技术。</p>
-</li>
-<li>
-<p><a href="https://link.zhihu.com/?target=https%3A//www.omrimallis.com/posts/understanding-how-llm-inference-works-with-llama-cpp/%23optimizing-inference">KV 缓存</a>：一种常见的优化技术，用于加快长提示的推理速度，我们将介绍一个基本的 kv 缓存实现。</p>
+</ul>
 </li>
 </ol>
-<p>通过阅读本文，你将有望对 LLM 的工作过程有一个端到端的理解，并且能够探索更高级的主题，这些主题将在最后一节中详细说明。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2025/01/26/llama-cpp/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/01/26/KV-Cache/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
-      <meta itemprop="name" content="Ronny Lu">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ronny Lu's blog">
-      <meta itemprop="description" content="Tech notes on LLM, LLM Infra, and others">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="undefined | Ronny Lu's blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2025/01/26/KV-Cache/" class="post-title-link" itemprop="url">KV Cache</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2025-01-26 17:17:23 / 修改时间：17:17:58" itemprop="dateCreated datePublished" datetime="2025-01-26T17:17:23+08:00">2025-01-26</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">分类于</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">大模型</span></a>
-        </span>
-          ，
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E6%8E%A8%E7%90%86%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index"><span itemprop="name">推理技术</span></a>
-        </span>
-    </span>
-
-  
-    <span class="post-meta-break"></span>
-    <span class="post-meta-item" title="本文字数">
-      <span class="post-meta-item-icon">
-        <i class="far fa-file-word"></i>
-      </span>
-      <span class="post-meta-item-text">本文字数：</span>
-      <span>1.5k</span>
-    </span>
-    <span class="post-meta-item" title="阅读时长">
-      <span class="post-meta-item-icon">
-        <i class="far fa-clock"></i>
-      </span>
-      <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>6 分钟</span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h3 id="self-attention"><a class="markdownIt-Anchor" href="#self-attention"></a> Self-Attention</h3>
-<p><strong>自注意力机制允许模型将词与其他词关联起来。</strong></p>
-<p>假设我们考虑一个序列长度为6, embedding维度为512的输入, 由于是自注意力, QKV都是相同的</p>
-<p><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>s</mi><mi>o</mi><mi>f</mi><mi>t</mi><mi>m</mi><mi>a</mi><mi>x</mi><mo stretchy="false">(</mo><mfrac><mrow><mi>Q</mi><msup><mi>K</mi><mi>T</mi></msup></mrow><msqrt><msub><mi>d</mi><mi>k</mi></msub></msqrt></mfrac><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">softmax(\frac{QK^T}{\sqrt{d_k}})</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.627473em;vertical-align:-0.538em;"></span><span class="mord mathnormal">s</span><span class="mord mathnormal">o</span><span class="mord mathnormal" style="margin-right:0.10764em;">f</span><span class="mord mathnormal">t</span><span class="mord mathnormal">m</span><span class="mord mathnormal">a</span><span class="mord mathnormal">x</span><span class="mopen">(</span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.089473em;"><span style="top:-2.5864385em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord sqrt mtight"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8622307142857143em;"><span class="svg-align" style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord mtight" style="padding-left:0.833em;"><span class="mord mtight"><span class="mord mathnormal mtight">d</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3448em;"><span style="top:-2.3487714285714287em;margin-left:0em;margin-right:0.07142857142857144em;"><span class="pstrut" style="height:2.5em;"></span><span class="sizing reset-size3 size1 mtight"><span class="mord mathnormal mtight" style="margin-right:0.03148em;">k</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15122857142857138em;"><span></span></span></span></span></span></span></span></span><span style="top:-2.8222307142857144em;"><span class="pstrut" style="height:3em;"></span><span class="hide-tail mtight" style="min-width:0.853em;height:1.08em;"><svg width='400em' height='1.08em' viewBox='0 0 400000 1080' preserveAspectRatio='xMinYMin slice'><path d='M95,702
-c-2.7,0,-7.17,-2.7,-13.5,-8c-5.8,-5.3,-9.5,-10,-9.5,-14
-c0,-2,0.3,-3.3,1,-4c1.3,-2.7,23.83,-20.7,67.5,-54
-c44.2,-33.3,65.8,-50.3,66.5,-51c1.3,-1.3,3,-2,5,-2c4.7,0,8.7,3.3,12,10
-s173,378,173,378c0.7,0,35.3,-71,104,-213c68.7,-142,137.5,-285,206.5,-429
-c69,-144,104.5,-217.7,106.5,-221
-l0 -0
-c5.3,-9.3,12,-14,20,-14
-H400000v40H845.2724
-s-225.272,467,-225.272,467s-235,486,-235,486c-2.7,4.7,-9,7,-19,7
-c-6,0,-10,-1,-12,-3s-194,-422,-194,-422s-65,47,-65,47z
-M834 80h400000v40h-400000z'/></svg></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.17776928571428574em;"><span></span></span></span></span></span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.446108em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">Q</span><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.07153em;">K</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.9190928571428572em;"><span style="top:-2.931em;margin-right:0.07142857142857144em;"><span class="pstrut" style="height:2.5em;"></span><span class="sizing reset-size3 size1 mtight"><span class="mord mathnormal mtight" style="margin-right:0.13889em;">T</span></span></span></span></span></span></span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.538em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mclose">)</span></span></span></span>捕捉了两个token之间的相关性</p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110165928491.png" alt="image.png" /></p>
-<p>上一步的结果再和V做矩阵乘, 得到与输入维度相同的输出矩阵, <strong>每行(即经过计算后的的新的embedding)不仅捕捉了词语的含义（由嵌入表示）或在句子中的位置（由位置编码表示），还捕捉了每个词与其他词的相互作用</strong>。</p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110165937525.png" alt="image.png" /></p>
-<p>给出一张非常直观的图</p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250110165943584.png" alt="image.png" /></p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2025/01/26/KV-Cache/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/01/26/Continuous-batching/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
-      <meta itemprop="name" content="Ronny Lu">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ronny Lu's blog">
-      <meta itemprop="description" content="Tech notes on LLM, LLM Infra, and others">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="undefined | Ronny Lu's blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2025/01/26/Continuous-batching/" class="post-title-link" itemprop="url">Continuous batching</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2025-01-26 17:16:40 / 修改时间：17:17:08" itemprop="dateCreated datePublished" datetime="2025-01-26T17:16:40+08:00">2025-01-26</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">分类于</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">大模型</span></a>
-        </span>
-          ，
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E6%8E%A8%E7%90%86%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index"><span itemprop="name">推理技术</span></a>
-        </span>
-    </span>
-
-  
-    <span class="post-meta-break"></span>
-    <span class="post-meta-item" title="本文字数">
-      <span class="post-meta-item-icon">
-        <i class="far fa-file-word"></i>
-      </span>
-      <span class="post-meta-item-text">本文字数：</span>
-      <span>6.5k</span>
-    </span>
-    <span class="post-meta-item" title="阅读时长">
-      <span class="post-meta-item-icon">
-        <i class="far fa-clock"></i>
-      </span>
-      <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>24 分钟</span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote>
-<p>🔗 原文链接：<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/719610083?utm_psn=1817314936814198784">https://zhuanlan.zhihu.com/p/719610083?utm_psn=1817314936…</a></p>
-</blockquote>
-<p>由于类 GPT 的仅编码器模型推理分为预填充和解码两个阶段。在解码阶段一次推理只输出一个token，输出的 token 会与输入 tokens 拼接在一起，然后作为下一次推理的输入，这样不断反复直到遇到终止符。这样会造成大量的冗余计算。同时用由于仅编码器模型的 Self Attention 中带 Masked ，因此，在推理的时候，前面已经生成的 Token 不需要与后面的 Token 产生 Attention ，从而使得前面已经计算的 K 和 V 可以缓存起来。因此，KV Cache 应运而生。之前针对 KV Cache 技术进行了讲述，KV Cache 是一种典型的以空间换时间（或者叫以内存换计算）的优化技术提升推理速度从而降低延迟。除了从模型视角优化推理的性能，对于一个系统而言，还可以以更高的视角从系统层面来考虑优化整体的模型服务性能。</p>
-<p>而本文将介绍大模型服务请求调度优化技术 Continuous batching 通过提高硬件利用率从而提升系统的系统的性能（吞吐量）。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2025/01/26/Continuous-batching/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/01/26/Chunked-Prefill/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
-      <meta itemprop="name" content="Ronny Lu">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ronny Lu's blog">
-      <meta itemprop="description" content="Tech notes on LLM, LLM Infra, and others">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="undefined | Ronny Lu's blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2025/01/26/Chunked-Prefill/" class="post-title-link" itemprop="url">Chunked Prefill</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2025-01-26 17:15:51 / 修改时间：17:16:22" itemprop="dateCreated datePublished" datetime="2025-01-26T17:15:51+08:00">2025-01-26</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">分类于</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">大模型</span></a>
-        </span>
-          ，
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E6%8E%A8%E7%90%86%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index"><span itemprop="name">推理技术</span></a>
-        </span>
-    </span>
-
-  
-    <span class="post-meta-break"></span>
-    <span class="post-meta-item" title="本文字数">
-      <span class="post-meta-item-icon">
-        <i class="far fa-file-word"></i>
-      </span>
-      <span class="post-meta-item-text">本文字数：</span>
-      <span>2.1k</span>
-    </span>
-    <span class="post-meta-item" title="阅读时长">
-      <span class="post-meta-item-icon">
-        <i class="far fa-clock"></i>
-      </span>
-      <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>8 分钟</span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="introduction"><a class="markdownIt-Anchor" href="#introduction"></a> <strong>Introduction</strong></h2>
+<h1 id="以kv-cache-为中心"><a class="markdownIt-Anchor" href="#以kv-cache-为中心"></a> 以KV Cache 为中心</h1>
 <ol>
 <li>
-<p><strong>Prefill 阶段会并行处理输入 prompt 的所有 token，因此很小的 batch size 就会打满GPU utilization</strong> 比如说，13B 的 LLaMA 输入一条 512 tokens 的 prompt 做 prefill 就会打满单卡 A6000。<strong>反过来，（开启KV Cache）的 decode 阶段每个自回归阶段仅仅会生成一个 token，因此 GPU utilization 很低</strong></p>
+<p>以 KV Cache 决定哪个节点来处理请求</p>
+<ul>
+<li>增加 Prefix Cache 命中长度，节省更多算力</li>
+</ul>
 </li>
 <li>
-<p>Decode 时，单个 token 的开销显著大于 prefill 阶段；增大 batch size，prefill 的单个 token 开销几乎是不变的，而 decode 的开销显著下降。可见，prefill 在 batch size 很小时就已经占满了 GPU 效率，而 decode 阶段在 batch size 很大时才会占满。实际上后文会说明，prefill 阶段的输入 L 很长，因此计算开销大；而 decode 阶段输入的 L 一直是 1，但是需要反复读读 KV Cache，故而 IO 开销很大。</p>
-</li>
-<li>
-<p>需要把 decode 阶段的 batch size 开的非常大才有可能占满 GPU utilization，但是开这么大的 batch size 会因为 KV Cache 读写开销太大而变得不现实，所以 docode 阶段的 GPU utilization 是很难占满的。因此，在实际情况下，decode 仍旧是 memory bounded 而非 compute bounded 的。</p>
-</li>
-<li>
-<p>一条 prompt 会被 prefill 一次，但是会 decode 多次，直到 decode 满足终结条件，譬如 end token 或者长度限制。</p>
-</li>
-<li>
-<p>Tensor Parallize 卡间通讯需求大，而 Pipeline Paralize 需要不断优化 pipeline bubble。</p>
-</li>
-<li>
-<p>Chunked Prefill 做出了两步优化。首先将长短不一的 prompts 拆分为长短一致的 chunks 进行 prefill；其次这些 chunks 间的气泡可以插入/捎带（piggyback）其他完成了 prefill 的 prompts 的 decode 需求。</p>
+<p>以KV Cache 接请求的 P/D阶段</p>
+<ul>
+<li>Prefill 完成计算 → KV Cache 传输到 Decode → Decode 基于 KV Cache,继续自回归生成</li>
+</ul>
 </li>
 </ol>
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/2025/01/26/Chunked-Prefill/#more" rel="contents">
+              <a class="btn" href="/2025/08/20/%E4%BB%A5-KV-Cache-%E4%B8%BA%E4%B8%AD%E5%BF%83%E7%9A%84-PD-%E5%88%86%E7%A6%BB%E5%BC%8F%E6%9E%B6%E6%9E%84/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -790,7 +333,7 @@ M834 80h400000v40h-400000z'/></svg></span></span></span><span class="vlist-s">�
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/01/26/%E6%8A%95%E6%9C%BA%E8%A7%A3%E7%A0%81-Speculative-Decoding/">
+    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/07/16/Sglang-prefill%E9%98%B6%E6%AE%B5%E5%8F%8C%E6%B5%81%E4%BC%98%E5%8C%96%E6%94%B9%E8%BF%9B/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
@@ -808,7 +351,7 @@ M834 80h400000v40h-400000z'/></svg></span></span></span><span class="vlist-s">�
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/2025/01/26/%E6%8A%95%E6%9C%BA%E8%A7%A3%E7%A0%81-Speculative-Decoding/" class="post-title-link" itemprop="url">投机解码 (Speculative Decoding)</a>
+          <a href="/2025/07/16/Sglang-prefill%E9%98%B6%E6%AE%B5%E5%8F%8C%E6%B5%81%E4%BC%98%E5%8C%96%E6%94%B9%E8%BF%9B/" class="post-title-link" itemprop="url">Sglang prefill阶段双流优化改进</a>
         </h2>
 
         <div class="post-meta-container">
@@ -819,14 +362,14 @@ M834 80h400000v40h-400000z'/></svg></span></span></span><span class="vlist-s">�
       </span>
       <span class="post-meta-item-text">发表于</span>
 
-      <time title="创建时间：2025-01-26 17:15:02" itemprop="dateCreated datePublished" datetime="2025-01-26T17:15:02+08:00">2025-01-26</time>
+      <time title="创建时间：2025-07-16 16:08:16" itemprop="dateCreated datePublished" datetime="2025-07-16T16:08:16+08:00">2025-07-16</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2025-01-27 15:07:12" itemprop="dateModified" datetime="2025-01-27T15:07:12+08:00">2025-01-27</time>
+      <time title="修改时间：2025-08-20 15:45:19" itemprop="dateModified" datetime="2025-08-20T15:45:19+08:00">2025-08-20</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -840,6 +383,10 @@ M834 80h400000v40h-400000z'/></svg></span></span></span><span class="vlist-s">�
         <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
           <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E6%8E%A8%E7%90%86%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index"><span itemprop="name">推理技术</span></a>
         </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E6%8E%A8%E7%90%86%E6%8A%80%E6%9C%AF/Sglang/" itemprop="url" rel="index"><span itemprop="name">Sglang</span></a>
+        </span>
     </span>
 
   
@@ -849,14 +396,14 @@ M834 80h400000v40h-400000z'/></svg></span></span></span><span class="vlist-s">�
         <i class="far fa-file-word"></i>
       </span>
       <span class="post-meta-item-text">本文字数：</span>
-      <span>6.8k</span>
+      <span>1.1k</span>
     </span>
     <span class="post-meta-item" title="阅读时长">
       <span class="post-meta-item-icon">
         <i class="far fa-clock"></i>
       </span>
       <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>25 分钟</span>
+      <span>4 分钟</span>
     </span>
 </div>
 
@@ -867,15 +414,11 @@ M834 80h400000v40h-400000z'/></svg></span></span></span><span class="vlist-s">�
     
     
     <div class="post-body" itemprop="articleBody">
-          <blockquote>
-<p>🔗 原文链接：<a target="_blank" rel="noopener" href="https://www.53ai.com/news/finetuning/2024071109285.html">https://www.53ai.com/news/finetuning/2024071109285.html</a></p>
-</blockquote>
-<h1 id="一-背景"><a class="markdownIt-Anchor" href="#一-背景"></a> 一、背景</h1>
-<p>关于 Speculative Decoding 的综述文章 [2401.07851] Unlocking Efficiency in Large Language Model Inference: A Comprehensive Survey of Speculative Decoding，如下图Figure 3 所示：</p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126154418463.png" alt="image.png" /></p>
+          <h3 id="背景"><a class="markdownIt-Anchor" href="#背景"></a> 背景</h3>
+<p>由于prefill是算力瓶颈且线上服务有ttft的限制, batch size通常不会太大, 对于token长度为千数量级的, 通常在1-4之间, 那么当batch size为奇数或者batch内请求的长度不均时, 原始的split batch做双流的方式, 很容易会造成两个batch的计算和通信不均衡, 影响双流的效果, 因此考虑更加细粒度的split token方式, 缓解这种情况</p>
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/2025/01/26/%E6%8A%95%E6%9C%BA%E8%A7%A3%E7%A0%81-Speculative-Decoding/#more" rel="contents">
+              <a class="btn" href="/2025/07/16/Sglang-prefill%E9%98%B6%E6%AE%B5%E5%8F%8C%E6%B5%81%E4%BC%98%E5%8C%96%E6%94%B9%E8%BF%9B/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -906,7 +449,7 @@ M834 80h400000v40h-400000z'/></svg></span></span></span><span class="vlist-s">�
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/01/26/%E9%87%8F%E5%8C%96%E5%9F%BA%E7%A1%80-%E4%B8%BB%E6%B5%81%E9%87%8F%E5%8C%96%E6%8A%80%E6%9C%AF-QLoRA-LLM-int8-GPTQ-AWQ-SmoothQuant-FP8/">
+    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/07/16/Sglang-%E7%A4%BE%E5%8C%BA%E7%89%88-pd%E5%88%86%E7%A6%BB%E6%B5%81%E7%A8%8B%E6%A2%B3%E7%90%86-0-4-9post1/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
@@ -924,7 +467,7 @@ M834 80h400000v40h-400000z'/></svg></span></span></span><span class="vlist-s">�
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/2025/01/26/%E9%87%8F%E5%8C%96%E5%9F%BA%E7%A1%80-%E4%B8%BB%E6%B5%81%E9%87%8F%E5%8C%96%E6%8A%80%E6%9C%AF-QLoRA-LLM-int8-GPTQ-AWQ-SmoothQuant-FP8/" class="post-title-link" itemprop="url">量化基础 & 主流量化技术 (QLoRA, LLM.int8, GPTQ, AWQ, SmoothQuant, FP8)</a>
+          <a href="/2025/07/16/Sglang-%E7%A4%BE%E5%8C%BA%E7%89%88-pd%E5%88%86%E7%A6%BB%E6%B5%81%E7%A8%8B%E6%A2%B3%E7%90%86-0-4-9post1/" class="post-title-link" itemprop="url">Sglang 社区版 pd分离流程梳理 (0.4.9post1)</a>
         </h2>
 
         <div class="post-meta-container">
@@ -934,9 +477,15 @@ M834 80h400000v40h-400000z'/></svg></span></span></span><span class="vlist-s">�
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">发表于</span>
-      
 
-      <time title="创建时间：2025-01-26 17:13:24 / 修改时间：17:14:33" itemprop="dateCreated datePublished" datetime="2025-01-26T17:13:24+08:00">2025-01-26</time>
+      <time title="创建时间：2025-07-16 16:05:25" itemprop="dateCreated datePublished" datetime="2025-07-16T16:05:25+08:00">2025-07-16</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2025-08-20 15:45:03" itemprop="dateModified" datetime="2025-08-20T15:45:03+08:00">2025-08-20</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -950,6 +499,10 @@ M834 80h400000v40h-400000z'/></svg></span></span></span><span class="vlist-s">�
         <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
           <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E6%8E%A8%E7%90%86%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index"><span itemprop="name">推理技术</span></a>
         </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E6%8E%A8%E7%90%86%E6%8A%80%E6%9C%AF/Sglang/" itemprop="url" rel="index"><span itemprop="name">Sglang</span></a>
+        </span>
     </span>
 
   
@@ -959,14 +512,14 @@ M834 80h400000v40h-400000z'/></svg></span></span></span><span class="vlist-s">�
         <i class="far fa-file-word"></i>
       </span>
       <span class="post-meta-item-text">本文字数：</span>
-      <span>6.3k</span>
+      <span>3.2k</span>
     </span>
     <span class="post-meta-item" title="阅读时长">
       <span class="post-meta-item-icon">
         <i class="far fa-clock"></i>
       </span>
       <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>23 分钟</span>
+      <span>12 分钟</span>
     </span>
 </div>
 
@@ -977,28 +530,154 @@ M834 80h400000v40h-400000z'/></svg></span></span></span><span class="vlist-s">�
     
     
     <div class="post-body" itemprop="articleBody">
-          <p>课程链接: <a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1kw4m1X7Bi">吴恩达《深入模型量化|Quantization in Depth》中英字幕_哔哩哔哩_bilibili</a></p>
-<p>参考资料:</p>
+          <p><strong>设计文档:</strong> <a target="_blank" rel="noopener" href="https://docs.google.com/document/d/1rQXJwKd5b9b1aOzLh98mnyMhBMhlxXA5ATZTHoQrwvc/edit?tab=t.0#heading=h.i3s2t1j0e1ik"><strong>https://docs.google.com/document/d/1rQXJwKd5b9b1aOzLh98mnyMhBMhlxXA5ATZTHoQrwvc/edit?tab=t.0#heading=h.i3s2t1j0e1ik</strong></a></p>
+<p>参考:</p>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/1912106909617624371">https://zhuanlan.zhihu.com/p/1912106909617624371</a></p>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/1924856844867867827">https://zhuanlan.zhihu.com/p/1924856844867867827</a></p>
+<h1 id="组件概览"><a class="markdownIt-Anchor" href="#组件概览"></a> 组件概览</h1>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250716154607788.png" alt="image.png" /></p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2025/07/16/Sglang-%E7%A4%BE%E5%8C%BA%E7%89%88-pd%E5%88%86%E7%A6%BB%E6%B5%81%E7%A8%8B%E6%A2%B3%E7%90%86-0-4-9post1/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/06/13/Sglang-prefill%E9%98%B6%E6%AE%B5%E4%B8%93%E5%AE%B6%E8%B0%83%E5%BA%A6%E9%80%BB%E8%BE%91%E6%A2%B3%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
+      <meta itemprop="name" content="Ronny Lu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ronny Lu's blog">
+      <meta itemprop="description" content="Tech notes on LLM, LLM Infra, and others">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | Ronny Lu's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2025/06/13/Sglang-prefill%E9%98%B6%E6%AE%B5%E4%B8%93%E5%AE%B6%E8%B0%83%E5%BA%A6%E9%80%BB%E8%BE%91%E6%A2%B3%E7%90%86/" class="post-title-link" itemprop="url">Sglang prefill阶段专家调度逻辑梳理</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2025-06-13 10:47:07" itemprop="dateCreated datePublished" datetime="2025-06-13T10:47:07+08:00">2025-06-13</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2025-08-20 16:07:27" itemprop="dateModified" datetime="2025-08-20T16:07:27+08:00">2025-08-20</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">大模型</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E6%8E%A8%E7%90%86%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index"><span itemprop="name">推理技术</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E6%8E%A8%E7%90%86%E6%8A%80%E6%9C%AF/Sglang/" itemprop="url" rel="index"><span itemprop="name">Sglang</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>1.4k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>5 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h1 id="冗余专家架构实现"><a class="markdownIt-Anchor" href="#冗余专家架构实现"></a> 冗余专家架构实现</h1>
 <ul>
-<li>
-<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/646210009">https://zhuanlan.zhihu.com/p/646210009</a></p>
+<li>如何实现专家冗余
+<ul>
+<li>虚拟专家映射表</li>
+</ul>
 </li>
-<li>
-<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/704280420">https://zhuanlan.zhihu.com/p/704280420</a></p>
+<li>如何实现负载均衡
+<ul>
+<li>层级别均衡</li>
+<li>层内均衡：prefill、decode;</li>
+</ul>
 </li>
-<li>
-<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/675701614">https://zhuanlan.zhihu.com/p/675701614</a></p>
+<li>如何最快的切换权重
+<ul>
+<li>异步加载</li>
+</ul>
+</li>
+<li>如何实现安全的动态冗余切换
+<ul>
+<li>并发、分级发布、自动化 checker、流量屏蔽<br />
+<img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250819194017154.png" alt="image.png" /></li>
+</ul>
 </li>
 </ul>
-<h1 id="基本概念"><a class="markdownIt-Anchor" href="#基本概念"></a> 基本概念</h1>
-<h2 id="模型量化是做什么的"><a class="markdownIt-Anchor" href="#模型量化是做什么的"></a> <strong>模型量化是做什么的</strong></h2>
-<p><strong>模型量化是将浮点数值转化为定点数值，同时尽可能减少计算精度损失的方法。</strong></p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126142805147.png" alt="image.png" /></p>
-<p>具体而言，模型量化是一种压缩网络参数的方式，它将神经网络的参数（weight）、激活（activation）等原本用浮点表示的量值换用定点（整型）表示，在计算过程中，再将定点数据反量化回浮点数据，得到结果。</p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126142813497.png" alt="image.png" /></p>
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/2025/01/26/%E9%87%8F%E5%8C%96%E5%9F%BA%E7%A1%80-%E4%B8%BB%E6%B5%81%E9%87%8F%E5%8C%96%E6%8A%80%E6%9C%AF-QLoRA-LLM-int8-GPTQ-AWQ-SmoothQuant-FP8/#more" rel="contents">
+              <a class="btn" href="/2025/06/13/Sglang-prefill%E9%98%B6%E6%AE%B5%E4%B8%93%E5%AE%B6%E8%B0%83%E5%BA%A6%E9%80%BB%E8%BE%91%E6%A2%B3%E7%90%86/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -1029,7 +708,7 @@ M834 80h400000v40h-400000z'/></svg></span></span></span><span class="vlist-s">�
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/01/26/LoRA-Low-Rank-Adaptation-%E4%BD%8E%E7%A7%A9%E5%BE%AE%E8%B0%83/">
+    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/06/13/Sglang-pd%E5%88%86%E7%A6%BB%E9%80%BB%E8%BE%91%E6%A2%B3%E7%90%86/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
@@ -1047,7 +726,7 @@ M834 80h400000v40h-400000z'/></svg></span></span></span><span class="vlist-s">�
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/2025/01/26/LoRA-Low-Rank-Adaptation-%E4%BD%8E%E7%A7%A9%E5%BE%AE%E8%B0%83/" class="post-title-link" itemprop="url">LoRA (Low-Rank Adaptation) 低秩微调</a>
+          <a href="/2025/06/13/Sglang-pd%E5%88%86%E7%A6%BB%E9%80%BB%E8%BE%91%E6%A2%B3%E7%90%86/" class="post-title-link" itemprop="url">Sglang pd分离逻辑梳理</a>
         </h2>
 
         <div class="post-meta-container">
@@ -1059,7 +738,7 @@ M834 80h400000v40h-400000z'/></svg></span></span></span><span class="vlist-s">�
       <span class="post-meta-item-text">发表于</span>
       
 
-      <time title="创建时间：2025-01-26 14:16:41 / 修改时间：14:18:17" itemprop="dateCreated datePublished" datetime="2025-01-26T14:16:41+08:00">2025-01-26</time>
+      <time title="创建时间：2025-06-13 10:45:32 / 修改时间：10:48:08" itemprop="dateCreated datePublished" datetime="2025-06-13T10:45:32+08:00">2025-06-13</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -1071,7 +750,11 @@ M834 80h400000v40h-400000z'/></svg></span></span></span><span class="vlist-s">�
         </span>
           ，
         <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E8%AE%AD%E7%BB%83%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index"><span itemprop="name">训练技术</span></a>
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E6%8E%A8%E7%90%86%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index"><span itemprop="name">推理技术</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E6%8E%A8%E7%90%86%E6%8A%80%E6%9C%AF/Sglang/" itemprop="url" rel="index"><span itemprop="name">Sglang</span></a>
         </span>
     </span>
 
@@ -1082,14 +765,14 @@ M834 80h400000v40h-400000z'/></svg></span></span></span><span class="vlist-s">�
         <i class="far fa-file-word"></i>
       </span>
       <span class="post-meta-item-text">本文字数：</span>
-      <span>2k</span>
+      <span>3.4k</span>
     </span>
     <span class="post-meta-item" title="阅读时长">
       <span class="post-meta-item-icon">
         <i class="far fa-clock"></i>
       </span>
       <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>7 分钟</span>
+      <span>12 分钟</span>
     </span>
 </div>
 
@@ -1100,15 +783,10 @@ M834 80h400000v40h-400000z'/></svg></span></span></span><span class="vlist-s">�
     
     
     <div class="post-body" itemprop="articleBody">
-          <h2 id="前言"><a class="markdownIt-Anchor" href="#前言"></a> 前言</h2>
-<p>随着最近大规模语言模型（Large Language Model，LLM）的出现，数十亿乃至千亿的参数量级成为了LLM的标配。如此参数量级的模型意味着传统的模型微调或者线性探测无法同时在训练效率和效果上同时满足开发者的要求。在这里介绍一个近期训练LLM普遍使用的PEFT（Parameter-Efficient Fine-Tuning）算法：<strong>LoRA</strong>（Low Rank Adaptation）[1]，顾名思义，LoRA的核心思想是基于低秩的适配器进行优化。</p>
-<h2 id="1-背景知识"><a class="markdownIt-Anchor" href="#1-背景知识"></a> 1. 背景知识</h2>
-<h3 id="11-什么是秩"><a class="markdownIt-Anchor" href="#11-什么是秩"></a> 1.1 什么是秩？</h3>
-<p>那么什么是秩呢？矩阵的秩（rank）分为行秩和列秩，行秩指的是矩阵的线性无关的行的个数，列秩同理。因为一个矩阵的行秩和列秩总是相等的，因此它们统一被叫做矩阵的<strong>秩</strong>。在机器学习中，我们通常使用一个矩阵来表示一个全连接层，但是这个全连接层往往是过参数化的，这意味着我们可以通过计算这个矩阵的秩来确定哪些特征是重要和相关的。例如在主成分分析（PCA）和奇异值分解（SVD）中，我们通过一个较低维度的表示来近似表示一个高维矩阵或数据集（图1）。换句话说，我们试图找到原始特征空间（或矩阵）中少数维度的（线性）组合，能够捕捉数据集中大部分的信息。</p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126141522733.png" alt="image.png" /></p>
+          <p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250612213333954.png" alt="image.png" /></p>
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/2025/01/26/LoRA-Low-Rank-Adaptation-%E4%BD%8E%E7%A7%A9%E5%BE%AE%E8%B0%83/#more" rel="contents">
+              <a class="btn" href="/2025/06/13/Sglang-pd%E5%88%86%E7%A6%BB%E9%80%BB%E8%BE%91%E6%A2%B3%E7%90%86/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -1139,7 +817,7 @@ M834 80h400000v40h-400000z'/></svg></span></span></span><span class="vlist-s">�
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/01/26/Llama-3-1-405B-%E8%AE%AD%E7%BB%83/">
+    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/06/13/Sglang-MTP-Eagle-%E9%80%BB%E8%BE%91%E6%A2%B3%E7%90%86/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
@@ -1157,7 +835,7 @@ M834 80h400000v40h-400000z'/></svg></span></span></span><span class="vlist-s">�
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/2025/01/26/Llama-3-1-405B-%E8%AE%AD%E7%BB%83/" class="post-title-link" itemprop="url">Llama 3.1-405B 训练</a>
+          <a href="/2025/06/13/Sglang-MTP-Eagle-%E9%80%BB%E8%BE%91%E6%A2%B3%E7%90%86/" class="post-title-link" itemprop="url">Sglang MTP (Eagle) 逻辑梳理</a>
         </h2>
 
         <div class="post-meta-container">
@@ -1169,7 +847,7 @@ M834 80h400000v40h-400000z'/></svg></span></span></span><span class="vlist-s">�
       <span class="post-meta-item-text">发表于</span>
       
 
-      <time title="创建时间：2025-01-26 14:14:34 / 修改时间：14:17:58" itemprop="dateCreated datePublished" datetime="2025-01-26T14:14:34+08:00">2025-01-26</time>
+      <time title="创建时间：2025-06-13 10:38:40 / 修改时间：10:39:33" itemprop="dateCreated datePublished" datetime="2025-06-13T10:38:40+08:00">2025-06-13</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -1181,7 +859,11 @@ M834 80h400000v40h-400000z'/></svg></span></span></span><span class="vlist-s">�
         </span>
           ，
         <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E8%AE%AD%E7%BB%83%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index"><span itemprop="name">训练技术</span></a>
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E6%8E%A8%E7%90%86%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index"><span itemprop="name">推理技术</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E6%8E%A8%E7%90%86%E6%8A%80%E6%9C%AF/Sglang/" itemprop="url" rel="index"><span itemprop="name">Sglang</span></a>
         </span>
     </span>
 
@@ -1192,14 +874,14 @@ M834 80h400000v40h-400000z'/></svg></span></span></span><span class="vlist-s">�
         <i class="far fa-file-word"></i>
       </span>
       <span class="post-meta-item-text">本文字数：</span>
-      <span>2.5k</span>
+      <span>1.4k</span>
     </span>
     <span class="post-meta-item" title="阅读时长">
       <span class="post-meta-item-icon">
         <i class="far fa-clock"></i>
       </span>
       <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>9 分钟</span>
+      <span>5 分钟</span>
     </span>
 </div>
 
@@ -1210,13 +892,43 @@ M834 80h400000v40h-400000z'/></svg></span></span></span><span class="vlist-s">�
     
     
     <div class="post-body" itemprop="articleBody">
-          <p><a target="_blank" rel="noopener" href="https://scontent-nrt1-1.xx.fbcdn.net/v/t39.2365-6/452387774_1036916434819166_4173978747091533306_n.pdf?_nc_cat=104&amp;ccb=1-7&amp;_nc_sid=3c67a6&amp;_nc_ohc=t6egZJ8QdI4Q7kNvgFMhbmG&amp;_nc_ht=scontent-nrt1-1.xx&amp;oh=00_AYBspddKakesakPWwavuhJerPmZXDEBsnrcTmoxP6-MQSg&amp;oe=66A7944D">技术报告链接</a></p>
-<p>计算资源：Llama 3.1-405B 在16,000 个 H100 GPU 上训练，每个 GPU 的运行功率为 700W TDP，配备 80GB HBM3。每台服务器配备8个 GPU 和2个 CPU。在服务器内部，8个 GPU 通过 NVLink 连接。预训练总共用了54天。</p>
-<p>Llama 3.1-405B 采用了 <strong>4D 混合并行：TP (张量并行）+ CP (序列并行）+ PP (流水线并行）+ DP (数据并行）,</strong> 配置如下表</p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126134936971.png" alt="image.png" /></p>
+          <h2 id="1-初始化阶段server-启动"><a class="markdownIt-Anchor" href="#1-初始化阶段server-启动"></a> 1. 初始化阶段（Server 启动）</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>触发点</th>
+<th>关键字段</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>Scheduler.__init__</code></td>
+<td><code>self.spec_algorithm = SpeculativeAlgorithm.from_string(server_args.speculative_algorithm)</code></td>
+<td>解析 CLI 参数 <code>--speculative_algorithm</code>。Eagle ⇒ <code>SpecAlgorithm.EAGLE</code>。</td>
+</tr>
+<tr>
+<td>2</td>
+<td>同处</td>
+<td><code>if self.spec_algorithm.is_eagle():</code></td>
+<td><strong>EagleWorker 构造</strong>（见表-A）。同时：  <br>① 申请独立 draft-KV buffer  <br>② 建立 <code>draft_policy</code>（Queue 内优先级仅管 draft 请求）</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>self.decode_mem_cache_buf_multiplier = server_args.speculative_num_draft_tokens</code></td>
+<td>估算 decode 所需额外 KV buf 空间（默认 2）。</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><strong>表-A EAGLEWorker 构造</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">from sglang.srt.speculative.eagle_worker import EAGLEWorker</span><br><span class="line">self.draft_worker = EAGLEWorker(</span><br><span class="line">        gpu_id=gpu_id,</span><br><span class="line">        tp_rank=tp_rank,</span><br><span class="line">        server_args=server_args,</span><br><span class="line">        nccl_port=port_args.nccl_port,</span><br><span class="line">        target_worker=self.tp_worker,   # 真正的“验证”模型</span><br><span class="line">        dp_rank=dp_rank,</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<p>EAGLEWorker 内部再启动一个 <code>ModelRunner</code>（share 权重但有自己 KV pool），专门跑 <strong>草稿 (draft) forward</strong>。</p>
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/2025/01/26/Llama-3-1-405B-%E8%AE%AD%E7%BB%83/#more" rel="contents">
+              <a class="btn" href="/2025/06/13/Sglang-MTP-Eagle-%E9%80%BB%E8%BE%91%E6%A2%B3%E7%90%86/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -1247,7 +959,7 @@ M834 80h400000v40h-400000z'/></svg></span></span></span><span class="vlist-s">�
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/01/26/%E5%BA%8F%E5%88%97%E5%B9%B6%E8%A1%8C/">
+    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/06/12/Sglang-Deepseek%E6%A8%A1%E5%9E%8B-Prefill%E9%98%B6%E6%AE%B5%E6%B5%81%E7%A8%8B%E6%A2%B3%E7%90%86/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
@@ -1265,7 +977,7 @@ M834 80h400000v40h-400000z'/></svg></span></span></span><span class="vlist-s">�
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/2025/01/26/%E5%BA%8F%E5%88%97%E5%B9%B6%E8%A1%8C/" class="post-title-link" itemprop="url">序列并行</a>
+          <a href="/2025/06/12/Sglang-Deepseek%E6%A8%A1%E5%9E%8B-Prefill%E9%98%B6%E6%AE%B5%E6%B5%81%E7%A8%8B%E6%A2%B3%E7%90%86/" class="post-title-link" itemprop="url">Sglang Deepseek模型 Prefill阶段流程梳理</a>
         </h2>
 
         <div class="post-meta-container">
@@ -1277,7 +989,7 @@ M834 80h400000v40h-400000z'/></svg></span></span></span><span class="vlist-s">�
       <span class="post-meta-item-text">发表于</span>
       
 
-      <time title="创建时间：2025-01-26 14:13:50 / 修改时间：14:17:42" itemprop="dateCreated datePublished" datetime="2025-01-26T14:13:50+08:00">2025-01-26</time>
+      <time title="创建时间：2025-06-12 21:06:50 / 修改时间：21:15:26" itemprop="dateCreated datePublished" datetime="2025-06-12T21:06:50+08:00">2025-06-12</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -1289,7 +1001,11 @@ M834 80h400000v40h-400000z'/></svg></span></span></span><span class="vlist-s">�
         </span>
           ，
         <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E8%AE%AD%E7%BB%83%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index"><span itemprop="name">训练技术</span></a>
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E6%8E%A8%E7%90%86%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index"><span itemprop="name">推理技术</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E6%8E%A8%E7%90%86%E6%8A%80%E6%9C%AF/Sglang/" itemprop="url" rel="index"><span itemprop="name">Sglang</span></a>
         </span>
     </span>
 
@@ -1300,7 +1016,7 @@ M834 80h400000v40h-400000z'/></svg></span></span></span><span class="vlist-s">�
         <i class="far fa-file-word"></i>
       </span>
       <span class="post-meta-item-text">本文字数：</span>
-      <span>1.7k</span>
+      <span>1.6k</span>
     </span>
     <span class="post-meta-item" title="阅读时长">
       <span class="post-meta-item-icon">
@@ -1318,14 +1034,435 @@ M834 80h400000v40h-400000z'/></svg></span></span></span><span class="vlist-s">�
     
     
     <div class="post-body" itemprop="articleBody">
-          <h2 id="sequence-parallelism"><a class="markdownIt-Anchor" href="#sequence-parallelism"></a> <strong>Sequence Parallelism</strong></h2>
-<p>Megatron 在他们的 Tensor Parallelism 的基础上，将 Transformer 核的 LayerNorm 以及 Dropout 层的输入**按 Sequence Length 维度进行了切分，**在 self-attention 计算前聚合（all-gather）了sequence的内容</p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126134624926.png" alt="image.png" /></p>
-<h2 id="context-parallelism"><a class="markdownIt-Anchor" href="#context-parallelism"></a> <strong>Context Parallelism</strong></h2>
-<p>相当于 Sequence Parallelism 的升级版，<strong>解决SP中未完成的self-attention序列并行问题</strong>。</p>
+          <p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250612205849762.png" alt="image.png" /></p>
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/2025/01/26/%E5%BA%8F%E5%88%97%E5%B9%B6%E8%A1%8C/#more" rel="contents">
+              <a class="btn" href="/2025/06/12/Sglang-Deepseek%E6%A8%A1%E5%9E%8B-Prefill%E9%98%B6%E6%AE%B5%E6%B5%81%E7%A8%8B%E6%A2%B3%E7%90%86/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/06/12/Sglang-dp%E6%B5%81%E7%A8%8B%E6%A2%B3%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
+      <meta itemprop="name" content="Ronny Lu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ronny Lu's blog">
+      <meta itemprop="description" content="Tech notes on LLM, LLM Infra, and others">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | Ronny Lu's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2025/06/12/Sglang-dp%E6%B5%81%E7%A8%8B%E6%A2%B3%E7%90%86/" class="post-title-link" itemprop="url">Sglang dp流程梳理</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-06-12 20:53:23 / 修改时间：21:04:33" itemprop="dateCreated datePublished" datetime="2025-06-12T20:53:23+08:00">2025-06-12</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">大模型</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E6%8E%A8%E7%90%86%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index"><span itemprop="name">推理技术</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E6%8E%A8%E7%90%86%E6%8A%80%E6%9C%AF/Sglang/" itemprop="url" rel="index"><span itemprop="name">Sglang</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>971</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>4 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p><a target="_blank" rel="noopener" href="https://github.com/zhaochenyang20/Awesome-ML-SYS-Tutorial/blob/main/sglang/sglang-worker/readme-CN.md">https://github.com/zhaochenyang20/Awesome-ML-SYS-Tutorial/blob/main/sglang/sglang-worker/readme-CN.md</a></p>
+<h1 id="组件集成架构"><a class="markdownIt-Anchor" href="#组件集成架构"></a> 组件集成架构</h1>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250612201214460.png" alt="image.png" /></p>
+<h1 id="dataparallelcontroller"><a class="markdownIt-Anchor" href="#dataparallelcontroller"></a> DataParallelController</h1>
+<p>从<code>DataParallelController</code>开始，终于到了管理多 GPU 的控制器。目前为止，我们梳理过：</p>
+<p>ModelRunner-&gt;TpModelWorker-&gt;Scheduler</p>
+<p>到这里，所有的文章都是集中在单卡上的 TP 做的，为什么突然就到了 DP 多卡呢？直观上，显然 DP 相比 TP 是更上一层，为什么 SGLang 没有<code>TensorParallelController</code>，而直接到了<code>DataParallelController</code>？</p>
+<p><strong>事实上，SGLang 的</strong><code>DataParallelController</code><strong>同时也进行了 TP 和 DP 的统一管理。TP 需要管理的内容不多，大家都是一致的，做好</strong><code>broadcast input</code><strong>和</strong><code>allreduce activations</code><strong>即可。所以，</strong><code>DataParallelController</code><strong>将 TP 的管理和更上层的 DP 管理统一到了这一层，换言之，这是个多级并行控制器。</strong></p>
+<p>源码地址：<a target="_blank" rel="noopener" href="https://github.com/sgl-project/sglang/blob/main/python/sglang/srt/managers/data_parallel_controller.py">sglang/sglang/srt/managers/data_parallel_controller.py</a></p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2025/06/12/Sglang-dp%E6%B5%81%E7%A8%8B%E6%A2%B3%E7%90%86/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/06/12/Deepseek-prefill-%E9%98%B6%E6%AE%B5%E5%8F%8C%E6%B5%81%E9%80%BB%E8%BE%91%E6%A2%B3%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
+      <meta itemprop="name" content="Ronny Lu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ronny Lu's blog">
+      <meta itemprop="description" content="Tech notes on LLM, LLM Infra, and others">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | Ronny Lu's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2025/06/12/Deepseek-prefill-%E9%98%B6%E6%AE%B5%E5%8F%8C%E6%B5%81%E9%80%BB%E8%BE%91%E6%A2%B3%E7%90%86/" class="post-title-link" itemprop="url">Deepseek prefill 阶段双流逻辑梳理</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-06-12 19:38:08 / 修改时间：19:42:28" itemprop="dateCreated datePublished" datetime="2025-06-12T19:38:08+08:00">2025-06-12</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">大模型</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E6%8E%A8%E7%90%86%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index"><span itemprop="name">推理技术</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E6%8E%A8%E7%90%86%E6%8A%80%E6%9C%AF/Deepseek%E4%BC%98%E5%8C%96/" itemprop="url" rel="index"><span itemprop="name">Deepseek优化</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>424</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>2 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250612193442868.png" alt="image.png" /></p>
+<p>思路: 通过分出计算流和通信流, 重叠计算和通信, 掩盖通信延迟</p>
+<p>入口: <code>forward_prefill_parallel</code></p>
+<p>关键函数:</p>
+<p><code>forward_attn_gate</code></p>
+<ul>
+<li>
+<p><code>input_layernorm</code></p>
+</li>
+<li>
+<p><code>prefill_attn_gate</code></p>
+<ul>
+<li>
+<p><code>forward_normal/forward_normal_chunked_kv</code>: attention计算</p>
+</li>
+<li>
+<p><code>gate</code>: 生成router结果</p>
+</li>
+<li>
+<p><code>select_experts</code>: 选专家</p>
+</li>
+</ul>
+</li>
+<li>
+<p><code>per_token_group_quant_fp8</code>: fp8量化attn的输出</p>
+</li>
+</ul>
+<p><code>deep_ep_combine_post</code>: combine 后处理, 返回 combine结果 * routed_scaling_factor + shared_output</p>
+<p><code>deep_ep_prefill_dispatch</code>: moe 层 dispatch</p>
+<p><code>deep_ep_combine</code>: moe 层 combine</p>
+<p><code>deep_gemm_prefill</code>: moe 层 local_expert_forward</p>
+<p><code>shared_experts</code>: 共享专家计算</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2025/06/12/Deepseek-prefill-%E9%98%B6%E6%AE%B5%E5%8F%8C%E6%B5%81%E9%80%BB%E8%BE%91%E6%A2%B3%E7%90%86/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/06/12/Deepseek-mla-%E6%9D%83%E9%87%8D%E5%90%B8%E6%94%B6-%E4%B8%8D%E5%90%B8%E6%94%B6%E5%88%86%E6%9E%90/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
+      <meta itemprop="name" content="Ronny Lu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ronny Lu's blog">
+      <meta itemprop="description" content="Tech notes on LLM, LLM Infra, and others">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | Ronny Lu's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2025/06/12/Deepseek-mla-%E6%9D%83%E9%87%8D%E5%90%B8%E6%94%B6-%E4%B8%8D%E5%90%B8%E6%94%B6%E5%88%86%E6%9E%90/" class="post-title-link" itemprop="url">Deepseek mla 权重吸收 & 不吸收分析</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-06-12 15:40:31 / 修改时间：16:05:00" itemprop="dateCreated datePublished" datetime="2025-06-12T15:40:31+08:00">2025-06-12</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">大模型</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E6%8E%A8%E7%90%86%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index"><span itemprop="name">推理技术</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E6%8E%A8%E7%90%86%E6%8A%80%E6%9C%AF/Deepseek%E4%BC%98%E5%8C%96/" itemprop="url" rel="index"><span itemprop="name">Deepseek优化</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>1.3k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>5 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h1 id="mla权重未吸收"><a class="markdownIt-Anchor" href="#mla权重未吸收"></a> MLA权重未吸收</h1>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250612154229678.png" alt="image.png" /></p>
+<ul>
+<li>
+<p><strong>q_a_and_kv_a_proj</strong></p>
+<ul>
+<li>输入为(s, 7168), 参数为(7168, 2112(1536 + 512 + 64)), 输出为(s, 2112)</li>
+<li>把W_DQ, W_DKV, W_KR三个权重参数合并, 形状为 [hidden size(7168), latent dimension for Q(1536) + latent dimension for K/V(512) + rope dimension(64)]</li>
+<li>计算得到q_c(layernorm之前), new_kv_c(layernorm之前), new_k_pe(layernorm之前, rope之前)</li>
+<li><strong>计算量s_q * 7168 * 2112 * 2</strong></li>
+</ul>
+</li>
+<li>
+<p><strong>q_a_and_kv_a_layernorm</strong></p>
+<ul>
+<li>计算得到q_c, new_kv_c(latent cache), new_k_pe(rope之前)</li>
+</ul>
+</li>
+<li>
+<p><strong>q_b_proj</strong></p>
+<ul>
+<li>输入为(s, 1536), 参数为(1536, 24576(128 * (128 + 64))), 输出为(s, 24576)</li>
+<li>把W_UQ, W_QR两个权重参数合并, 形状为[latent dimension for Q(1536), number of attention heads(128) * no rope dimension + rope dimension(128 + 64)]</li>
+<li>计算得到q_nope(q[…, :no rope dimension], q_pe(rope之前)</li>
+<li><strong>计算量s_q * 1536 * 128 * (128 + 64) * 2</strong></li>
+</ul>
+</li>
+<li>
+<p><strong>kv_b_split_proj</strong></p>
+<ul>
+<li>输入为(s, 512), 参数为(512, 32768(128 * (128 + 128))), 输出为(s, 16384), (s, 16384)</li>
+<li>把W_UK, W_UV两个权重参数合并[latent dimension for K/V(512), number of attention heads(128) * (no rope dimension(128) + V head dim(128))]</li>
+<li>计算得到k_nope(k[…, :no rope dimension]), v</li>
+<li><strong>计算量s_kv * 512 * 128 * (128 + 128) * 2</strong></li>
+</ul>
+</li>
+<li>
+<p><strong>rotary_emb</strong></p>
+<ul>
+<li>对new_k_pe(rope之前), q_pe(rope之前)应用旋转位置编码</li>
+<li>计算得到new_k_pe(k[…, no rope dimension:]), q_pe(q[…, no rope dimension:])</li>
+</ul>
+</li>
+<li>
+<p><strong>attn_mha</strong></p>
+<ul>
+<li>通过q,k,v计算attn, 输出形状为[seq length, number of attention heads(128) * V head dim(128)]</li>
+<li><strong>计算量s_q * (128 + 64) * 128 * s_kv * 2 (Attention, qk计算) + s_q * s_kv * 128 * 128 * 2 (Attention得分矩阵 * v)</strong></li>
+</ul>
+</li>
+<li>
+<p><strong>o_proj</strong></p>
+<ul>
+<li>对应输入为(s, 16384), 参数为(16384(128 * 128), 7168), 输出为(s, 7168)</li>
+<li>参数为W_O, 形状为[number of attention heads(128) * V head dim(128), hidden size(7168)]</li>
+<li>计算得到o</li>
+<li><strong>计算量s_q * 128 * 128 * 7168 * 2</strong></li>
+</ul>
+</li>
+</ul>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2025/06/12/Deepseek-mla-%E6%9D%83%E9%87%8D%E5%90%B8%E6%94%B6-%E4%B8%8D%E5%90%B8%E6%94%B6%E5%88%86%E6%9E%90/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -1349,7 +1486,7 @@ M834 80h400000v40h-400000z'/></svg></span></span></span><span class="vlist-s">�
 
 
   <nav class="pagination">
-    <a class="extend prev" rel="prev" title="上一页" aria-label="上一页" href="/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/6/">6</a><a class="extend next" rel="next" title="下一页" aria-label="下一页" href="/page/3/"><i class="fa fa-angle-right"></i></a>
+    <a class="extend prev" rel="prev" title="上一页" aria-label="上一页" href="/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/8/">8</a><a class="extend next" rel="next" title="下一页" aria-label="下一页" href="/page/3/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 </div>
@@ -1372,14 +1509,14 @@ M834 80h400000v40h-400000z'/></svg></span></span></span><span class="vlist-s">�
       <i class="fa fa-chart-line"></i>
     </span>
       <span>站点总字数：</span>
-    <span title="站点总字数">194k</span>
+    <span title="站点总字数">245k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span>站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">11:46</span>
+    <span title="站点阅读时长">14:50</span>
   </span>
 </div>
 <div class="busuanzi-count">

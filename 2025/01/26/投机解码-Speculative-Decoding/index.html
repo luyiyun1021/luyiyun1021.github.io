@@ -52,8 +52,10 @@
 <meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126155120150.png">
 <meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250127150607067.png">
 <meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250127150620045.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250612200557240.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250612200606036.png">
 <meta property="article:published_time" content="2025-01-26T09:15:02.000Z">
-<meta property="article:modified_time" content="2025-01-27T07:07:12.197Z">
+<meta property="article:modified_time" content="2025-06-12T12:08:30.926Z">
 <meta property="article:author" content="Ronny Lu">
 <meta property="article:tag" content="大模型">
 <meta property="article:tag" content="大模型推理">
@@ -166,7 +168,7 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%80-%E8%83%8C%E6%99%AF"><span class="nav-number">1.</span> <span class="nav-text"> 一、背景</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BA%8C-%E8%87%AA%E5%9B%9E%E5%BD%92%E8%A7%A3%E7%A0%81autoregressive-decoding"><span class="nav-number">2.</span> <span class="nav-text"> 二、自回归解码（Autoregressive Decoding）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#21-%E6%A6%82%E8%BF%B0"><span class="nav-number">2.0.1.</span> <span class="nav-text"> 2.1. 概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#22-kv-cache"><span class="nav-number">2.0.2.</span> <span class="nav-text"> 2.2 KV Cache</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%80-%E8%83%8C%E6%99%AF-2"><span class="nav-number">3.</span> <span class="nav-text"> 一、背景</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BA%8C-%E8%87%AA%E5%9B%9E%E5%BD%92%E8%A7%A3%E7%A0%81autoregressive-decoding-2"><span class="nav-number">4.</span> <span class="nav-text"> 二、自回归解码（Autoregressive Decoding）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#21-%E6%A6%82%E8%BF%B0-2"><span class="nav-number">4.0.1.</span> <span class="nav-text"> 2.1. 概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#22-kv-cache-2"><span class="nav-number">4.0.2.</span> <span class="nav-text"> 2.2 KV Cache</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#23-%E8%AE%BF%E5%AD%98%E7%93%B6%E9%A2%88"><span class="nav-number">4.0.3.</span> <span class="nav-text"> 2.3 访存瓶颈</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#24-decoding-%E9%98%B6%E6%AE%B5%E4%BC%98%E5%8C%96"><span class="nav-number">4.0.4.</span> <span class="nav-text"> 2.4 Decoding 阶段优化</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%89-%E5%B9%B6%E8%A1%8C%E8%A7%A3%E7%A0%81parallel-decoding"><span class="nav-number">5.</span> <span class="nav-text"> 三、并行解码（Parallel Decoding）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#31-%E6%96%B9%E6%A1%88%E6%A6%82%E8%BF%B0"><span class="nav-number">5.0.1.</span> <span class="nav-text"> 3.1 方案概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#32-%E5%AE%9E%E7%8E%B0%E7%BB%86%E8%8A%82"><span class="nav-number">5.0.2.</span> <span class="nav-text"> 3.2 实现细节</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#33-%E8%AF%84%E4%BC%B0%E7%BB%93%E6%9E%9C"><span class="nav-number">5.0.3.</span> <span class="nav-text"> 3.3. 评估结果</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9B%9B-%E6%8A%95%E6%9C%BA%E8%A7%A3%E7%A0%81speculative-decoding"><span class="nav-number">6.</span> <span class="nav-text"> 四、投机解码（Speculative Decoding）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#41-%E6%96%B9%E6%A1%88%E6%A6%82%E8%BF%B0"><span class="nav-number">6.0.1.</span> <span class="nav-text"> 4.1. 方案概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#42-%E5%AE%9E%E7%8E%B0%E7%BB%86%E8%8A%82"><span class="nav-number">6.0.2.</span> <span class="nav-text"> 4.2 实现细节</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#43-%E8%AF%84%E4%BC%B0%E7%BB%93%E6%9E%9C"><span class="nav-number">6.0.3.</span> <span class="nav-text"> 4.3. 评估结果</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BA%94-medusa"><span class="nav-number">7.</span> <span class="nav-text"> 五、Medusa</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#medusa-heads"><span class="nav-number">7.1.</span> <span class="nav-text"> Medusa heads</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#tree-attention"><span class="nav-number">7.2.</span> <span class="nav-text"> Tree Attention</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#typical-acceptance"><span class="nav-number">7.3.</span> <span class="nav-text"> Typical Acceptance</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">7.4.</span> <span class="nav-text"> 总结</span></a></li></ol></li></ol></div>
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%80-%E8%83%8C%E6%99%AF"><span class="nav-number">1.</span> <span class="nav-text"> 一、背景</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BA%8C-%E8%87%AA%E5%9B%9E%E5%BD%92%E8%A7%A3%E7%A0%81autoregressive-decoding"><span class="nav-number">2.</span> <span class="nav-text"> 二、自回归解码（Autoregressive Decoding）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#21-%E6%A6%82%E8%BF%B0"><span class="nav-number">2.0.1.</span> <span class="nav-text"> 2.1. 概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#22-kv-cache"><span class="nav-number">2.0.2.</span> <span class="nav-text"> 2.2 KV Cache</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%80-%E8%83%8C%E6%99%AF-2"><span class="nav-number">3.</span> <span class="nav-text"> 一、背景</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BA%8C-%E8%87%AA%E5%9B%9E%E5%BD%92%E8%A7%A3%E7%A0%81autoregressive-decoding-2"><span class="nav-number">4.</span> <span class="nav-text"> 二、自回归解码（Autoregressive Decoding）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#21-%E6%A6%82%E8%BF%B0-2"><span class="nav-number">4.0.1.</span> <span class="nav-text"> 2.1. 概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#22-kv-cache-2"><span class="nav-number">4.0.2.</span> <span class="nav-text"> 2.2 KV Cache</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#23-%E8%AE%BF%E5%AD%98%E7%93%B6%E9%A2%88"><span class="nav-number">4.0.3.</span> <span class="nav-text"> 2.3 访存瓶颈</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#24-decoding-%E9%98%B6%E6%AE%B5%E4%BC%98%E5%8C%96"><span class="nav-number">4.0.4.</span> <span class="nav-text"> 2.4 Decoding 阶段优化</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%89-%E5%B9%B6%E8%A1%8C%E8%A7%A3%E7%A0%81parallel-decoding"><span class="nav-number">5.</span> <span class="nav-text"> 三、并行解码（Parallel Decoding）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#31-%E6%96%B9%E6%A1%88%E6%A6%82%E8%BF%B0"><span class="nav-number">5.0.1.</span> <span class="nav-text"> 3.1 方案概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#32-%E5%AE%9E%E7%8E%B0%E7%BB%86%E8%8A%82"><span class="nav-number">5.0.2.</span> <span class="nav-text"> 3.2 实现细节</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#33-%E8%AF%84%E4%BC%B0%E7%BB%93%E6%9E%9C"><span class="nav-number">5.0.3.</span> <span class="nav-text"> 3.3. 评估结果</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9B%9B-%E6%8A%95%E6%9C%BA%E8%A7%A3%E7%A0%81speculative-decoding"><span class="nav-number">6.</span> <span class="nav-text"> 四、投机解码（Speculative Decoding）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#41-%E6%96%B9%E6%A1%88%E6%A6%82%E8%BF%B0"><span class="nav-number">6.0.1.</span> <span class="nav-text"> 4.1. 方案概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#42-%E5%AE%9E%E7%8E%B0%E7%BB%86%E8%8A%82"><span class="nav-number">6.0.2.</span> <span class="nav-text"> 4.2 实现细节</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#43-%E8%AF%84%E4%BC%B0%E7%BB%93%E6%9E%9C"><span class="nav-number">6.0.3.</span> <span class="nav-text"> 4.3. 评估结果</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BA%94-medusa"><span class="nav-number">7.</span> <span class="nav-text"> 五、Medusa</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#medusa-heads"><span class="nav-number">7.1.</span> <span class="nav-text"> Medusa heads</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#tree-attention"><span class="nav-number">7.2.</span> <span class="nav-text"> Tree Attention</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#typical-acceptance"><span class="nav-number">7.3.</span> <span class="nav-text"> Typical Acceptance</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">7.4.</span> <span class="nav-text"> 总结</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%85%AD-eagle"><span class="nav-number">8.</span> <span class="nav-text"> 六、EAGLE</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%96%B9%E6%A1%88%E6%A6%82%E8%BF%B0"><span class="nav-number">8.1.</span> <span class="nav-text"> 方案概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9E%E7%8E%B0%E7%BB%86%E8%8A%82"><span class="nav-number">8.2.</span> <span class="nav-text"> 实现细节</span></a></li></ol></li></ol></div>
         </div>
         <!--/noindex-->
 
@@ -181,18 +183,18 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">55</span>
+          <span class="site-state-item-count">75</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
           <a href="/categories/">
-        <span class="site-state-item-count">14</span>
+        <span class="site-state-item-count">16</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-count">19</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -255,7 +257,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2025-01-27 15:07:12" itemprop="dateModified" datetime="2025-01-27T15:07:12+08:00">2025-01-27</time>
+      <time title="修改时间：2025-06-12 20:08:30" itemprop="dateModified" datetime="2025-06-12T20:08:30+08:00">2025-06-12</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -285,14 +287,14 @@
         <i class="far fa-file-word"></i>
       </span>
       <span class="post-meta-item-text">本文字数：</span>
-      <span>6.8k</span>
+      <span>7.5k</span>
     </span>
     <span class="post-meta-item" title="阅读时长">
       <span class="post-meta-item-icon">
         <i class="far fa-clock"></i>
       </span>
       <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>25 分钟</span>
+      <span>27 分钟</span>
     </span>
 </div>
 
@@ -667,6 +669,47 @@
 <p>突破贪心解码限制，让Parallel Decoding支持类似sampling方法。Medusa不保证和原始top-p相同Sampling分布，而是设计一个朴素地基于阈值的方法。因为这种方法并不和创新解码等价，大家对它的接收程度还有待验证。</p>
 </li>
 </ol>
+<h1 id="六-eagle"><a class="markdownIt-Anchor" href="#六-eagle"></a> 六、EAGLE</h1>
+<h2 id="方案概述"><a class="markdownIt-Anchor" href="#方案概述"></a> 方案概述</h2>
+<p>北京大学和微软等团队提出的投机采样方案 EAGLE（Extrapolation Algorithm for Greater Language-model Efficiency，[2401.15077] EAGLE: Speculative Sampling Requires Rethinking Feature Uncertainty），其是一个无损投机采样加速方案。与传统的投机采样方案不同，EAGLE 利用最后一个 Transformer Block 对应的输出特征来自回归的生成草稿（猜测的 Token），并通过提前一步集成 Token 来解决下一个特征预测问题中的采样不确定性问题。</p>
+<p>EAGLE 提供的是无损加速，不涉及对原始 LLM 的微调（但会增加一下小的草稿模型），并且生成的文本保持与普通自回归解码相同的分布。使用 gpt-fast，EAGLE 在单个 RTX 3090 GPU 上使用 LLaMA2-Chat 13B 平均达到 160 个 Token/s，而 Huggingface 的实现为 24 个 Token/s。</p>
+<h2 id="实现细节"><a class="markdownIt-Anchor" href="#实现细节"></a> 实现细节</h2>
+<p>如下图所示，EAGLE 不是使用一个小的 LLM 来预测后续 Token，也不是使用多个 LM head 来预测，而是借助之前三个 Token 的输入和输出 Embedding 来预测下一个 Token 的 Embedding，然后使用该 Embedding 经过 LM Head 来生成 Token。</p>
+<ul>
+<li>
+<p>Draft model 第一次 Forward（利用 How、can、I 预测下一个）：</p>
+<ul>
+<li>
+<p>使用 how 在原始 LLM 最后一个 Transformer Layer 的输出 Embedding fhow 以及 can 对应的第一个 Transformer Layer 的输入 Embedding ecan 组成第一个 Embedding。</p>
+</li>
+<li>
+<p>使用 can 在原始 LLM 最后一个 Transformer Layer 的输出 Embedding fcan 以及 I 对应的第一个 Transformer Layer 的输入 Embedding eI 组成第二个 Embedding。</p>
+</li>
+<li>
+<p>使用上述两个 Embedding 经过 One Auto-regression Head 预测当前 Token I 对应的最后一个 Transformer Layer 的输出 Embedding fI。</p>
+</li>
+<li>
+<p>使用 Embedding fI 经过原始 LLM 的 LM Head 和 Sampling 过程预测下一个 Token（make/help）。</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Draft model 第二次 Forward（利用 How、can、I、make/help 预测下一个）：</p>
+<ul>
+<li>和第一次 Forward 类似，不过在上一个 forward 基础上扩增了新生成的 Token （make/help），其中 How、Can、I、make 预测得到 a/out，How、Can、I、help 预测得到 with/you。</li>
+</ul>
+</li>
+<li>
+<p>Draft model 第三次 Forward（利用 How、can、I、make（a/our）/help（with/you） 预测下一个）：</p>
+<ul>
+<li>过程同上，继续增加新增的 Token，预测生成下图下半部分的 the/your 和 to/feel。</li>
+</ul>
+</li>
+</ul>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250612200557240.png" alt="image.png" /></p>
+<p>与其他投机采样方案的差异如下图所示，可以看出，其相比 Medusa 待验证的树更稀疏（可以避免一些无效的生成，比如 I am begin），相应待验证的 Token 也更少：</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250612200606036.png" alt="image.png" /></p>
+<p>可以这样理解, Eagle相比Medusa的改进就是把FFN head换成了 Autoregressive head</p>
 
     </div>
 
@@ -723,14 +766,14 @@
       <i class="fa fa-chart-line"></i>
     </span>
       <span>站点总字数：</span>
-    <span title="站点总字数">194k</span>
+    <span title="站点总字数">245k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span>站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">11:46</span>
+    <span title="站点阅读时长">14:50</span>
   </span>
 </div>
 <div class="busuanzi-count">

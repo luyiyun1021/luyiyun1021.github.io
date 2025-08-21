@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="https://avatars.githubusercontent.com/u/55233584?v=4">
+  <link rel="icon" type="image/png" sizes="32x32" href="https://avatars.githubusercontent.com/u/55233584?v=4">
+  <link rel="icon" type="image/png" sizes="16x16" href="https://avatars.githubusercontent.com/u/55233584?v=4">
+  <link rel="mask-icon" href="https://avatars.githubusercontent.com/u/55233584?v=4" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-minimal.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"luyiyun1021.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.22.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta property="og:type" content="article">
+<meta property="og:title" content="Sglang Deepseek模型 Prefill阶段流程梳理">
+<meta property="og:url" content="https://luyiyun1021.github.io/2025/06/12/Sglang-Deepseek%E6%A8%A1%E5%9E%8B-Prefill%E9%98%B6%E6%AE%B5%E6%B5%81%E7%A8%8B%E6%A2%B3%E7%90%86/index.html">
+<meta property="og:site_name" content="Ronny Lu&#39;s blog">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250612205849762.png">
+<meta property="article:published_time" content="2025-06-12T13:06:50.000Z">
+<meta property="article:modified_time" content="2025-06-12T13:15:26.471Z">
+<meta property="article:author" content="Ronny Lu">
+<meta property="article:tag" content="大模型">
+<meta property="article:tag" content="大模型推理">
+<meta property="article:tag" content="Deepseek">
+<meta property="article:tag" content="Sglang">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250612205849762.png">
+
+
+<link rel="canonical" href="https://luyiyun1021.github.io/2025/06/12/Sglang-Deepseek%E6%A8%A1%E5%9E%8B-Prefill%E9%98%B6%E6%AE%B5%E6%B5%81%E7%A8%8B%E6%A2%B3%E7%90%86/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://luyiyun1021.github.io/2025/06/12/Sglang-Deepseek%E6%A8%A1%E5%9E%8B-Prefill%E9%98%B6%E6%AE%B5%E6%B5%81%E7%A8%8B%E6%A2%B3%E7%90%86/","path":"2025/06/12/Sglang-Deepseek模型-Prefill阶段流程梳理/","title":"Sglang Deepseek模型 Prefill阶段流程梳理"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Sglang Deepseek模型 Prefill阶段流程梳理 | Ronny Lu's blog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<style>.darkmode--activated{--body-bg-color:#282828;--content-bg-color:#333;--card-bg-color:#555;--text-color:#ccc;--blockquote-color:#bbb;--link-color:#ccc;--link-hover-color:#eee;--brand-color:#ddd;--brand-hover-color:#ddd;--table-row-odd-bg-color:#282828;--table-row-hover-bg-color:#363636;--menu-item-bg-color:#555;--btn-default-bg:#222;--btn-default-color:#ccc;--btn-default-border-color:#555;--btn-default-hover-bg:#666;--btn-default-hover-color:#ccc;--btn-default-hover-border-color:#666;--highlight-background:#282b2e;--highlight-foreground:#a9b7c6;--highlight-gutter-background:#34393d;--highlight-gutter-foreground:#9ca9b6}.darkmode--activated img{opacity:.75}.darkmode--activated img:hover{opacity:.9}.darkmode--activated code{color:#69dbdc;background:0 0}button.darkmode-toggle{z-index:9999}.darkmode-ignore,img{display:flex!important}.beian img{display:inline-block!important}</style></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Ronny Lu's blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-overview-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Ronny Lu"
+      src="https://avatars.githubusercontent.com/u/55233584?v=4">
+  <p class="site-author-name" itemprop="name">Ronny Lu</p>
+  <div class="site-description" itemprop="description">Tech notes on LLM, LLM Infra, and others</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">75</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">16</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">19</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/06/12/Sglang-Deepseek%E6%A8%A1%E5%9E%8B-Prefill%E9%98%B6%E6%AE%B5%E6%B5%81%E7%A8%8B%E6%A2%B3%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
+      <meta itemprop="name" content="Ronny Lu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ronny Lu's blog">
+      <meta itemprop="description" content="Tech notes on LLM, LLM Infra, and others">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Sglang Deepseek模型 Prefill阶段流程梳理 | Ronny Lu's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Sglang Deepseek模型 Prefill阶段流程梳理
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-06-12 21:06:50 / 修改时间：21:15:26" itemprop="dateCreated datePublished" datetime="2025-06-12T21:06:50+08:00">2025-06-12</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">大模型</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E6%8E%A8%E7%90%86%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index"><span itemprop="name">推理技术</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E6%8E%A8%E7%90%86%E6%8A%80%E6%9C%AF/Sglang/" itemprop="url" rel="index"><span itemprop="name">Sglang</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>1.6k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>6 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250612205849762.png" alt="image.png" /></p>
+<span id="more"></span>
+<ol>
+<li>用户启动 Server ，初始化 FastAPI App、TokenizerManager、DetokenizerManager 和 Scheduler，每个组件运行各自的无限事件循环（infinite event loop）。</li>
+<li>用户向 FastAPI Server 发送 <code>/v1/chat/completions</code> 请求，其中max_tokens = 1, Server 通过 <code>v1_chat_completions</code> endpoint 将请求转发到 TokenizerManager。</li>
+<li><code>v1_chat_completions</code> 函数将请求转换为 <code>ChatCompletionRequest</code>，再通过<code>v1_chat_generate_request</code>转换为 <code>GenerateReqInput</code>，并调用 TokenizerManager 的 <code>generate_request</code> 方法。</li>
+<li>TokenizerManager 调用<code>_tokenize_one_request</code>对请求进行 tokenization，转化为<code>TokenizedGenerateReqInput</code>并以 Python 对象（<code>pyobj</code>）形式将其通过<code>_send_one_request</code>转发给 Scheduler (通过zmq ipc socket)，同时调用 TokenizerManager 的 <code>_wait_one_response</code> 方法。</li>
+<li>Scheduler 在事件循环 <code>event_loop_normal</code> 中处理请求：</li>
+</ol>
+<ul>
+<li>Scheduler 通过 <code>recv_requests</code> 接收请求，调用 <code>process_input_requests</code> 处理输入，通过 <code>handle_generate_request</code> 管理生成请求<code>Req</code>的逻辑，并将其加入 <code>waiting_queue</code>。
+<ul>
+<li>从 <code>waiting_queue</code> 中，Scheduler 使用 <code>get_next_batch_to_run</code> 获得 prefill batch, 为即将处理的请求创建 <code>ScheduleBatch</code>。</li>
+<li>Scheduler 执行 <code>run_batch</code> 函数，将 <code>ScheduleBatch</code> 转换为 <code>ModelWorkerBatch</code>。
+<ul>
+<li>Scheduler 调用 TpModelWorker 的 <code>forward_batch_generation</code>，等待 <code>logits_output</code> 和 <code>next_token_ids</code>。
+<ul>
+<li>调用 self.attn_backend.init_forward_metadata(forward_batch)
+<ul>
+<li>调用 FlashInferMLAIndicesUpdaterPrefill, 根据req_pool_indices, 对于attention backend中的req_pool-&gt;token_to_kv_pool进行维护和更新</li>
+</ul>
+</li>
+<li>调用 self.model.forward(forward_batch.input_ids, forward_batch.positions, forward_batch)进行模型前向
+<ul>
+<li>进入到model的DeepseekV2ForCausalLM-&gt;DeepseekV2Model-&gt;DeepseekV2DecoderLayer, 进行(DeepseekV2AttentionMLAMOE + DeepseekV2MoE)模块layer次数的迭代</li>
+<li>DeepseekV2AttentionMLAMOE
+<ul>
+<li>DeepseekV2AttentionMLA: 调用 forward_normal 函数
+<ul>
+<li>根据当前输入的hidden state算出latent_cache, 调用token_to_kv_pool的set_kv_buffer函数, 把latent_cache存在out_cache_loc预先分配的位置</li>
+<li>调用self.attn_mqa即FlashInferAttnBackend的forward函数</li>
+</ul>
+</li>
+<li>调用shared_experts前向, 过gate_up_proj, act_quant_fn, down_proj得到shared_output</li>
+<li>过MoEGate得到router_logits, 对于每个专家的原始打分</li>
+<li>调用select_experts使用分组topk算法获得topk_weights, topk_ids
+<ul>
+<li>参数说明:
+<ul>
+<li><code>hidden_states</code>: 输入的隐藏状态，形状为 (batch_size, hidden_dim);</li>
+<li><code>gating_output</code>: 路由器的输出，表示每个输入对每个专家的偏好，形状为 (batch_size, num_experts);</li>
+<li><code>correction_bias</code>: 用于修正的偏置项，形状为 (num_experts,);</li>
+<li><code>topk</code>: 每个输入选择的专家数量, config中的num_experts_per_tok, 为8;</li>
+<li><code>renormalize</code>: 是否对选择的专家权重进行重新归一化;</li>
+<li><code>num_expert_group</code>: 专家的分组数量, 对应config中的n_group, 为8;</li>
+<li><code>topk_group</code>: 每个分组中选择的专家数量, config中的topk_group, 为4。</li>
+</ul>
+</li>
+<li>逻辑: 将专家分组，每组包含<code>(config.n_routed_experts + global_server_args_dict[&quot;re_ep_size&quot;])</code>/ <code>num_expert_group</code> = (256个普通专家 + 32个冗余专家) / 8 = 36个专家, ep=32的话, 每张卡9个专家(8个普通专家 + 1个冗余专家), 那么一个专家组包含四张卡。对每个分组内的专家得分(由gating_output sigmoid得到)进行 top-2 操作，并将 top-2 的得分相加，得到每个分组的总得分。从每个分组中选择得分最高的 <code>topk_group=4</code> 个分组。在被选中的分组中的专家中选择得分最高的 <code>topk=8</code> 个专家。</li>
+</ul>
+</li>
+<li>返回(output, residual, shared_output, None, None, None, topk_weights, topk_ids)</li>
+</ul>
+</li>
+<li>DeepseekV2MoE
+<ul>
+<li>根据选出的专家, 过<code>self.experts</code>, 类型为<code>DPEPMoE</code>
+<ul>
+<li>对输入x进行每token分组量化（speedgate.per_token_group_quant_fp8），得到量化后的hidden_states_fp8, 形状为 (num_tokens, hidden_size) 和 hidden_states_scale, 形状为 (num_tokens, hidden_size // 128)，组成x_e4m3元组</li>
+<li>使用<code>self.ep_group.deep_ep_buffer.get_dispatch_layout</code>方法获取调度布局信息</li>
+<li>使用<code>self.ep_group.deep_ep_buffer.dispatch</code>方法进行<code>all_2_all</code>调度，将输入<code>x</code>根据<code>topk_idx</code>和<code>topk_weights</code>分配到不同的专家, 返回<code>recv_x</code>, <code>recv_topk_idx</code>, <code>recv_topk_weights</code></li>
+<li>调用<code>_prefill_local_expert_forward_fp8</code>方法进行本地专家的前向传播计算。输入为 <code>recv_x[0]</code>(hidden states) 形状为 (num_tokens, hidden_size), <code>recv_x[1]</code> (hidden_states_scale) 形状为 (num_tokens, hidden_size // 128), <code>recv_topk_idx</code>, 形状为 (num_tokens, topk) , <code>recv_topk_weights</code>, 形状为 (num_tokens, topk), <code>recv_num_tokens_per_expert_list</code>, 每个本地专家的收到的token数, 形状为 (self.num_experts_per_partition)
+<ul>
+<li><strong>预处理</strong>:
+<ul>
+<li>
+<p>把每个专家实际 token 数向上取整到128的倍数, 得到取整后的num_all_tokens, 这些token是有可能有重复的, 比如说专家1收到token1,2, 专家2收到token1,3, num_all_tokens是256</p>
+</li>
+<li>
+<p>构造recv_x_all_fp8, 含义为每个token(包括padding的token)的hidden, 形状为(num_all_tokens, hidden_size), 通过m_indices决定这个token被发送到哪个专家</p>
+</li>
+<li>
+<p>recv_x_all_scale, 形状为 (num_all_tokens, hidden_size // 128)</p>
+</li>
+<li>
+<p>m_indices, 含义为每个token(包括padding的token)发送到哪个专家, 形状为(num_all_tokens),值为专家id</p>
+<ul>
+<li>假设有 3 个专家，实际 token 数 <code>N = [155, 9, 3]</code>
+<ul>
+<li>取整后 <code>N_128</code>: <code>[256, 128, 128]</code></li>
+<li>展开序列 <code>m_indices</code>（前 20 行）: <code>[0,0,…(256×),1,1,…(128×),2,2,…(128×)]</code></li>
+<li>行 0-255 属于 expert 0，256-383 属于 expert 1，依此类推。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>token_to_m, 每个不重复的token对应recv_x_all_fp8中的哪些行数, 形状为(num_tokens, topk),</p>
+</li>
+<li>
+<p>token_counts, 每个不重复的token关联了几个专家, 形状为(num_tokens),</p>
+</li>
+<li>
+<p>token_weights, 每个token对应的topk_weight, 形状为(num_all_tokens)</p>
+<ul>
+<li>
+<p><strong>GroupGemm-0:</strong></p>
+<pre class="highlight"><code class="">&quot;&quot;&quot;
+Perform a grouped GEMM (contiguous format) with FP8 inputs and BF16 output, with 1x128 LHS scaling and 128x128 RHS scaling.
+
+Requirements:
+    LHS, RHS, RHS scaling factors, and output tensors must be in contiguous format.
+    RHS and RHS scaling factors are required to be transposed.
+    The LHS scaling tensor requires a TMA-aligned transposed format, if your input does not match the requirement,
+    this function will do a transposing with a set of slow PyTorch operations.
+    On the M axis, inputs are grouped into several batches, of which batch sizes aligned to `get_m_alignment_for_contiguous_layout()` (128).
+
+Arguments:
+    lhs: the first element is an FP8 tensor (typed `torch.float8_e4m3fn`) of shape `[m_sum, k]`,
+    the second element is an FP32 1x128 scaling tensor for LHS of shape `[m_sum, ⌈k / 128⌉]`.
+    rhs: the first element is an FP8 tensor (typed `torch.float8_e4m3fn`) of shape `[num_groups, n, k]`,
+    the second element is an FP32 128x128 scaling tensor for RHS of shape `[num_groups, ⌈n / 128⌉, ⌈k / 128⌉]`.
+    out: the BF16 output tensor of shape `[m_sum, n]`, representing the result.
+    m_indices: a tensor of shape `[m_sum]` with type `torch.int`.
+    `m_indices[i]` records the group which the i-th row of the LHS belongs to,
+    which means that the i-th row of the LHS matrix will be multiplied with `rhs[m_indices[i]]`.
+    Values of `m_indices` in every-m-alignment-block must also be the same.
+&quot;&quot;&quot;
+</code></pre>
+<ul>
+<li>调用deep_gemm.m_grouped_gemm_fp8_fp8_bf16_nt_contiguous, 输入是(recv_x_all_fp8, recv_x_all_scale), (self.w13_weight, self.w13_weight_scale_inv), gateup_output, m_indices, 输出是 <strong>bf16</strong> gateup_output，形状为(num_all_tokens, self.w13_weight.shape[1])</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><strong>SiLU:</strong>
+<ul>
+<li>down_input = F.silu(gateup_output[…, :d]) * gateup_output[…, d:], d = gateup_output.shape[-1] // 2</li>
+</ul>
+</li>
+<li><strong>量化</strong> 到 FP8
+<ul>
+<li>speedgate.per_token_group_quant_fp8(down_input, down_input_fp8, down_input_scale, group_size=128, epsilon=1e-10, dtype=float8_e4m3fn, row_major=True), <strong>行分组量化</strong>（128 元素一组）+ 每组 scale，兼容下一步 GroupGEMM-1。</li>
+</ul>
+</li>
+<li><strong>GroupGemm-1:</strong>
+<ul>
+<li>调用deep_gemm.m_grouped_gemm_fp8_fp8_bf16_nt_contiguous, 输入是(down_input_fp8, down_input_scale), (self.w2_weight, self.w2_weight_scale_inv), down_output, m_indices, 输出是 <strong>bf16</strong> down_output，形状为(num_all_tokens, self.w2_weight.shape[1])</li>
+</ul>
+</li>
+<li><strong>Combine-Convert — 把重复的token序列重新聚合成不重复的token 序列:</strong>
+<ul>
+<li>输出x_to_combine, 根据token_to_m, 把down_output * token_weights的结构填入, 形状为(num_tokens, hidden_size)</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>使用<code>self.ep_group.deep_ep_buffer.combine</code>方法进行<code>all_2_all</code>合并，将不同专家的输出合并回原始的张量</li>
+<li>将合并后的输出<code>combined_x</code>乘以<code>routed_scaling_factor</code>，并加上<code>shared_output</code>，得到最终的输出<code>x</code>，并返回。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Scheduler 通过 <code>process_batch_result</code> 处理批次结果，通过 <code>check_finished</code> 验证完成状态。由于max_tokens = 1, 请求被判断为完成，转发到 Scheduler 的 <code>stream_output</code>。</li>
+<li>在 <code>stream_output</code> 函数中，Scheduler 处理输出，将其包装成 <code>BatchTokenIDOut</code>，并发送给 DetokenizerManager。</li>
+</ul>
+</li>
+</ul>
+<ol start="6">
+<li>DetokenizerManager 在其事件循环中接收 <code>BatchTokenIDOut</code>，处理后生成 <code>BatchStrOut</code> 并返回给 TokenizerManager。</li>
+<li>TokenizerManager 在其事件循环中接收结果，通过 <code>handle_loop</code> 处理并更新内部状态，然后将响应返回给Server 。</li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" rel="tag"># 大模型</a>
+              <a href="/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%8E%A8%E7%90%86/" rel="tag"># 大模型推理</a>
+              <a href="/tags/Deepseek/" rel="tag"># Deepseek</a>
+              <a href="/tags/Sglang/" rel="tag"># Sglang</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/06/12/Sglang-dp%E6%B5%81%E7%A8%8B%E6%A2%B3%E7%90%86/" rel="prev" title="Sglang dp流程梳理">
+                  <i class="fa fa-angle-left"></i> Sglang dp流程梳理
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2025/06/13/Sglang-MTP-Eagle-%E9%80%BB%E8%BE%91%E6%A2%B3%E7%90%86/" rel="next" title="Sglang MTP (Eagle) 逻辑梳理">
+                  Sglang MTP (Eagle) 逻辑梳理 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Ronny Lu</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">245k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">14:50</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">false</script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" integrity="sha256-UF1fgpAiu3tPJN/uCqEUHNe7pnr+QR0SQDNfgglgtcM=" crossorigin="anonymous">
+  <script class="next-config" data-name="katex" type="application/json">{"copy_tex_js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/copy-tex.min.js","integrity":"sha256-Us54+rSGDSTvIhKKUs4kygE2ipA0RXpWWh0/zLqw3bs="}}</script>
+  <script src="/js/third-party/math/katex.js"></script>
+
+
+
+</body>
+</html>

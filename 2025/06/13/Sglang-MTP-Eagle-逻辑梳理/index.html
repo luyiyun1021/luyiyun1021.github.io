@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="https://avatars.githubusercontent.com/u/55233584?v=4">
+  <link rel="icon" type="image/png" sizes="32x32" href="https://avatars.githubusercontent.com/u/55233584?v=4">
+  <link rel="icon" type="image/png" sizes="16x16" href="https://avatars.githubusercontent.com/u/55233584?v=4">
+  <link rel="mask-icon" href="https://avatars.githubusercontent.com/u/55233584?v=4" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-minimal.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"luyiyun1021.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.22.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="1. 初始化阶段（Server 启动）    # 触发点 关键字段 说明     1 Scheduler.__init__ self.spec_algorithm &#x3D; SpeculativeAlgorithm.from_string(server_args.speculative_algorithm) 解析 CLI 参数 --speculative_algorithm。Eagle ⇒ SpecA">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Sglang MTP (Eagle) 逻辑梳理">
+<meta property="og:url" content="https://luyiyun1021.github.io/2025/06/13/Sglang-MTP-Eagle-%E9%80%BB%E8%BE%91%E6%A2%B3%E7%90%86/index.html">
+<meta property="og:site_name" content="Ronny Lu&#39;s blog">
+<meta property="og:description" content="1. 初始化阶段（Server 启动）    # 触发点 关键字段 说明     1 Scheduler.__init__ self.spec_algorithm &#x3D; SpeculativeAlgorithm.from_string(server_args.speculative_algorithm) 解析 CLI 参数 --speculative_algorithm。Eagle ⇒ SpecA">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250612220210833.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250612220226800.png">
+<meta property="article:published_time" content="2025-06-13T02:38:40.000Z">
+<meta property="article:modified_time" content="2025-06-13T02:39:33.040Z">
+<meta property="article:author" content="Ronny Lu">
+<meta property="article:tag" content="大模型">
+<meta property="article:tag" content="大模型推理">
+<meta property="article:tag" content="Sglang">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250612220210833.png">
+
+
+<link rel="canonical" href="https://luyiyun1021.github.io/2025/06/13/Sglang-MTP-Eagle-%E9%80%BB%E8%BE%91%E6%A2%B3%E7%90%86/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://luyiyun1021.github.io/2025/06/13/Sglang-MTP-Eagle-%E9%80%BB%E8%BE%91%E6%A2%B3%E7%90%86/","path":"2025/06/13/Sglang-MTP-Eagle-逻辑梳理/","title":"Sglang MTP (Eagle) 逻辑梳理"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Sglang MTP (Eagle) 逻辑梳理 | Ronny Lu's blog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<style>.darkmode--activated{--body-bg-color:#282828;--content-bg-color:#333;--card-bg-color:#555;--text-color:#ccc;--blockquote-color:#bbb;--link-color:#ccc;--link-hover-color:#eee;--brand-color:#ddd;--brand-hover-color:#ddd;--table-row-odd-bg-color:#282828;--table-row-hover-bg-color:#363636;--menu-item-bg-color:#555;--btn-default-bg:#222;--btn-default-color:#ccc;--btn-default-border-color:#555;--btn-default-hover-bg:#666;--btn-default-hover-color:#ccc;--btn-default-hover-border-color:#666;--highlight-background:#282b2e;--highlight-foreground:#a9b7c6;--highlight-gutter-background:#34393d;--highlight-gutter-foreground:#9ca9b6}.darkmode--activated img{opacity:.75}.darkmode--activated img:hover{opacity:.9}.darkmode--activated code{color:#69dbdc;background:0 0}button.darkmode-toggle{z-index:9999}.darkmode-ignore,img{display:flex!important}.beian img{display:inline-block!important}</style></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Ronny Lu's blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E5%88%9D%E5%A7%8B%E5%8C%96%E9%98%B6%E6%AE%B5server-%E5%90%AF%E5%8A%A8"><span class="nav-number">1.</span> <span class="nav-text"> 1. 初始化阶段（Server 启动）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E8%AF%B7%E6%B1%82%E8%BF%9B%E5%85%A5-prefill-%E9%98%B6%E6%AE%B5"><span class="nav-number">2.</span> <span class="nav-text"> 2. 请求进入 – Prefill 阶段</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#21-draft-req-%E7%9A%84%E7%94%9F%E6%88%90"><span class="nav-number">2.1.</span> <span class="nav-text"> 2.1 Draft Req 的生成</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#22-chunked-prefill-%E7%9A%84%E7%89%B9%E6%AE%8A%E5%A4%84%E7%90%86"><span class="nav-number">2.2.</span> <span class="nav-text"> 2.2 Chunked Prefill 的特殊处理</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-gpu-forward-speculative-%E7%BB%84%E5%90%88batch"><span class="nav-number">3.</span> <span class="nav-text"> 3. GPU Forward – Speculative 组合batch</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#31-%E8%B0%83%E5%BA%A6%E7%82%B9"><span class="nav-number">3.1.</span> <span class="nav-text"> 3.1 调度点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#32-eagleworkerforward_batch_speculative_generation"><span class="nav-number">3.2.</span> <span class="nav-text"> 3.2 EAGLEWorker.forward_batch_speculative_generation</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#forward_batch_speculative_generation"><span class="nav-number">3.2.1.</span> <span class="nav-text"> forward_batch_speculative_generation</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-scheduler-%E7%AB%AF%E7%BB%93%E6%9E%9C%E5%A4%84%E7%90%86"><span class="nav-number">4.</span> <span class="nav-text"> 4. Scheduler 端结果处理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E5%86%85%E5%AD%98%E6%B1%A0-treecache-%E4%BA%A4%E4%BA%92"><span class="nav-number">5.</span> <span class="nav-text"> 5. 内存池 &amp; TreeCache 交互</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-%E9%80%80%E5%87%BA-%E5%9B%9E%E6%BB%9A%E8%B7%AF%E5%BE%84"><span class="nav-number">6.</span> <span class="nav-text"> 6. 退出 &amp; 回滚路径</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">6.1.</span> <span class="nav-text"> 总结</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#pd%E5%88%86%E7%A6%BB%E4%B8%8B%E7%9A%84%E9%80%BB%E8%BE%91"><span class="nav-number">6.2.</span> <span class="nav-text"> PD分离下的逻辑</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-prefill-%E9%98%B6%E6%AE%B5%E9%81%87%E5%88%B0-eagle-%E7%9A%84%E5%88%86%E6%94%AF"><span class="nav-number">6.3.</span> <span class="nav-text"> 1. Prefill 阶段遇到 EAGLE 的分支</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-eagleworker-%E5%9C%A8-prefill-%E9%98%B6%E6%AE%B5%E5%81%9A%E4%BA%86%E4%BB%80%E4%B9%88"><span class="nav-number">6.4.</span> <span class="nav-text"> 2. EAGLEWorker 在 Prefill 阶段做了什么</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-prefill-%E7%AB%AF%E6%89%93%E5%8C%85%E5%B9%B6%E5%8F%91%E9%80%81%E4%B8%A4%E5%A5%97-kv"><span class="nav-number">6.5.</span> <span class="nav-text"> 3. Prefill 端打包并发送两套 KV</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-decode-%E4%BE%A7%E5%8A%A0%E8%BD%BD"><span class="nav-number">6.6.</span> <span class="nav-text"> 4. Decode 侧加载</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%80%E5%AE%9A%E8%A6%81%E5%9C%A8-prefill-%E7%AB%AF%E7%94%9F%E6%88%90-draft-kv"><span class="nav-number">7.</span> <span class="nav-text"> 为什么一定要在 Prefill 端生成 Draft-KV？</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Ronny Lu"
+      src="https://avatars.githubusercontent.com/u/55233584?v=4">
+  <p class="site-author-name" itemprop="name">Ronny Lu</p>
+  <div class="site-description" itemprop="description">Tech notes on LLM, LLM Infra, and others</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">75</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">16</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">19</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/06/13/Sglang-MTP-Eagle-%E9%80%BB%E8%BE%91%E6%A2%B3%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
+      <meta itemprop="name" content="Ronny Lu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ronny Lu's blog">
+      <meta itemprop="description" content="Tech notes on LLM, LLM Infra, and others">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Sglang MTP (Eagle) 逻辑梳理 | Ronny Lu's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Sglang MTP (Eagle) 逻辑梳理
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-06-13 10:38:40 / 修改时间：10:39:33" itemprop="dateCreated datePublished" datetime="2025-06-13T10:38:40+08:00">2025-06-13</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">大模型</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E6%8E%A8%E7%90%86%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index"><span itemprop="name">推理技术</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E6%8E%A8%E7%90%86%E6%8A%80%E6%9C%AF/Sglang/" itemprop="url" rel="index"><span itemprop="name">Sglang</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>1.4k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>5 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h2 id="1-初始化阶段server-启动"><a class="markdownIt-Anchor" href="#1-初始化阶段server-启动"></a> 1. 初始化阶段（Server 启动）</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>触发点</th>
+<th>关键字段</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>Scheduler.__init__</code></td>
+<td><code>self.spec_algorithm = SpeculativeAlgorithm.from_string(server_args.speculative_algorithm)</code></td>
+<td>解析 CLI 参数 <code>--speculative_algorithm</code>。Eagle ⇒ <code>SpecAlgorithm.EAGLE</code>。</td>
+</tr>
+<tr>
+<td>2</td>
+<td>同处</td>
+<td><code>if self.spec_algorithm.is_eagle():</code></td>
+<td><strong>EagleWorker 构造</strong>（见表-A）。同时：  <br>① 申请独立 draft-KV buffer  <br>② 建立 <code>draft_policy</code>（Queue 内优先级仅管 draft 请求）</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>self.decode_mem_cache_buf_multiplier = server_args.speculative_num_draft_tokens</code></td>
+<td>估算 decode 所需额外 KV buf 空间（默认 2）。</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><strong>表-A EAGLEWorker 构造</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">from sglang.srt.speculative.eagle_worker import EAGLEWorker</span><br><span class="line">self.draft_worker = EAGLEWorker(</span><br><span class="line">        gpu_id=gpu_id,</span><br><span class="line">        tp_rank=tp_rank,</span><br><span class="line">        server_args=server_args,</span><br><span class="line">        nccl_port=port_args.nccl_port,</span><br><span class="line">        target_worker=self.tp_worker,   # 真正的“验证”模型</span><br><span class="line">        dp_rank=dp_rank,</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<p>EAGLEWorker 内部再启动一个 <code>ModelRunner</code>（share 权重但有自己 KV pool），专门跑 <strong>草稿 (draft) forward</strong>。</p>
+<span id="more"></span>
+<h2 id="2-请求进入-prefill-阶段"><a class="markdownIt-Anchor" href="#2-请求进入-prefill-阶段"></a> 2. 请求进入 – Prefill 阶段</h2>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Scheduler.get_new_batch_prefill()</span><br><span class="line">  │</span><br><span class="line">  ├── 为主 KV cache 构造 PrefillAdder</span><br><span class="line">  └── 若 is_eagle ⇒ 同时构造 draft_adder  (带自己的 tree_cache &amp; token_pool)</span><br></pre></td></tr></table></figure>
+<h3 id="21-draft-req-的生成"><a class="markdownIt-Anchor" href="#21-draft-req-的生成"></a> 2.1 Draft Req 的生成</h3>
+<p><code>Req.create_draft_request()</code></p>
+<ul>
+<li>建一个轻量 <code>Req</code> 镜像（<code>req.draft_req</code>），<strong>共享 rid</strong>，但：
+<ul>
+<li><code>origin_input_ids</code> 与主 req 同步</li>
+<li>独立的 <code>req.draft_output_ids / verified_token</code></li>
+<li>KV 指针指向 <strong>draft_token_to_kv_pool</strong></li>
+<li></li>
+</ul>
+</li>
+</ul>
+<h3 id="22-chunked-prefill-的特殊处理"><a class="markdownIt-Anchor" href="#22-chunked-prefill-的特殊处理"></a> 2.2 Chunked Prefill 的特殊处理</h3>
+<p>当启用 PD-分离且在 Decode 侧需要先收齐 KV，再校验 draft token：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">PrefillAdder.add_being_chunked_req()</span><br><span class="line">   └── 为 draft_req 计算 verified_token</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>chunk_verify_token_idx = len(prefix) + trunc_len</p>
+<p>draft_req.verified_token = req.fill_ids[chunk_verify_token_idx]</p>
+</blockquote>
+<h2 id="3-gpu-forward-speculative-组合batch"><a class="markdownIt-Anchor" href="#3-gpu-forward-speculative-组合batch"></a> 3. GPU Forward – Speculative 组合batch</h2>
+<h3 id="31-调度点"><a class="markdownIt-Anchor" href="#31-调度点"></a> 3.1 调度点</h3>
+<p><code>Scheduler.run_batch(batch)</code></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">if self.spec_algorithm.is_none():</span><br><span class="line">      logits, next_ids = tp_worker.forward_batch_generation(...)</span><br><span class="line">else:                 # is eagle / gqa</span><br><span class="line">      (logits, next_ids,</span><br><span class="line">       model_worker_batch,</span><br><span class="line">       num_accepted_tokens) = self.draft_worker.forward_batch_speculative_generation(batch)</span><br></pre></td></tr></table></figure>
+<h3 id="32-eagleworkerforward_batch_speculative_generation"><a class="markdownIt-Anchor" href="#32-eagleworkerforward_batch_speculative_generation"></a> 3.2 EAGLEWorker.forward_batch_speculative_generation</h3>
+<ol>
+<li><strong>draft forward</strong>
+<ul>
+<li>读 <code>batch.spec_info</code> (<code>EagleDraftInput</code>)，把上一轮 decode 的 verified token 拼到 prompt；</li>
+<li>得到 draft logits <code>draft_ids</code> (长度 = <code>speculative_num_draft_tokens</code>，常为 2)。</li>
+</ul>
+</li>
+<li><strong>验证阶段 (target worker)</strong>
+<ul>
+<li>把 <code>[prompt + draft_ids[:-1]]</code> 喂给 <strong>真实模型</strong> (<code>self.target_worker.forward_batch_generation</code>)；</li>
+<li>将输出 token 与 draft 的最后一个 token 比对。
+<ul>
+<li>① 若一致 → <strong>全部 draft token 接受</strong></li>
+<li>② 若不一致 → 只接受第一个，回滚第二个</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><strong>返回值</strong>
+<ul>
+<li><code>next_token_ids</code>：按校验后的<strong>最终输出</strong>组织</li>
+<li><code>num_accepted_tokens</code>：本轮真正写入 KV 的 token 数</li>
+<li>剩余 book-keeping（跳表更新、缓存指针移动）</li>
+</ul>
+</li>
+</ol>
+<h4 id="forward_batch_speculative_generation"><a class="markdownIt-Anchor" href="#forward_batch_speculative_generation"></a> forward_batch_speculative_generation</h4>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>函数</td>
+<td>细节</td>
+<td>代码要点</td>
+</tr>
+<tr>
+<td><code>draft()</code></td>
+<td>小模型一次 forward <code>speculative_num_steps (s)</code> 步；每步取 <code>topk</code></td>
+<td>1. <code>assign_draft_cache_locs</code> CUDA kernel 在 <strong>draft-KV</strong> 里申请 <code>bs × k × s</code> slot  <br>2. <code>draft_forward()</code> 循环：Flash/FI/Triton Attention → softmax → <code>fast_topk</code>3. 立即 <code>token_to_kv_pool.free()</code>，draft-KV 只暂存几毫秒</td>
+</tr>
+<tr>
+<td><code>verify()</code></td>
+<td>大模型只 forward <strong>1</strong> token</td>
+<td>1. 把草稿 <strong>(d₀ … dₛ₋₁)</strong> 做成 <code>EagleVerifyInput</code>2. <code>target_worker.forward_batch_generation(skip_sample=True)</code>3. 只比较 <strong>最后 1 词</strong> (dₛ₋₁ vs t₀)，得 <code>accept_len ∈ &#123;1, s&#125;</code></td>
+</tr>
+<tr>
+<td><code>forward_draft_extend_after_decode()</code></td>
+<td>把“最后一个已接受 token” 写回 draft-KV，维持 position 单调</td>
+<td>- <code>prepare_extend_after_decode()</code> 把新 token 拼在 hidden 后再 forward 一步  <br>- 结束恢复 <code>batch.seq_lens</code> 等备份</td>
+</tr>
+<tr>
+<td><code>finish_request()</code></td>
+<td>回收两套 KV</td>
+<td>- <code>target_tree_cache.cache_finished_req(req)</code>- <code>draft_tree_cache.cache_finished_req(req.draft_req, token_ids)</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="4-scheduler-端结果处理"><a class="markdownIt-Anchor" href="#4-scheduler-端结果处理"></a> 4. Scheduler 端结果处理</h2>
+<p><code>process_batch_result_decode()</code>（和 prefill）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">if not batch.spec_algorithm.is_none():</span><br><span class="line"></span><br><span class="line">        spec_verify_ct.append(req.spec_verify_ct)  # metrics</span><br></pre></td></tr></table></figure>
+<p>记录统计：<code>self.spec_num_total_accepted_tokens</code>, <code>spec_accept_length</code> 等。<br />
+Draft KV 生命周期：</p>
+<ul>
+<li><code>self.draft_worker.finish_request()</code> 在 req 结束/回收时同步释放 draft KV buffer。</li>
+</ul>
+<h2 id="5-内存池-treecache-交互"><a class="markdownIt-Anchor" href="#5-内存池-treecache-交互"></a> 5. 内存池 &amp; TreeCache 交互</h2>
+<table>
+<thead>
+<tr>
+<th>资源</th>
+<th>主 KV</th>
+<th>Draft KV</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Pool 对象</td>
+<td><code>token_to_kv_pool</code></td>
+<td><code>draft_token_to_kv_pool</code></td>
+</tr>
+<tr>
+<td>Cache</td>
+<td><code>tree_cache</code></td>
+<td><code>draft_tree_cache</code></td>
+</tr>
+<tr>
+<td>申请</td>
+<td>PrefillAdder / alloc_draft_buf</td>
+<td>同步进行</td>
+</tr>
+<tr>
+<td>释放</td>
+<td><code>self.token_to_kv_pool.free()</code></td>
+<td><code>draft_worker.finish_request()</code></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>两套 pool <strong>地址空间分离</strong>，避免 draft-KV 撞主-KV</li>
+<li><code>decode_mem_cache_buf_multiplier = 2</code> 让 decode 侧一次 forward 可以直接复用 draft-KV</li>
+</ul>
+<h2 id="6-退出-回滚路径"><a class="markdownIt-Anchor" href="#6-退出-回滚路径"></a> 6. 退出 &amp; 回滚路径</h2>
+<ul>
+<li><strong>OOM Retract</strong> (<code>ScheduleBatch.retract_decode</code>)
+<ul>
+<li>对 draft_pool 也走一遍释放流程。</li>
+</ul>
+</li>
+<li><strong>Abort / Timeout</strong>
+<ul>
+<li><code>self.draft_worker.finish_request(req)</code> 确保 draft-KV 清理</li>
+</ul>
+</li>
+</ul>
+<h3 id="总结"><a class="markdownIt-Anchor" href="#总结"></a> 总结</h3>
+<p><strong>时序图</strong></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250612220210833.png" alt="image.png" /></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250612220226800.png" alt="image.png" /></p>
+<ol>
+<li>Scheduler 检测 <code>--speculative_algorithm eagle</code> → 派生 <strong>EAGLEWorker</strong></li>
+<li>Prefill 阶段同时为 <strong>主 req</strong> 和 <strong>draft req</strong> 建 KV &amp; PrefixCache</li>
+<li>每轮 decode：
+<ol>
+<li>draft_worker 草稿 → target_worker 校验</li>
+<li>返回 <strong>next_ids</strong> + <strong>accepted_len</strong></li>
+<li>Scheduler 累计吞吐，更新 req.state</li>
+</ol>
+</li>
+<li>Draft KV 与主 KV 生命周期解耦，通过 <code>finish_request()</code> 统一释放<br />
+整套逻辑保持 <strong>单活前向</strong>（draft+target 两次），但平均 <strong>~2× 生成速率</strong>。</li>
+</ol>
+<h3 id="pd分离下的逻辑"><a class="markdownIt-Anchor" href="#pd分离下的逻辑"></a> PD分离下的逻辑</h3>
+<p><strong>Draft-model 的 prompt KV-cache 就是在 PD 分离架构的 Prefill Pod 里顺着 prompt 一起“预烤”出来的</strong>，并且在 Prefill 结束时随同 Target-model 的 KV 一起通过 Mooncake (or mock) 通道传给 Decode Pod。</p>
+<p>下面把关键链路拆出来看看：</p>
+<h3 id="1-prefill-阶段遇到-eagle-的分支"><a class="markdownIt-Anchor" href="#1-prefill-阶段遇到-eagle-的分支"></a> 1. Prefill 阶段遇到 EAGLE 的分支</h3>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"># scheduler.run_batch(...)</span><br><span class="line"></span><br><span class="line">if self.is_generation:</span><br><span class="line">    if self.spec_algorithm.is_none():</span><br><span class="line">        ...</span><br><span class="line">    else:   # 进入 EAGLE 路径</span><br><span class="line">        (</span><br><span class="line">            logits_output,</span><br><span class="line">            next_token_ids,</span><br><span class="line">            model_worker_batch,</span><br><span class="line">            num_accepted_tokens,</span><br><span class="line">        ) = self.draft_worker.forward_batch_speculative_generation(batch)</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>self.draft_worker</code> 就是 <strong>EAGLEWorker</strong>，无论是在 P 还是 D 侧都会被创建。</li>
+<li>当前 batch 的 <code>forward_mode == EXTEND</code>（Prefill），于是 EAGLEWorker 走到 <strong>else 分支</strong>（见下一节）。</li>
+</ul>
+<h3 id="2-eagleworker-在-prefill-阶段做了什么"><a class="markdownIt-Anchor" href="#2-eagleworker-在-prefill-阶段做了什么"></a> 2. EAGLEWorker 在 Prefill 阶段做了什么</h3>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"># eagle_worker.forward_batch_speculative_generation</span><br><span class="line"></span><br><span class="line">else:                       # forward_mode 不是 DECODE，说明在 Prefill</span><br><span class="line">    # ① 先用 Target-model 做一次 prefill</span><br><span class="line">    model_worker_batch = batch.get_model_worker_batch()</span><br><span class="line">    model_worker_batch.capture_hidden_mode = FULL</span><br><span class="line">    logits_output, _ = self.target_worker.forward_batch_generation(model_worker_batch)</span><br><span class="line">    # ② 把得到的 hidden-states 喂给 Draft-model</span><br><span class="line">    batch.spec_info = EagleDraftInput(</span><br><span class="line">        hidden_states = logits_output.hidden_states,</span><br><span class="line">        verified_id  = next_token_ids,</span><br><span class="line">    )</span><br><span class="line">    self.forward_draft_extend(batch)          # ★ 这里真正跑 Draft-model</span><br></pre></td></tr></table></figure>
+<p><code>forward_draft_extend()</code> 会</p>
+<ol>
+<li><strong>把 batch 的 memory-pool 指到 Draft-model 自己的</strong> <code>**token_to_kv_pool**</code>；</li>
+<li>执行一次 full-prompt forward，把所有 KV 写到 Draft-model 的 pool；</li>
+<li>把 prompt 的 Draft-KV 引用挂在 <code>batch.out_cache_loc</code> 里备用。<br />
+这样，<strong>Draft-model 的 prompt cache 就在 Prefill 端生成完成</strong>。</li>
+</ol>
+<h3 id="3-prefill-端打包并发送两套-kv"><a class="markdownIt-Anchor" href="#3-prefill-端打包并发送两套-kv"></a> 3. Prefill 端打包并发送两套 KV</h3>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">if get_pd_sep_stage() == ROLE_PREFILL:</span><br><span class="line">    kv_indices = self.req_to_token_pool.req_to_token[req.req_pool_idx, :token_id_len]</span><br><span class="line">    draft_kv_indices = None</span><br><span class="line">    if self.draft_worker:                    # ← 打开 EAGLE 时才有</span><br><span class="line">        draft_kv_indices = self.draft_req_to_token_pool.req_to_token[</span><br><span class="line">                              req.draft_req.req_pool_idx, :token_id_len]</span><br><span class="line">    self.send_kv_cache(..., kv_indices, draft_kv_indices)</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>kv_indices</code>  → Target-model 那套 prompt-KV 的槽位索引</li>
+<li><code>draft_kv_indices</code> → Draft-model 那套 prompt-KV 的槽位索引<br />
+﻿<code>send_kv_cache()</code> 最终调用 <code>MooncakeKVTransferAgent.send_kv_caches()</code>，一次性把两套 KV copy 到 Decode Pod （若未启用 EAGLE 就把 draft part 设 <code>None</code>）。</li>
+</ul>
+<h3 id="4-decode-侧加载"><a class="markdownIt-Anchor" href="#4-decode-侧加载"></a> 4. Decode 侧加载</h3>
+<p>Decode Pod 在 <code>load_cache()</code> 里对称地</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">self.trans_agent.recv_kv_caches(loc, draft_loc, ...)</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>loc</code> / <code>draft_loc</code> 分别指向 Target / Draft 的 KV-buffer，写完后两边的 KV 都已就绪，Draft-model 可以直接参与后续 <strong>草稿-验证</strong> 回路。</li>
+</ul>
+<h2 id="为什么一定要在-prefill-端生成-draft-kv"><a class="markdownIt-Anchor" href="#为什么一定要在-prefill-端生成-draft-kv"></a> 为什么一定要在 Prefill 端生成 Draft-KV？</h2>
+<table>
+<thead>
+<tr>
+<th>目的</th>
+<th>解释</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Draft-model 第一次 decode 就要有 prompt</td>
+<td>否则 D 侧还要再跑一遍 Prefill，白白浪费。</td>
+</tr>
+<tr>
+<td>P、D 的 KV-pool 相互独立</td>
+<td>Prefill 端分配好的 Draft 槽位必须原样搬到 D 侧，保持 index 对齐。</td>
+</tr>
+<tr>
+<td>统一接口</td>
+<td><code>send_kv_cache()</code> / <code>recv_kv_caches()</code> 支持 <code>(target, draft)</code> 两路输入，关闭 EAGLE 时 draft 参数传 <code>None</code> 即可。</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>结论</strong>：在 PD-分离 + EAGLE 场景下，Prefill Pod 会同时生成 <strong>Target</strong> 与 <strong>Draft</strong> 的 prompt-KV，</p>
+<p>然后一并传输到 Decode Pod；Decode Pod 拿到后就能立即开始 “一次 forward 草稿 2 token，验证最后 1 token” 的高速循环。</p>
+</blockquote>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" rel="tag"># 大模型</a>
+              <a href="/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%8E%A8%E7%90%86/" rel="tag"># 大模型推理</a>
+              <a href="/tags/Sglang/" rel="tag"># Sglang</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/06/12/Sglang-Deepseek%E6%A8%A1%E5%9E%8B-Prefill%E9%98%B6%E6%AE%B5%E6%B5%81%E7%A8%8B%E6%A2%B3%E7%90%86/" rel="prev" title="Sglang Deepseek模型 Prefill阶段流程梳理">
+                  <i class="fa fa-angle-left"></i> Sglang Deepseek模型 Prefill阶段流程梳理
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2025/06/13/Sglang-pd%E5%88%86%E7%A6%BB%E9%80%BB%E8%BE%91%E6%A2%B3%E7%90%86/" rel="next" title="Sglang pd分离逻辑梳理">
+                  Sglang pd分离逻辑梳理 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Ronny Lu</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">245k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">14:50</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">false</script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" integrity="sha256-UF1fgpAiu3tPJN/uCqEUHNe7pnr+QR0SQDNfgglgtcM=" crossorigin="anonymous">
+  <script class="next-config" data-name="katex" type="application/json">{"copy_tex_js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/copy-tex.min.js","integrity":"sha256-Us54+rSGDSTvIhKKUs4kygE2ipA0RXpWWh0/zLqw3bs="}}</script>
+  <script src="/js/third-party/math/katex.js"></script>
+
+
+
+</body>
+</html>

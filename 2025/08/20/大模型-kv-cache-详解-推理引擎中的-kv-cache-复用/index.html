@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="https://avatars.githubusercontent.com/u/55233584?v=4">
+  <link rel="icon" type="image/png" sizes="32x32" href="https://avatars.githubusercontent.com/u/55233584?v=4">
+  <link rel="icon" type="image/png" sizes="16x16" href="https://avatars.githubusercontent.com/u/55233584?v=4">
+  <link rel="mask-icon" href="https://avatars.githubusercontent.com/u/55233584?v=4" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-minimal.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"luyiyun1021.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.22.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="主题   大模型推理基础概念, 为什么需要有kv cache, prefix cache   kv cache, prefix cache在推理引擎中的实现和用法   推理引擎接入attention store后的改动    常见的LLM模型结构 (以LLaMA为例)     模块 作用     Embeddings 把输入 token id 映射成 hidden_dim 长度的向量。   RM">
+<meta property="og:type" content="article">
+<meta property="og:title" content="大模型 kv cache 详解 &amp; 推理引擎中的 kv cache 复用">
+<meta property="og:url" content="https://luyiyun1021.github.io/2025/08/20/%E5%A4%A7%E6%A8%A1%E5%9E%8B-kv-cache-%E8%AF%A6%E8%A7%A3-%E6%8E%A8%E7%90%86%E5%BC%95%E6%93%8E%E4%B8%AD%E7%9A%84-kv-cache-%E5%A4%8D%E7%94%A8/index.html">
+<meta property="og:site_name" content="Ronny Lu&#39;s blog">
+<meta property="og:description" content="主题   大模型推理基础概念, 为什么需要有kv cache, prefix cache   kv cache, prefix cache在推理引擎中的实现和用法   推理引擎接入attention store后的改动    常见的LLM模型结构 (以LLaMA为例)     模块 作用     Embeddings 把输入 token id 映射成 hidden_dim 长度的向量。   RM">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820161239761.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820161328850.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820161338620.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820161344336.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820161352464.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820161357994.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820161404655.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820161414582.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820161421196.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820161427396.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820161434145.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820161441508.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820161448156.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820161454171.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820161500099.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820161521931.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820161532856.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820161539835.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820161547020.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820161632438.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820161745072.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820161752157.png">
+<meta property="article:published_time" content="2025-08-20T08:20:58.000Z">
+<meta property="article:modified_time" content="2025-08-20T08:44:54.685Z">
+<meta property="article:author" content="Ronny Lu">
+<meta property="article:tag" content="大模型">
+<meta property="article:tag" content="大模型推理">
+<meta property="article:tag" content="Sglang">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820161239761.png">
+
+
+<link rel="canonical" href="https://luyiyun1021.github.io/2025/08/20/%E5%A4%A7%E6%A8%A1%E5%9E%8B-kv-cache-%E8%AF%A6%E8%A7%A3-%E6%8E%A8%E7%90%86%E5%BC%95%E6%93%8E%E4%B8%AD%E7%9A%84-kv-cache-%E5%A4%8D%E7%94%A8/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://luyiyun1021.github.io/2025/08/20/%E5%A4%A7%E6%A8%A1%E5%9E%8B-kv-cache-%E8%AF%A6%E8%A7%A3-%E6%8E%A8%E7%90%86%E5%BC%95%E6%93%8E%E4%B8%AD%E7%9A%84-kv-cache-%E5%A4%8D%E7%94%A8/","path":"2025/08/20/大模型-kv-cache-详解-推理引擎中的-kv-cache-复用/","title":"大模型 kv cache 详解 & 推理引擎中的 kv cache 复用"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>大模型 kv cache 详解 & 推理引擎中的 kv cache 复用 | Ronny Lu's blog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<style>.darkmode--activated{--body-bg-color:#282828;--content-bg-color:#333;--card-bg-color:#555;--text-color:#ccc;--blockquote-color:#bbb;--link-color:#ccc;--link-hover-color:#eee;--brand-color:#ddd;--brand-hover-color:#ddd;--table-row-odd-bg-color:#282828;--table-row-hover-bg-color:#363636;--menu-item-bg-color:#555;--btn-default-bg:#222;--btn-default-color:#ccc;--btn-default-border-color:#555;--btn-default-hover-bg:#666;--btn-default-hover-color:#ccc;--btn-default-hover-border-color:#666;--highlight-background:#282b2e;--highlight-foreground:#a9b7c6;--highlight-gutter-background:#34393d;--highlight-gutter-foreground:#9ca9b6}.darkmode--activated img{opacity:.75}.darkmode--activated img:hover{opacity:.9}.darkmode--activated code{color:#69dbdc;background:0 0}button.darkmode-toggle{z-index:9999}.darkmode-ignore,img{display:flex!important}.beian img{display:inline-block!important}</style></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Ronny Lu's blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%BB%E9%A2%98"><span class="nav-number">1.</span> <span class="nav-text"> 主题</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%B8%B8%E8%A7%81%E7%9A%84llm%E6%A8%A1%E5%9E%8B%E7%BB%93%E6%9E%84-%E4%BB%A5llama%E4%B8%BA%E4%BE%8B"><span class="nav-number">2.</span> <span class="nav-text"> 常见的LLM模型结构 (以LLaMA为例)</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#self-attention"><span class="nav-number">3.</span> <span class="nav-text"> Self-Attention</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#self-attention-2"><span class="nav-number">3.1.</span> <span class="nav-text"> Self-Attention</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#multi-head-attention"><span class="nav-number">3.2.</span> <span class="nav-text"> Multi-Head Attention</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#kv-cache"><span class="nav-number">4.</span> <span class="nav-text"> KV cache</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#next-token-prediction-task"><span class="nav-number">4.1.</span> <span class="nav-text"> Next Token Prediction Task</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#motivation-behind-kv-cache"><span class="nav-number">4.2.</span> <span class="nav-text"> Motivation behind KV cache</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#kv-cache-2"><span class="nav-number">4.3.</span> <span class="nav-text"> KV cache</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#kv-cache%E5%8D%A0%E7%94%A8%E7%9A%84%E6%98%BE%E5%AD%98%E7%A9%BA%E9%97%B4"><span class="nav-number">4.4.</span> <span class="nav-text"> KV Cache占用的显存空间</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BC%98%E5%8C%96%E6%96%B9%E5%90%91"><span class="nav-number">4.4.1.</span> <span class="nav-text"> 优化方向</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#kv-cache%E8%83%BD%E7%9C%81%E4%B8%8B%E7%9A%84flops"><span class="nav-number">4.5.</span> <span class="nav-text"> KV Cache能省下的FLOPs</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8kv-cache%E5%90%8E%E6%8E%A8%E7%90%86%E9%80%BB%E8%BE%91%E7%9A%84%E5%8F%98%E5%8C%96"><span class="nav-number">4.6.</span> <span class="nav-text"> 使用KV Cache后推理逻辑的变化</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#prefix-cache"><span class="nav-number">5.</span> <span class="nav-text"> Prefix Cache</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E5%8F%AA%E6%9C%89%E5%85%B1%E5%90%8C%E5%89%8D%E7%BC%80%E7%9A%84kv-cache%E8%83%BD%E5%A4%8D%E7%94%A8"><span class="nav-number">5.1.</span> <span class="nav-text"> 为什么只有共同前缀的KV cache能复用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#radix-cache"><span class="nav-number">5.2.</span> <span class="nav-text"> Radix Cache</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#sglang-%E7%9A%84-kv-cache-%E7%AE%A1%E7%90%86%E7%9B%B8%E5%85%B3%E6%A8%A1%E5%9D%97"><span class="nav-number">6.</span> <span class="nav-text"> sglang 的 kv cache 管理相关模块</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#kv-cache%E4%B8%8E%E5%86%85%E5%AD%98%E6%B1%A0"><span class="nav-number">6.1.</span> <span class="nav-text"> KV Cache与内存池</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-req_to_token_pool"><span class="nav-number">6.1.0.1.</span> <span class="nav-text"> 1. req_to_token_pool</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-token_to_kv_pool"><span class="nav-number">6.1.0.2.</span> <span class="nav-text"> 2. token_to_kv_pool</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-tree_cache"><span class="nav-number">6.1.0.3.</span> <span class="nav-text"> 3. tree_cache</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#sglang-radixcache-%E5%85%B7%E4%BD%93%E5%AE%9E%E7%8E%B0"><span class="nav-number">6.2.</span> <span class="nav-text"> Sglang RadixCache 具体实现</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-%E6%95%B4%E4%BD%93%E5%8A%A8%E6%9C%BA"><span class="nav-number">6.2.1.</span> <span class="nav-text"> 1 整体动机</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-%E6%A0%B8%E5%BF%83%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84"><span class="nav-number">6.2.2.</span> <span class="nav-text"> 2 核心数据结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-%E5%88%86%E9%A1%B5%E6%9C%BA%E5%88%B6"><span class="nav-number">6.2.3.</span> <span class="nav-text"> 3 分页机制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-%E5%BC%95%E7%94%A8%E8%AE%A1%E6%95%B0"><span class="nav-number">6.2.4.</span> <span class="nav-text"> 4 引用计数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-api"><span class="nav-number">6.2.5.</span> <span class="nav-text"> 5 API</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#51-match_prefixkey-listint-tensor-last_node"><span class="nav-number">6.2.5.1.</span> <span class="nav-text"> 5.1 match_prefix(key: List[int]) -&gt; (Tensor, last_node)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#52-insertkey-value"><span class="nav-number">6.2.5.2.</span> <span class="nav-text"> 5.2 insert(key, value)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#53-cache_finished_reqreq-vscache_unfinished_reqreq"><span class="nav-number">6.2.5.3.</span> <span class="nav-text"> 5.3 cache_finished_req(req) v.s.cache_unfinished_req(req)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#54-evictnum_tokens"><span class="nav-number">6.2.5.4.</span> <span class="nav-text"> 5.4 evict(num_tokens)</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-%E8%B0%83%E7%94%A8%E9%93%BE"><span class="nav-number">6.2.6.</span> <span class="nav-text"> 6 调用链</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-%E4%BE%8B%E5%AD%90"><span class="nav-number">6.2.7.</span> <span class="nav-text"> 7 例子</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#asradixcache-radixcache-%E6%8A%8A-kv-%E5%90%8C%E6%AD%A5%E5%88%B0-attention-store"><span class="nav-number">6.3.</span> <span class="nav-text"> AsRadixCache (RadixCache + 把 KV 同步到 Attention Store)</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">7.</span> <span class="nav-text"> 参考</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Ronny Lu"
+      src="https://avatars.githubusercontent.com/u/55233584?v=4">
+  <p class="site-author-name" itemprop="name">Ronny Lu</p>
+  <div class="site-description" itemprop="description">Tech notes on LLM, LLM Infra, and others</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">75</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">16</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">19</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/08/20/%E5%A4%A7%E6%A8%A1%E5%9E%8B-kv-cache-%E8%AF%A6%E8%A7%A3-%E6%8E%A8%E7%90%86%E5%BC%95%E6%93%8E%E4%B8%AD%E7%9A%84-kv-cache-%E5%A4%8D%E7%94%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
+      <meta itemprop="name" content="Ronny Lu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ronny Lu's blog">
+      <meta itemprop="description" content="Tech notes on LLM, LLM Infra, and others">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="大模型 kv cache 详解 & 推理引擎中的 kv cache 复用 | Ronny Lu's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          大模型 kv cache 详解 & 推理引擎中的 kv cache 复用
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-08-20 16:20:58 / 修改时间：16:44:54" itemprop="dateCreated datePublished" datetime="2025-08-20T16:20:58+08:00">2025-08-20</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">大模型</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E6%8E%A8%E7%90%86%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index"><span itemprop="name">推理技术</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E6%8E%A8%E7%90%86%E6%8A%80%E6%9C%AF/Sglang/" itemprop="url" rel="index"><span itemprop="name">Sglang</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>4.9k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>18 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h1 id="主题"><a class="markdownIt-Anchor" href="#主题"></a> 主题</h1>
+<ol>
+<li>
+<p><strong>大模型推理基础概念, 为什么需要有kv cache, prefix cache</strong></p>
+</li>
+<li>
+<p><strong>kv cache, prefix cache在推理引擎中的实现和用法</strong></p>
+</li>
+<li>
+<p><strong>推理引擎接入attention store后的改动</strong></p>
+</li>
+</ol>
+<h1 id="常见的llm模型结构-以llama为例"><a class="markdownIt-Anchor" href="#常见的llm模型结构-以llama为例"></a> 常见的LLM模型结构 (以LLaMA为例)</h1>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820161239761.png" alt="image.png" /></p>
+<table>
+<thead>
+<tr>
+<th>模块</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Embeddings</strong></td>
+<td>把输入 token id 映射成 <strong>hidden_dim</strong> 长度的向量。</td>
+</tr>
+<tr>
+<td><strong>RMSNorm</strong></td>
+<td>用均方根归一化当前隐藏状态，稳住数值并让层与层之间梯度更平滑。</td>
+</tr>
+<tr>
+<td><strong>Self-Attention</strong></td>
+<td>计算 token 之间的自注意力</td>
+</tr>
+<tr>
+<td><strong>Residual Add (+)</strong></td>
+<td>将注意力输出叠加回输入张量，构成残差连接。</td>
+</tr>
+<tr>
+<td><strong>Feed-Forward</strong></td>
+<td>线性层负责隐藏维度扩展, 表征复杂特征</td>
+</tr>
+<tr>
+<td><strong>SwiGLU</strong></td>
+<td>激活函数, 给模型带来非线性</td>
+</tr>
+<tr>
+<td><strong>Linear → Vocab → Softmax</strong></td>
+<td>把隐藏向量投影到词表维度，得到每个 token 的 logits。再通过 Softmax算出概率</td>
+</tr>
+</tbody>
+</table>
+<span id="more"></span>
+<h1 id="self-attention"><a class="markdownIt-Anchor" href="#self-attention"></a> Self-Attention</h1>
+<h2 id="self-attention-2"><a class="markdownIt-Anchor" href="#self-attention-2"></a> Self-Attention</h2>
+<p><strong>自注意力机制允许模型将词与其他词关联起来。</strong></p>
+<p>假设我们考虑一个序列长度为6, embedding维度为512的输入, 由于是自注意力, QKV都是相同的</p>
+<p><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>s</mi><mi>o</mi><mi>f</mi><mi>t</mi><mi>m</mi><mi>a</mi><mi>x</mi><mo stretchy="false">(</mo><mfrac><mrow><mi>Q</mi><msup><mi>K</mi><mi>T</mi></msup></mrow><msqrt><msub><mi>d</mi><mi>k</mi></msub></msqrt></mfrac><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">softmax(\frac{QK^T}{\sqrt{d_k}})</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.627473em;vertical-align:-0.538em;"></span><span class="mord mathnormal">s</span><span class="mord mathnormal">o</span><span class="mord mathnormal" style="margin-right:0.10764em;">f</span><span class="mord mathnormal">t</span><span class="mord mathnormal">m</span><span class="mord mathnormal">a</span><span class="mord mathnormal">x</span><span class="mopen">(</span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.089473em;"><span style="top:-2.5864385em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord sqrt mtight"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8622307142857143em;"><span class="svg-align" style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord mtight" style="padding-left:0.833em;"><span class="mord mtight"><span class="mord mathnormal mtight">d</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3448em;"><span style="top:-2.3487714285714287em;margin-left:0em;margin-right:0.07142857142857144em;"><span class="pstrut" style="height:2.5em;"></span><span class="sizing reset-size3 size1 mtight"><span class="mord mathnormal mtight" style="margin-right:0.03148em;">k</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15122857142857138em;"><span></span></span></span></span></span></span></span></span><span style="top:-2.8222307142857144em;"><span class="pstrut" style="height:3em;"></span><span class="hide-tail mtight" style="min-width:0.853em;height:1.08em;"><svg width='400em' height='1.08em' viewBox='0 0 400000 1080' preserveAspectRatio='xMinYMin slice'><path d='M95,702
+c-2.7,0,-7.17,-2.7,-13.5,-8c-5.8,-5.3,-9.5,-10,-9.5,-14
+c0,-2,0.3,-3.3,1,-4c1.3,-2.7,23.83,-20.7,67.5,-54
+c44.2,-33.3,65.8,-50.3,66.5,-51c1.3,-1.3,3,-2,5,-2c4.7,0,8.7,3.3,12,10
+s173,378,173,378c0.7,0,35.3,-71,104,-213c68.7,-142,137.5,-285,206.5,-429
+c69,-144,104.5,-217.7,106.5,-221
+l0 -0
+c5.3,-9.3,12,-14,20,-14
+H400000v40H845.2724
+s-225.272,467,-225.272,467s-235,486,-235,486c-2.7,4.7,-9,7,-19,7
+c-6,0,-10,-1,-12,-3s-194,-422,-194,-422s-65,47,-65,47z
+M834 80h400000v40h-400000z'/></svg></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.17776928571428574em;"><span></span></span></span></span></span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.446108em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">Q</span><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.07153em;">K</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.9190928571428572em;"><span style="top:-2.931em;margin-right:0.07142857142857144em;"><span class="pstrut" style="height:2.5em;"></span><span class="sizing reset-size3 size1 mtight"><span class="mord mathnormal mtight" style="margin-right:0.13889em;">T</span></span></span></span></span></span></span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.538em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mclose">)</span></span></span></span>捕捉了两个token之间的相关性</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820161328850.png" alt="image.png" /></p>
+<p>上一步的结果再和V做矩阵乘, 得到与输入维度相同的输出矩阵, <strong>每行(即经过计算后的的新的embedding)不仅捕捉了词语的含义（由嵌入表示）或在句子中的位置（由位置编码表示），还捕捉了每个词与其他词的相互作用</strong>。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820161338620.png" alt="image.png" /></p>
+<p>给出一张非常直观的图</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820161344336.png" alt="image.png" /></p>
+<h2 id="multi-head-attention"><a class="markdownIt-Anchor" href="#multi-head-attention"></a> <strong>Multi-Head Attention</strong></h2>
+<p>沿着d模型维度将QKV分割成较小的矩阵，并在这些较小的矩阵之间计算注意力. 所以每个头都在观察完整的句子，但是是每个embedding的不同方面。这样做的原因是<strong>我们希望每个头观察同一个词的不同方面</strong>。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820161352464.png" alt="image.png" /></p>
+<p>再给出一张非常直观的图</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820161357994.png" alt="image.png" /></p>
+<h1 id="kv-cache"><a class="markdownIt-Anchor" href="#kv-cache"></a> KV cache</h1>
+<h2 id="next-token-prediction-task"><a class="markdownIt-Anchor" href="#next-token-prediction-task"></a> Next Token Prediction Task</h2>
+<p>首先来了解一下LLama的训练（下词预测任务）：seq2seq的生成，但迭代T次，seq_len逐渐增加。</p>
+<p>即输入序列的第一个token将映射到输出序列的第一个token, [SOS] -&gt; Love, 第二次迭代中将用[SOS] Love预测that, 以此类推</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820161404655.png" alt="image.png" /></p>
+<h2 id="motivation-behind-kv-cache"><a class="markdownIt-Anchor" href="#motivation-behind-kv-cache"></a> Motivation behind KV cache</h2>
+<p>在推理的每一步，我们只关心模型输出的最后一个词元，因为我们已经有了之前的词元。然而，模型需要访问所有之前的词元来决定输出哪个词元，因为它们构成了模型的上下文（或称为“提示”）。<br />
+有没有办法让模型在推理时对已经看到的词元进行更少的计算呢？</p>
+<h2 id="kv-cache-2"><a class="markdownIt-Anchor" href="#kv-cache-2"></a> KV cache</h2>
+<p>下句预测时的Self-Attention：</p>
+<ul>
+<li>timpstep=1时seq_len=1，给[SOS]时，预测Love；</li>
+</ul>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820161414582.png" alt="image.png" /></p>
+<ul>
+<li>timpstep=2时<code>seq_len=2</code>，给[SOS] 和 Love时，预测that</li>
+</ul>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820161421196.png" alt="image.png" /></p>
+<ul>
+<li>timpstep=4时<code>seq_len=4</code>，给[SOS] 和 Love 和 can 和 quickly时，预测seize…</li>
+</ul>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820161427396.png" alt="image.png" /></p>
+<p>再来分析一下，<strong>每次个timestep的self-attention中我们到底需要哪些</strong>：因为我们只关注<strong>最后一个token的</strong><code>**attention_output**</code>，如下图timestep=4，我们只需要attention_output的第4个token。</p>
+<p>因此我们只需要<strong>Q的最后一个token</strong>和<strong>K的所有token</strong>相乘，得到最后一个token的<code>attention_score</code>，然后用<strong>V的所有token</strong>再与<code>attention_score</code>点积(相乘求和)，得到最后一个token的<code>attention_output</code>：</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820161434145.png" alt="image.png" /></p>
+<p>由上分析可知，<strong>每个timestep，我们的Q只需要新增的那个token即可，而K和V要缓存之前timestep的token，保证token是全的</strong>。<strong>每次计算出来的attention_output就是那个新增的token的attention。</strong> 这样就可以节省大量计算开销。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820161441508.png" alt="image.png" /></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820161448156.png" alt="image.png" /></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820161454171.png" alt="image.png" /></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820161500099.png" alt="image.png" /></p>
+<p><strong>参数量的计算方法:</strong> <a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/624740065"><strong>分析transformer模型的参数量、计算量、中间激活、KV cache</strong></a></p>
+<h2 id="kv-cache占用的显存空间"><a class="markdownIt-Anchor" href="#kv-cache占用的显存空间"></a> KV Cache占用的显存空间</h2>
+<p>Q, K的形状为:[b,head_num,s,per_head_hidden_size], 那么对于每个decoder layer，每个 token 的 K、V 矩阵都是 embedding_size=num_heads * head_size，再乘上 seqlen和 batch size，那就是每个layer的 kv Cache 所需的存储容量了。</p>
+<p><strong>例如，在 LLaMA 2-13B 中，head_num = 40, layer_num = 40, dimension = 5120, 对于1个token的 KV Cache 一共需要 2 (key and value vectors) × 5120 (hidden state size) × 40 (number of layers) × 2 (bytes per FP16) = 800KB</strong>。</p>
+<p><strong>以模型支持的最大的上下文长度4096为例，对于4096个token, 需要800KB * 4096 = 3.2GB的KV cache, 每增加一个batch则需要3.2GB显存，对于一张A100 40GB来说，在加载完模型26GB之后，余下的显存也仅能支持4个batch</strong></p>
+<h3 id="优化方向"><a class="markdownIt-Anchor" href="#优化方向"></a> <strong>优化方向</strong></h3>
+<ul>
+<li>
+<p><strong>模型</strong>: 减少hidden size(比如deepseek的MLA架构), 量化(减少单个元素储存空间, 比如fp16 -&gt; fp8)</p>
+</li>
+<li>
+<p><strong>架构</strong>: prefix cache(kv cache复用)</p>
+</li>
+</ul>
+<h2 id="kv-cache能省下的flops"><a class="markdownIt-Anchor" href="#kv-cache能省下的flops"></a> KV Cache能省下的FLOPs</h2>
+<blockquote>
+<p>FLOPs，floating point operations，表示浮点数运算次数，衡量了计算量的大小。<br />
+如何计算矩阵乘法的FLOPs呢？<br />
+对于 A∈R1×n,B∈Rn×1 ，计算 AB 需要进行 n 次乘法运算和 n 次加法运算，共计 2n 次浮点数运算，需要 2n 的FLOPs。对于 A∈Rm×n,B∈Rn×p ，计算 AB 需要的浮点数运算次数为 2mnp 。</p>
+</blockquote>
+<ul>
+<li>
+<p><strong>Attention 部分总计算量</strong></p>
+<ul>
+<li>(8 * seqlen * embedding size^2 + 4 * seqlen^2 * embedding size) * layer_{num} = 8 * 4096 * 5120 * 5120 * 40 + 4 * 4096 * 4096 *5120 * 40 = <strong>48 T FLOPS</strong></li>
+</ul>
+</li>
+<li>
+<p><strong>Q、K、V 矩阵计算</strong></p>
+<ul>
+<li>
+<p>原先一共需要 3 (Q+K+V) * 2 (mul+add) * embedding size * embedding size * seqlen * num_layer计算量</p>
+</li>
+<li>
+<p>现在一共需要 3 (Q+K+V) * 2 (mul+add) * embedding size * embedding size * num_layer计算量</p>
+</li>
+<li>
+<p><strong>省了 3 * 2 * 5120 * 5120 * (4096 - 1) * 40 TFLOPs的计算量</strong></p>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Attention Score部分</strong></p>
+<ul>
+<li>
+<p>原先一共需要 2 (mul+add) * embedding size * seqlen * seqlen * num_layer计算量</p>
+</li>
+<li>
+<p>现在一共需要 2 (mul+add) * embedding size * seqlen * num_layer计算量</p>
+</li>
+<li>
+<p><strong>省下 2 * 5120 * 4096 * (4096 - 1) * 40 TFLOPs的计算量</strong></p>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Attention Score * v部分</strong></p>
+<ul>
+<li>
+<p>原先一共需要 2 (mul+add) * embedding size * seqlen * seqlen * num_layer计算量</p>
+</li>
+<li>
+<p>现在一共需要 2 (mul+add) * embedding size * seqlen * num_layer计算量</p>
+</li>
+<li>
+<p><strong>省下 2 * 5120 * 4096 * (4096 - 1) * 40 TFLOPs的计算量</strong></p>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>attention 后的线性映射</strong></p>
+<ul>
+<li>
+<p>原先一共需要 2 (mul+add) * embedding size * embedding size * seqlen * num_layer计算量</p>
+</li>
+<li>
+<p>现在一共需要 2 (mul+add) * embedding size * embedding size * num_layer计算量</p>
+</li>
+<li>
+<p><strong>省下 2 * 5120 * 5120 * (4096 - 1) * 40 TFLOPs的计算量</strong></p>
+</li>
+</ul>
+</li>
+<li>
+<p>计算量从<strong>48 T FLOPS -&gt; 48/4096 TFLOPS, 节省99.98%计算量</strong></p>
+</li>
+</ul>
+<h2 id="使用kv-cache后推理逻辑的变化"><a class="markdownIt-Anchor" href="#使用kv-cache后推理逻辑的变化"></a> 使用KV Cache后推理逻辑的变化</h2>
+<p>当不使用 KV cache 时，每次生成下一个 token 的注意力计算都会对<strong>整条</strong>已生成序列（seq_len）进行自注意力计算。<br />
+而使用 KV cache 后，在生成新 token 时不需要重新计算所有先前 token 的 Key/Value 表示，<strong>只需对当前新生成的 token 计算 Query，并与已缓存的 Key/Value（即 KV cache）进行一次点积操作</strong>，得到注意力分布，从而减少计算量。此时，<strong>注意力的输出序列长度从整个历史序列长度缩减为 1</strong>（仅对当前 token 的预测所需）。</p>
+<p>因此, 每层 Decoder 都会接收到一个长度为 <code>seq_len</code> 的张量, 尽管输入的长度为 1，但注意力层并非只对这 1 个 token 做内部计算后结束。因为我们已经缓存了所有之前步骤（token）的 Key 和 Value，因此在注意力计算时，<strong>当前生成的 token 的 Query（Q）会与已经缓存的（seq_len-1）个 Key/Value 一起作用</strong>，从而模拟完整上下文的自注意力过程。换句话说：</p>
+<ul>
+<li>
+<p><strong>Query 是当前新 token 对应的 Q（长度为1的Q）</strong></p>
+</li>
+<li>
+<p><strong>Key/Value 则来自于之前缓存的所有历史 token（长度为过去累积的序列长度）</strong></p>
+</li>
+</ul>
+<p>因此，尽管这一轮输入激活只有一个 token，但注意力计算仍然是对所有历史信息进行查询（Q对缓存的K/V），确保模型没有丢失上下文。</p>
+<h1 id="prefix-cache"><a class="markdownIt-Anchor" href="#prefix-cache"></a> Prefix Cache</h1>
+<p>在讲 RadixAttention 之前有必要简单讲一下 Prefix Cache：</p>
+<p>假设我们现在有这样一个场景，<strong>多次请求的 Prompt 可能会共享同一个前缀（Prefix）</strong>，例如文档查询：</p>
+<p>假设我们有一个很长的prompt如下所示是一个 markdown 表格:</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820161521931.png" alt="image.png" /></p>
+<p>然后我们有下面两条 Query 分别将表格与问题拼接起来进行查询表格：</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820161532856.png" alt="image.png" /></p>
+<p>明显这两个 Prompt 都有共同的很长的前缀，如果我们把 Prompt 中共同的前缀产生的 KV Cache 给缓存下来，无疑会极大的减少 Prefill 阶段的时间从而减少 TTFT，并且如果不缓存，这个共同前缀的 KV Cache 将会被存两次，导致浪费显存，因此缓存下来还能减少显存从而增大吞吐</p>
+<p>这就是 Prefix Cache 所做的事情：<strong>将共享前缀的 KV Cache 给缓存起来</strong>，并且是一个能无损同时增加 TTFT 和吞吐的技术</p>
+<h2 id="为什么只有共同前缀的kv-cache能复用"><a class="markdownIt-Anchor" href="#为什么只有共同前缀的kv-cache能复用"></a> 为什么只有共同前缀的KV cache能复用</h2>
+<p>考虑 ”你好百度“ 和 “再见百度” 两个请求, 正在通过度这个词预测下一个字,</p>
+<p>第1层: 度的kv cache是由input embedding * K, V 参数矩阵得到的, 度的input embedding是由词表映射(这个是固定的)和位置编码(这个可能一样, 也可能不一样, 比如你好百度和百度你好)叠加的, 因此两个度的input embedding可能不一样, 如果input embedding是一样的, 那么度的kv cache是一样的,</p>
+<p>第2-n层: 度的kv cache是由input embedding * K, V 参数矩阵得到的, 度的input embedding是由上一层的输出和位置编码叠加的, 回顾上一层的Attention计算, q需要和历史的所有kv计算得到q和上文所有token的分数, 乘上上文所有v的值, 因此上一层的输出取决于所有上文内容, 因此如果请求的前缀不相同, kv cache不能复用</p>
+<h2 id="radix-cache"><a class="markdownIt-Anchor" href="#radix-cache"></a> Radix Cache</h2>
+<p>上面的 Prefix Cache 有这么几个问题还没有说明：</p>
+<ul>
+<li>
+<p><strong>怎么实现？用什么数据结构存储这些 Prefix Cache？</strong></p>
+</li>
+<li>
+<p><strong>你要存多少个 Prompt 的 KV Cache？存满了该怎么办？</strong></p>
+</li>
+</ul>
+<p>RadixCache 相比于上述提到的 Prefix Cache，引入了树(Radix Tree)结构来进一步增强 Prefix Cache（如何管理前缀 token）。</p>
+<ul>
+<li>
+<p>Radix Tree最大的特点就是，它的node，不仅可以是一个单独的元素，也可以是一个变长的序列。具体体现在，在必要的时候，一个已经在Tree中的大node可以动态地分裂成小node，以满足动态shared prefix的需求。</p>
+</li>
+<li>
+<p>RadixCache 提出使用 LRU 策略来管理前缀树，具体来说就是 Prefix Cache pool 大小有限（显存有限），因此存到一定数目的 Prefix 的 Cache 后可以根据 LRU 策略来驱逐，从而在不至于打爆 Prefix Cache pool 的基础上还能拥有更大的 Cache hit rate。</p>
+</li>
+</ul>
+<p>RadixCache LRU 策略示例：</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820161539835.png" alt="image.png" /></p>
+<p><strong>步骤(1)</strong>，Radix Tree最初是空的。<strong>步骤(2)</strong>，服务器处理传入的用户消息: “Hello”，并使用LLM输出: “Hi”，进行响应。system prompt为: “You are a helpful assistant”、用户的prompt为: “Hello!”，LLM回复为: “Hi!”；整个对话被合并为一个大node，保存到Radix Tree的节点a。<strong>步骤(3)</strong>，同一个用户输入了一个新的prompt，服务器从Radix Tree中找到的历史对话前缀(即对话的第一个回合)并复用它的KV Cache。新回合作为新节点追加到树中。<strong>步骤(4)</strong>，开始一个新的聊天会话。Radix Tree将(3)中的大节点“b”，动态地拆分为两个节点，以允许两个聊天会话共享system prompt。<strong>步骤(5)</strong>，第二个聊天继续。然而，由于内存限制，(4)中的节点“c”必须被清除。新的对话被缓存到新的节点&quot;d&quot;。</p>
+<h1 id="sglang-的-kv-cache-管理相关模块"><a class="markdownIt-Anchor" href="#sglang-的-kv-cache-管理相关模块"></a> sglang 的 kv cache 管理相关模块</h1>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820161547020.png" alt="image.png" /></p>
+<h2 id="kv-cache与内存池"><a class="markdownIt-Anchor" href="#kv-cache与内存池"></a> KV Cache与内存池</h2>
+<p>我们先来介绍一些管理KV Cache的关键组件。我们用两级内存池来管理KV Cache：</p>
+<h4 id="1-req_to_token_pool"><a class="markdownIt-Anchor" href="#1-req_to_token_pool"></a> 1. <code>req_to_token_pool</code></h4>
+<ul>
+<li>
+<p><strong>用途：</strong> 将Request映射到其token的 KV cache的索引。</p>
+</li>
+<li>
+<p><strong>形状：</strong> 最大允许Request数（通过 <code>max-running-requests</code> 设置） * 最大允许 token 数（通过 <code>model_config.context_len</code> 设置）</p>
+</li>
+<li>
+<p><strong>访问：</strong></p>
+<ul>
+<li>
+<p>Dim0: <code>req_pool_indices</code></p>
+</li>
+<li>
+<p>Dim1: 每个token在Request中的位置(0, 1, 2, …)</p>
+</li>
+<li>
+<p>返回值：token 在 <code>token_to_kv_pool</code> 的 <code>cache_loc</code></p>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="2-token_to_kv_pool"><a class="markdownIt-Anchor" href="#2-token_to_kv_pool"></a> 2. <code>token_to_kv_pool</code></h4>
+<ul>
+<li>
+<p><strong>用途：</strong> 进一步将单个token从它的KV cache索引映射到其实际的KV cache数据。对于不同的注意力机制（如<a target="_blank" rel="noopener" href="https://arxiv.org/abs/1706.03762">MHA</a>、<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2405.04434">MLA</a>、<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2408.07092">Double Sparsity</a>），<code>token_to_kv_pool</code>可能有不同的实现。</p>
+</li>
+<li>
+<p><strong>形状：</strong> 层数 * 最大允许 token 数 * attention头数 * 每个attention头的维度</p>
+</li>
+<li>
+<p><strong>访问：</strong></p>
+<ul>
+<li>
+<p>Dim0：<code>layer_id</code>，该kv cache对应的层数</p>
+</li>
+<li>
+<p>Dim1：<code>out_cache_loc</code>，token对应的kv cache索引（<code>req_to_token_pool</code>的返回值）</p>
+</li>
+<li>
+<p>Dim2：注意力头</p>
+</li>
+<li>
+<p>Dim3：注意力头维度</p>
+</li>
+<li>
+<p>返回值：<code>cache_k</code> &amp; <code>cache_v</code>：实际的 KV cache数据</p>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="3-tree_cache"><a class="markdownIt-Anchor" href="#3-tree_cache"></a> 3. <code>tree_cache</code></h4>
+<ul>
+<li>
+<p><strong>用途：</strong> <code>tree_cache</code>是一个树结构，用于加强跨Request之间的prefix KV cache复用。<code>tree_cache</code> 负责为每个请求在token级别更新<code>req_to_token_pool</code> 和 <code>token_to_kv_pool</code>。一个token在 <code>tree_cache</code>、<code>req_to_token_pool</code> 和 <code>token_to_kv_pool</code> 之间的数据可以通过其KV Cache 索引 (<code>out_cache_loc</code>) 相互映射。</p>
+</li>
+<li>
+<p><strong>访问：</strong></p>
+<ul>
+<li>
+<p>键：Token List。</p>
+</li>
+<li>
+<p>值：Token List的 KV cache索引 List</p>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="sglang-radixcache-具体实现"><a class="markdownIt-Anchor" href="#sglang-radixcache-具体实现"></a> <strong>Sglang RadixCache 具体实现</strong></h2>
+<p><strong>RadixCache = 带节点引用计数的前缀-KV 索引树,</strong> 它把 <strong>token id 序列 → KV-cache 索引</strong> 的映射组织成一棵前缀树（radix tree）；请求运行时只保留自己还在用的路径的引用计数（<code>lock_ref</code> &gt; 0），其余节点可被 LRU 驱逐并把显存归还给 KV-memory pool。</p>
+<h3 id="1-整体动机"><a class="markdownIt-Anchor" href="#1-整体动机"></a> 1 整体动机</h3>
+<table>
+<thead>
+<tr>
+<th>需求</th>
+<th>RadixCache 提供的能力</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>kv-cache 重用</strong>：两条请求共享前缀，就不要重复存 KV。</td>
+<td>相同前缀的 token 序列合并到一条根-到-节点路径，<code>value</code> 存 <strong>kv 索引张量</strong>。</td>
+</tr>
+<tr>
+<td><strong>显存可回收</strong>：已结束或被截断的前缀应及时释放。</td>
+<td><code>lock_ref</code> 记录“仍被多少活跃请求引用”；<code>evict()</code> 只逐叶删除 <code>lock_ref==0</code>。</td>
+</tr>
+<tr>
+<td><strong>page 对齐</strong>：为配合分块 KV 通信，可按 N token 为一页对齐。</td>
+<td><code>page_size</code> 决定一次比较/插入的 token 步长，默认 1；大于 1 时按页存键。</td>
+</tr>
+</tbody>
+</table>
+<h3 id="2-核心数据结构"><a class="markdownIt-Anchor" href="#2-核心数据结构"></a> 2 核心数据结构</h3>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">TreeNode</span><br><span class="line"> ├ key    : <span class="built_in">list</span>[<span class="built_in">int</span>]     <span class="comment"># 本节点“增量” token 序列</span></span><br><span class="line"> ├ value  : torch.Tensor  <span class="comment"># 同长度的 kv 索引 </span></span><br><span class="line"> ├ children: &#123;child_key → TreeNode&#125;</span><br><span class="line"> ├ parent : TreeNode|<span class="literal">None</span></span><br><span class="line"> ├ lock_ref: <span class="built_in">int</span>          <span class="comment"># 活跃引用计数</span></span><br><span class="line"> └ last_access_time       <span class="comment"># LRU 驱逐时用</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>
+<p>根节点 <code>key = [] , value = [] , lock_ref = 1</code>（永不驱逐）</p>
+</li>
+<li>
+<p><strong>压缩前缀树</strong>：相邻节点的 <code>key</code> 无重叠；从根到叶的 <code>key</code> 串联就是完整 token 序列。</p>
+</li>
+</ul>
+<h3 id="3-分页机制"><a class="markdownIt-Anchor" href="#3-分页机制"></a> 3 分页机制</h3>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820161632438.png" alt="image.png" /></p>
+<p>paged_token_to_kv_pool_allocator是社区最近merge的功能，旨在将所有KV Cache按照page维度（概念同as的block）切分管理，空间的分配、释放以及读写都按照block维度进行</p>
+<h3 id="4-引用计数"><a class="markdownIt-Anchor" href="#4-引用计数"></a> 4 引用计数</h3>
+<table>
+<thead>
+<tr>
+<th>时机</th>
+<th>调用</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>请求 <strong>被调度执行</strong>，持有前缀</td>
+<td><code>inc_lock_ref(node)</code></td>
+<td>把从该节点到根的锁 +1；如果这是从 0 → 1，则 <code>evictable_size_</code> 减少。</td>
+</tr>
+<tr>
+<td>请求 <strong>被释放 / 截断</strong></td>
+<td><code>dec_lock_ref(node)</code></td>
+<td>对应减回，0 → 1 以外不动 evictable_size。</td>
+</tr>
+</tbody>
+</table>
+<h3 id="5-api"><a class="markdownIt-Anchor" href="#5-api"></a> 5 API</h3>
+<h4 id="51-match_prefixkey-listint-tensor-last_node"><a class="markdownIt-Anchor" href="#51-match_prefixkey-listint-tensor-last_node"></a> 5.1 <code>match_prefix(key: List[int]) -&gt; (Tensor, last_node)</code></h4>
+<ol>
+<li>
+<p>沿树匹配最长公共前缀</p>
+<ul>
+<li>
+<p><code>key_match_fn</code> = 逐 token 或逐 <code>page_size</code> 比较</p>
+</li>
+<li>
+<p>遇到「部分匹配」时会 <code>_split_node</code></p>
+</li>
+</ul>
+</li>
+<li>
+<p>返回</p>
+<ul>
+<li>
+<p><code>value</code>＝所有匹配节点的 <code>value</code> 拼接（即已存在的 kv 索引）</p>
+</li>
+<li>
+<p><code>last_node</code>＝匹配到的最后节点（可能是新加的 split 节点）</p>
+</li>
+</ul>
+</li>
+</ol>
+<h4 id="52-insertkey-value"><a class="markdownIt-Anchor" href="#52-insertkey-value"></a> 5.2 <code>insert(key, value)</code></h4>
+<p>把token_ids按page对齐后和他们的KV indices插入到Radix Cache中。如果成功，会返回一个新的prefix长度（new_prefix_len）</p>
+<h4 id="53-cache_finished_reqreq-vscache_unfinished_reqreq"><a class="markdownIt-Anchor" href="#53-cache_finished_reqreq-vscache_unfinished_reqreq"></a> 5.3 <code>cache_finished_req(req) v.s.cache_unfinished_req(req)</code></h4>
+<p>请求<strong>完全结束 v.s.</strong> 请求<strong>未结束</strong>：</p>
+<ol>
+<li>
+<p>拿出这条请求的完整的上下文token list(origin_input_ids + output_ids)及 kv 索引按page对齐后写入 RadixCache (<code>insert</code>)</p>
+</li>
+<li>
+<p>归还插入过程中新增的共享前缀部分到 token_to_kv pool</p>
+</li>
+<li>
+<p>调整节点引用计数</p>
+<ul>
+<li>
+<p>cache_unfinished_req</p>
+<p>调用match_prefix()更新Request的prefix_indices和last_node。这里非常重要，因为prefix_indices和last_node在下一个decode的迭代会被用到。</p>
+<ul>
+<li>
+<p>prefix_indices用于计算需要extend/prefill的token数。</p>
+</li>
+<li>
+<p>last_node用来在更新lock的时候回溯到root节点。</p>
+</li>
+</ul>
+<p>内存安全管理-为了防止意外删除活跃的cache节点，我们用一个锁来保证使用中的节点不被释放。在上述状态转换之后，旧的<code>last_node</code>通过<code>dec_lock_ref()</code>解锁，允许它在不再需要的时候被释放。新的<code>last_node</code>被锁定，防止被意外删除。</p>
+</li>
+<li>
+<p>cache_finished_req</p>
+<p>把 <code>req</code> 在 Req-token pool 里的 slot 释放同时对它曾经锁住的树节点做 <code>dec_lock_ref</code></p>
+</li>
+</ul>
+</li>
+</ol>
+<h4 id="54-evictnum_tokens"><a class="markdownIt-Anchor" href="#54-evictnum_tokens"></a> 5.4 <code>evict(num_tokens)</code></h4>
+<ul>
+<li>
+<p>先 <code>heapq.heapify(所有叶节点)</code>，按 <code>last_access_time</code> 作最小堆</p>
+</li>
+<li>
+<p>反复弹出最久未用且 <code>lock_ref == 0</code> 的叶子</p>
+<ul>
+<li>
+<p><code>free(leaf.value)</code> → 还显存</p>
+</li>
+<li>
+<p><code>self._delete_leaf()</code>：从父删引用；若父变成新叶，再入堆</p>
+</li>
+</ul>
+</li>
+<li>
+<p>直到腾出 <code>num_tokens</code> 或已无可驱逐节点</p>
+</li>
+</ul>
+<p><strong>调用时机</strong></p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>调用点（函数栈）</th>
+<th>代码触发条件</th>
+<th>典型场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>1</strong></td>
+<td><strong>Prefill / Chunk-Prefill 申请新 KV 空间时</strong><code>ScheduleBatch.prepare_for_extend</code> → <code>alloc_token_slots(*) / alloc_paged_token_slots_extend</code> → <code>**tree_cache.evict(num_tokens)**</code></td>
+<td><code>token_to_kv_pool_allocator.available_size() &lt; 待写入 token 数</code></td>
+<td>刚把一批新 prompt 切成 chunk，要塞进 KV 缓存，但显存不够，所以先淘汰最旧、无人引用的页。</td>
+</tr>
+<tr>
+<td><strong>2</strong></td>
+<td><strong>Decode 下一步前的容量检查</strong><code>ScheduleBatch.check_decode_mem</code> → <code>**tree_cache.evict(pages_needed)**</code></td>
+<td>deocde 阶段<code>update_running_batch</code></td>
+<td>长句子持续解码，或者连续 batching，KV 越来越满——先清理可回收页，再继续解码。</td>
+</tr>
+<tr>
+<td><strong>3</strong></td>
+<td><strong>Retract Decode 回退时</strong><code>ScheduleBatch.retract_decode</code> 循环里  <br>① 释放被回退 req 的 KV  <br>② <code>**tree_cache.evict(residual_size)**</code></td>
+<td>已经释放了一些页，但还不足以满足 <strong>“每条 req 至少还能再解 N 步”</strong> 的预算</td>
+<td>超大并发或多路长文本 decode，显存吃紧 → 调度器弹出若干历史最旧请求并回收其页。</td>
+</tr>
+</tbody>
+</table>
+<h3 id="6-调用链"><a class="markdownIt-Anchor" href="#6-调用链"></a> 6 调用链</h3>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">用户请求  →  waiting_queue               <span class="comment"># 刚进入调度器</span></span><br><span class="line">└─► <span class="number">1.</span> 前缀匹配阶段</span><br><span class="line">     Scheduler.process_input_requests</span><br><span class="line">       └─► waiting_queue                <span class="comment"># 等待调度</span></span><br><span class="line">    Scheduler.get_new_batch_prefill</span><br><span class="line">      ├─► SchedulePolicy.calc_priority</span><br><span class="line">      │     └─► _compute_prefix_matches</span><br><span class="line">      │           └─► RadixCache.match_prefix     <span class="comment"># 第 1 次查找（批量排序）</span></span><br><span class="line">      └─► Req.init_next_round_input</span><br><span class="line">            └─► RadixCache.match_prefix           <span class="comment"># 第 2 次查找（真正取前缀）</span></span><br><span class="line"> </span><br><span class="line">     <span class="number">2.</span> Prefill/Chunk 执行中</span><br><span class="line">       ├─► 若一次 prefill 未完成（chunk 方式）</span><br><span class="line">       │       Scheduler.tree_cache.cache_unfinished_req</span><br><span class="line">       │</span><br><span class="line">       └─► Prefill 完全结束或 Decode 结束</span><br><span class="line">               Scheduler.tree_cache.cache_finished_req</span><br><span class="line">                </span><br><span class="line">    <span class="number">3.</span> 资源回收 &amp; 淘汰</span><br><span class="line">       ├─► Scheduler.check_memory / flush_cache</span><br><span class="line">       │     └─► RadixCache.reset()</span><br><span class="line">       └─► 当显存吃紧</span><br><span class="line">             tree_cache.evict(num_tokens)</span><br><span class="line">         </span><br></pre></td></tr></table></figure>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820161745072.png" alt="image.png" /></p>
+<h3 id="7-例子"><a class="markdownIt-Anchor" href="#7-例子"></a> 7 例子</h3>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820161752157.png" alt="image.png" /></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">root ([])</span><br><span class="line"> ├─ <span class="string">&quot;Hello&quot;</span> (kv0) r=<span class="number">1</span></span><br><span class="line"> │    └─ <span class="string">&quot;_L.A.!&quot;</span> (kv1) r=<span class="number">0</span>   ← 可驱逐</span><br><span class="line"> └─ <span class="string">&quot;I love you&quot;</span> (kv2) r=<span class="number">2</span>     ← 两活跃 req 共用</span><br></pre></td></tr></table></figure>
+<ul>
+<li>
+<p><code>evictable_size_</code> ＝ <code>len(kv1)</code></p>
+</li>
+<li>
+<p>当两条“爱你”请求结束后：<code>dec_lock_ref</code> 把 r→0→ <code>evictable_size</code> 增→ <code>evict()</code> 可以把 <code>&quot;I love you&quot;</code> 整段 KV 归还显存。</p>
+</li>
+</ul>
+<h2 id="asradixcache-radixcache-把-kv-同步到-attention-store"><a class="markdownIt-Anchor" href="#asradixcache-radixcache-把-kv-同步到-attention-store"></a> <strong>AsRadixCache (RadixCache + 把 KV 同步到 Attention Store)</strong></h2>
+<table>
+<thead>
+<tr>
+<th>类别</th>
+<th><strong>RadixCache</strong></th>
+<th><strong>AsRadixCache 新增 / 改动</strong></th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>初始化</strong></td>
+<td>只保存 CPU/GPU 端内存池指针</td>
+<td><code>self.layer_ids</code>保存模型层数 + <code>ref_ascli()</code> 持有 <code>AttentionStoreSDK</code> 句柄</td>
+<td>后续读写 KV 时需要告诉 AS 哪几层</td>
+</tr>
+<tr>
+<td><strong>match_prefix</strong></td>
+<td>只查本地 radix-tree</td>
+<td>① 正常从本地匹配  <br>② 如果本地命中长度 &lt; <code>key</code>, 调用<code>_as_match_and_read()</code> 到 AS <strong>增量回填</strong> KV，再把新数据插进树</td>
+<td>1. sglang在给请求分配kv cache空间时，会调用asradix cache的match_prefix接口<br>    <br>2. 在asradix cache的match_prefix接口中，同步调用一次as agent的match接口，判断能否从as获取从start_match_block_index开始的kv cache<br>    <br>3. 如果AS有cache命中，就从token_to_kv_pool分配空间，然后调用AS读接口读取kv cache<br>    <br>4. 读取成功后，更新索引</td>
+</tr>
+<tr>
+<td><strong>cache_finished_req</strong></td>
+<td>写 radix-tree → 释放 pool</td>
+<td>除原逻辑外：  <br>· 将整条 <strong>token →page 映射</strong><code>flush_token_index()</code> 推给 AS</td>
+<td><strong>写</strong>：生成结束时把radix cache中的索引完整同步到 AS<br><br><strong>“索引”</strong> 新增 / 持久化 —— 告诉 AS, 这些 token 对应的 KV 现在已经保存在本地 HBM，Block ID 如索引所示，AS 可以把它们当作“已缓存”来命中。</td>
+</tr>
+<tr>
+<td><strong>cache_unfinished_req</strong></td>
+<td>把当前已 prefill 的部分挂到树里</td>
+<td>保持原逻辑</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>evict</strong></td>
+<td>LRU-heap 找叶子 → 释放 KV</td>
+<td>① 额外整理出被驱逐 page 的 <strong>完整 token 序列 &amp; blockID</strong>② 调 <code>flush_token_index()</code> &amp; <code>write()</code> 通知 AS 失效 / 搬运数据</td>
+<td><strong>驱逐时更新:</strong><br><br>1. <strong>“索引”</strong> 失效 —— 告诉 AS：整条序列 <code>token_ids</code>从 <code>start_flush_block_index</code> 这个块起，后面的 KV 已被驱逐，只剩下前缀仍在本地；后缀如果要用必须去 AS 拉取。<br>    <br>2. <strong>“值”</strong> 写入 —— 把显存里整条序列 <code>token_ids</code>真正的 KV Tensor 块从 <code>start_flush_block_index</code> 这个块起拷到 AS</td>
+</tr>
+<tr>
+<td><strong>辅助函数</strong></td>
+<td>—</td>
+<td><code>_as_match_and_read()</code></td>
+<td>实现“缺页 + 读 AS + 回写本地”流程</td>
+</tr>
+</tbody>
+</table>
+<h1 id="参考"><a class="markdownIt-Anchor" href="#参考"></a> 参考</h1>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/zhaochenyang20/Awesome-ML-SYS-Tutorial/blob/main/sglang/kvcache-code-walk-through/readme-CN.md">https://github.com/zhaochenyang20/Awesome-ML-SYS-Tutorial/blob/main/sglang/kvcache-code-walk-through/readme-CN.md</a></li>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/693556044">https://zhuanlan.zhihu.com/p/693556044</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" rel="tag"># 大模型</a>
+              <a href="/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%8E%A8%E7%90%86/" rel="tag"># 大模型推理</a>
+              <a href="/tags/Sglang/" rel="tag"># Sglang</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/08/20/DeepSeek-%E4%B8%AD%E7%9A%84%E4%B8%93%E5%AE%B6%E5%9D%87%E8%A1%A1%E5%88%86%E6%9E%90%E4%B8%8E%E4%BC%98%E5%8C%96/" rel="prev" title="DeepSeek 中的专家均衡分析与优化">
+                  <i class="fa fa-angle-left"></i> DeepSeek 中的专家均衡分析与优化
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2025/08/20/Block-all-reduce-%E5%AD%A6%E4%B9%A0-sum-softmax/" rel="next" title="Block all reduce 学习 (sum, softmax)">
+                  Block all reduce 学习 (sum, softmax) <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Ronny Lu</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">245k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">14:50</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">false</script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" integrity="sha256-UF1fgpAiu3tPJN/uCqEUHNe7pnr+QR0SQDNfgglgtcM=" crossorigin="anonymous">
+  <script class="next-config" data-name="katex" type="application/json">{"copy_tex_js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/copy-tex.min.js","integrity":"sha256-Us54+rSGDSTvIhKKUs4kygE2ipA0RXpWWh0/zLqw3bs="}}</script>
+  <script src="/js/third-party/math/katex.js"></script>
+
+
+
+</body>
+</html>

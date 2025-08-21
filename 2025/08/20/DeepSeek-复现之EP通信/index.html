@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="https://avatars.githubusercontent.com/u/55233584?v=4">
+  <link rel="icon" type="image/png" sizes="32x32" href="https://avatars.githubusercontent.com/u/55233584?v=4">
+  <link rel="icon" type="image/png" sizes="16x16" href="https://avatars.githubusercontent.com/u/55233584?v=4">
+  <link rel="mask-icon" href="https://avatars.githubusercontent.com/u/55233584?v=4" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-minimal.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"luyiyun1021.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.22.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="EP通信的挑战  DeepSeekv3中的MoE架构   EP专家并行：每个GPU处理不同的专家">
+<meta property="og:type" content="article">
+<meta property="og:title" content="DeepSeek 复现之EP通信">
+<meta property="og:url" content="https://luyiyun1021.github.io/2025/08/20/DeepSeek-%E5%A4%8D%E7%8E%B0%E4%B9%8BEP%E9%80%9A%E4%BF%A1/index.html">
+<meta property="og:site_name" content="Ronny Lu&#39;s blog">
+<meta property="og:description" content="EP通信的挑战  DeepSeekv3中的MoE架构   EP专家并行：每个GPU处理不同的专家">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250819155632217.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250819155637847.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250819155644739.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250819155650486.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250819155656644.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250819155703501.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250819155711834.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250819155717823.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250819155723418.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250819155731691.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250819155738436.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250819155744991.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250819155753064.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250819155759406.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250819155807771.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250819155813932.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250819155820023.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250819155825267.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250819155831779.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250819155837032.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250819155847404.png">
+<meta property="article:published_time" content="2025-08-20T08:03:31.000Z">
+<meta property="article:modified_time" content="2025-08-20T08:04:06.485Z">
+<meta property="article:author" content="Ronny Lu">
+<meta property="article:tag" content="大模型">
+<meta property="article:tag" content="大模型推理">
+<meta property="article:tag" content="Deepseek">
+<meta property="article:tag" content="Deepseek优化">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250819155632217.png">
+
+
+<link rel="canonical" href="https://luyiyun1021.github.io/2025/08/20/DeepSeek-%E5%A4%8D%E7%8E%B0%E4%B9%8BEP%E9%80%9A%E4%BF%A1/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://luyiyun1021.github.io/2025/08/20/DeepSeek-%E5%A4%8D%E7%8E%B0%E4%B9%8BEP%E9%80%9A%E4%BF%A1/","path":"2025/08/20/DeepSeek-复现之EP通信/","title":"DeepSeek 复现之EP通信"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>DeepSeek 复现之EP通信 | Ronny Lu's blog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<style>.darkmode--activated{--body-bg-color:#282828;--content-bg-color:#333;--card-bg-color:#555;--text-color:#ccc;--blockquote-color:#bbb;--link-color:#ccc;--link-hover-color:#eee;--brand-color:#ddd;--brand-hover-color:#ddd;--table-row-odd-bg-color:#282828;--table-row-hover-bg-color:#363636;--menu-item-bg-color:#555;--btn-default-bg:#222;--btn-default-color:#ccc;--btn-default-border-color:#555;--btn-default-hover-bg:#666;--btn-default-hover-color:#ccc;--btn-default-hover-border-color:#666;--highlight-background:#282b2e;--highlight-foreground:#a9b7c6;--highlight-gutter-background:#34393d;--highlight-gutter-foreground:#9ca9b6}.darkmode--activated img{opacity:.75}.darkmode--activated img:hover{opacity:.9}.darkmode--activated code{color:#69dbdc;background:0 0}button.darkmode-toggle{z-index:9999}.darkmode-ignore,img{display:flex!important}.beian img{display:inline-block!important}</style></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Ronny Lu's blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#ep%E9%80%9A%E4%BF%A1%E7%9A%84%E6%8C%91%E6%88%98"><span class="nav-number">1.</span> <span class="nav-text"> EP通信的挑战</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#deepseekv3%E4%B8%AD%E7%9A%84moe%E6%9E%B6%E6%9E%84"><span class="nav-number">1.1.</span> <span class="nav-text"> DeepSeekv3中的MoE架构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ep%E4%B8%93%E5%AE%B6%E5%B9%B6%E8%A1%8C%E6%AF%8F%E4%B8%AAgpu%E5%A4%84%E7%90%86%E4%B8%8D%E5%90%8C%E7%9A%84%E4%B8%93%E5%AE%B6"><span class="nav-number">1.2.</span> <span class="nav-text"> EP专家并行：每个GPU处理不同的专家</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ep%E9%80%9A%E4%BF%A1%E7%9A%84%E6%9C%AC%E8%B4%A8%E5%90%91%E4%B8%8D%E5%90%8C%E4%B8%93%E5%AE%B6gpu%E5%88%86%E5%8F%91token%E5%B9%B6%E6%B1%87%E8%81%9A%E5%A4%84%E7%90%86%E7%BB%93%E6%9E%9C"><span class="nav-number">1.3.</span> <span class="nav-text"> EP通信的本质：向不同专家&#x2F;GPU分发token并汇聚处理结果</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ep%E9%80%9A%E4%BF%A1%E7%9A%84%E6%8C%91%E6%88%98prefill%E7%9A%84%E5%B8%A6%E5%AE%BD%E4%B8%8Edecode%E7%9A%84%E6%97%B6%E5%BB%B6"><span class="nav-number">1.4.</span> <span class="nav-text"> EP通信的挑战：Prefill的带宽与Decode的时延</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BC%A0%E7%BB%9Falltoall%E6%96%B9%E6%A1%88%E7%9A%84%E5%B8%A6%E5%AE%BD%E9%97%AE%E9%A2%98token%E7%9A%84%E5%86%97%E4%BD%99%E4%BC%A0%E8%BE%93"><span class="nav-number">1.5.</span> <span class="nav-text"> 传统AlltoAll方案的带宽问题：token的冗余传输</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BC%A0%E7%BB%9Falltoall%E6%96%B9%E6%A1%88%E7%9A%84%E6%97%B6%E5%BB%B6%E9%97%AE%E9%A2%98%E7%BD%91%E7%BB%9C%E4%BC%A0%E8%BE%93%E7%9A%84cpu%E7%93%B6%E9%A2%88"><span class="nav-number">1.6.</span> <span class="nav-text"> 传统AlltoAll方案的时延问题：网络传输的CPU瓶颈</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#ep%E9%80%9A%E4%BF%A1%E5%BA%93%E7%9A%84%E9%AB%98%E6%95%88%E5%AE%9E%E7%8E%B0"><span class="nav-number">2.</span> <span class="nav-text"> EP通信库的高效实现</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#ep%E9%80%9A%E4%BF%A1%E5%BA%93%E7%9A%84%E4%BC%98%E5%8C%96%E5%9F%BA%E4%BA%8Envshmem%E5%AE%9E%E7%8E%B0%E8%87%AA%E5%AE%9A%E4%B9%89%E9%80%9A%E4%BF%A1%E7%AE%97%E5%AD%90"><span class="nav-number">2.1.</span> <span class="nav-text"> EP通信库的优化：基于nvshmem实现自定义通信算子</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#prefill%E5%AE%9E%E4%BE%8B%E4%B8%AD%E7%9A%84ep%E9%80%9A%E4%BF%A1%E4%B8%A4%E9%98%B6%E6%AE%B5%E7%AE%97%E5%AD%90%E8%AE%BE%E8%AE%A1"><span class="nav-number">2.2.</span> <span class="nav-text"> Prefill实例中的EP通信：两阶段算子设计</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#deepep-twostage-dispatch%E7%AE%97%E5%AD%90%E7%AE%80%E6%9E%90"><span class="nav-number">2.3.</span> <span class="nav-text"> DeepEP TwoStage Dispatch算子简析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#deepep-twostage-combine%E7%AE%97%E5%AD%90%E7%AE%80%E6%9E%90"><span class="nav-number">2.4.</span> <span class="nav-text"> DeepEP TwoStage Combine算子简析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#deepep-twostage%E7%AE%97%E5%AD%90%E4%B8%AD%E7%9A%84tuning%E4%BB%A5dispatch%E4%B8%BA%E4%BE%8B"><span class="nav-number">2.5.</span> <span class="nav-text"> DeepEP TwoStage算子中的Tuning(以dispatch为例)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#deepep-twostage%E7%AE%97%E5%AD%90%E4%B8%8E%E8%AE%A1%E7%AE%97%E7%9A%84overlap"><span class="nav-number">2.6.</span> <span class="nav-text"> DeepEP TwoStage算子与计算的Overlap</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#decode%E5%AE%9E%E4%BE%8B%E4%B8%AD%E7%9A%84ep%E9%80%9A%E4%BF%A1%E6%9E%81%E8%87%B4%E6%97%B6%E5%BB%B6%E8%A6%81%E6%B1%82%E4%B8%8Eibgda"><span class="nav-number">2.7.</span> <span class="nav-text"> Decode实例中的EP通信：极致时延要求与IBGDA</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#deepep-low-latency%E7%AE%97%E5%AD%90%E7%AE%80%E6%9E%90"><span class="nav-number">2.8.</span> <span class="nav-text"> DeepEP Low Latency算子简析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#deepep-low-latency%E7%AE%97%E5%AD%90%E4%B8%8E%E8%AE%A1%E7%AE%97overlap"><span class="nav-number">2.9.</span> <span class="nav-text"> DeepEP Low Latency算子与计算Overlap</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">3.</span> <span class="nav-text"> 总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Ronny Lu"
+      src="https://avatars.githubusercontent.com/u/55233584?v=4">
+  <p class="site-author-name" itemprop="name">Ronny Lu</p>
+  <div class="site-description" itemprop="description">Tech notes on LLM, LLM Infra, and others</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">75</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">16</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">19</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/08/20/DeepSeek-%E5%A4%8D%E7%8E%B0%E4%B9%8BEP%E9%80%9A%E4%BF%A1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
+      <meta itemprop="name" content="Ronny Lu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ronny Lu's blog">
+      <meta itemprop="description" content="Tech notes on LLM, LLM Infra, and others">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="DeepSeek 复现之EP通信 | Ronny Lu's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          DeepSeek 复现之EP通信
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-08-20 16:03:31 / 修改时间：16:04:06" itemprop="dateCreated datePublished" datetime="2025-08-20T16:03:31+08:00">2025-08-20</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">大模型</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E6%8E%A8%E7%90%86%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index"><span itemprop="name">推理技术</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E6%8E%A8%E7%90%86%E6%8A%80%E6%9C%AF/Deepseek%E4%BC%98%E5%8C%96/" itemprop="url" rel="index"><span itemprop="name">Deepseek优化</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>3.5k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>13 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h1 id="ep通信的挑战"><a class="markdownIt-Anchor" href="#ep通信的挑战"></a> EP通信的挑战</h1>
+<h2 id="deepseekv3中的moe架构"><a class="markdownIt-Anchor" href="#deepseekv3中的moe架构"></a> DeepSeekv3中的MoE架构</h2>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250819155632217.png" alt="image.png" /></p>
+<h2 id="ep专家并行每个gpu处理不同的专家"><a class="markdownIt-Anchor" href="#ep专家并行每个gpu处理不同的专家"></a> EP专家并行：每个GPU处理不同的专家</h2>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250819155637847.png" alt="image.png" /></p>
+<span id="more"></span>
+<h2 id="ep通信的本质向不同专家gpu分发token并汇聚处理结果"><a class="markdownIt-Anchor" href="#ep通信的本质向不同专家gpu分发token并汇聚处理结果"></a> EP通信的本质：向不同专家/GPU分发token并汇聚处理结果</h2>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250819155644739.png" alt="image.png" /></p>
+<h2 id="ep通信的挑战prefill的带宽与decode的时延"><a class="markdownIt-Anchor" href="#ep通信的挑战prefill的带宽与decode的时延"></a> EP通信的挑战：Prefill的带宽与Decode的时延</h2>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250819155650486.png" alt="image.png" /></p>
+<h2 id="传统alltoall方案的带宽问题token的冗余传输"><a class="markdownIt-Anchor" href="#传统alltoall方案的带宽问题token的冗余传输"></a> 传统AlltoAll方案的带宽问题：token的冗余传输</h2>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250819155656644.png" alt="image.png" /></p>
+<p>token id-&gt;expert id映射重排成expert id-&gt;toekn id映射, 传输的时候每个token出现在多个expert的映射中, 发送是冗余的(机内冗余和卡内冗余)</p>
+<h2 id="传统alltoall方案的时延问题网络传输的cpu瓶颈"><a class="markdownIt-Anchor" href="#传统alltoall方案的时延问题网络传输的cpu瓶颈"></a> 传统AlltoAll方案的时延问题：网络传输的CPU瓶颈</h2>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250819155703501.png" alt="image.png" /></p>
+<ol>
+<li>
+<p>SM把数据写入显存</p>
+</li>
+<li>
+<p>SM通知Proxy线有数送</p>
+</li>
+<li>
+<p>CPU发现有数据要送</p>
+</li>
+<li>
+<p>CPU生成网卡送请求WQE</p>
+</li>
+<li>
+<p>CPU写内存中的Doorbell Record</p>
+</li>
+<li>
+<p>CPU向网卡起Doorbell</p>
+</li>
+<li>
+<p>网卡读取内存中的WQE</p>
+</li>
+<li>
+<p>网卡根据WQE从显存中读数据(GDR): GPU Direct RDMA, 网卡直接访问显存只在这一步生效</p>
+</li>
+<li>
+<p>网卡把数据发送到网络上</p>
+</li>
+<li>
+<p>网卡发送完毕把completion写入内存</p>
+</li>
+<li>
+<p>CPU确认发送完成回收资源</p>
+</li>
+</ol>
+<ul>
+<li>
+<p>CPU处理一个发送请求需要~1us</p>
+</li>
+<li>
+<p>1个Token对应一个发送请求，在Decode阶段128×8个token需要~1ms</p>
+</li>
+</ul>
+<h1 id="ep通信库的高效实现"><a class="markdownIt-Anchor" href="#ep通信库的高效实现"></a> EP通信库的高效实现</h1>
+<h2 id="ep通信库的优化基于nvshmem实现自定义通信算子"><a class="markdownIt-Anchor" href="#ep通信库的优化基于nvshmem实现自定义通信算子"></a> EP通信库的优化：基于nvshmem实现自定义通信算子</h2>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250819155711834.png" alt="image.png" /></p>
+<h2 id="prefill实例中的ep通信两阶段算子设计"><a class="markdownIt-Anchor" href="#prefill实例中的ep通信两阶段算子设计"></a> Prefill实例中的EP通信：两阶段算子设计</h2>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250819155717823.png" alt="image.png" /></p>
+<h2 id="deepep-twostage-dispatch算子简析"><a class="markdownIt-Anchor" href="#deepep-twostage-dispatch算子简析"></a> DeepEP TwoStage Dispatch算子简析</h2>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250819155723418.png" alt="image.png" /></p>
+<p>简单来说，<code>get_dispatch_layout</code>根据本地的<code>topk_idx</code>，来计算本地要发往每个rank和每个expert的token数量。</p>
+<p><code>notify_dispatch</code>在使用NVSHMEM在所有rank之间进行通信，计算互相发送的token数量以及负责的token区域，具体包括如下内容：</p>
+<ul>
+<li>
+<p><code>rdma_channel_prefix_matrix</code>：形状<code>(num_rdma_ranks, num_channels)</code>，每个channel要发往每个RDMA节点token数量的前缀和</p>
+</li>
+<li>
+<p><code>recv_rdma_rank_prefix_sum</code>：形状<code>(num_rdma_ranks)</code>，每个RDMA节点要接收的token数量</p>
+</li>
+<li>
+<p><code>gbl_channel_prefix_matrix</code>：形状<code>(num_ranks, num_channels)</code>，每个channel要发往每个GPU的token数量的前缀和</p>
+</li>
+<li>
+<p><code>recv_gbl_rank_prefix_sum</code>：形状<code>(num_ranks)</code>，每个GPU要接收的token数量</p>
+</li>
+<li>
+<p><code>moe_recv_counter</code>：int，总共要接收的token数量</p>
+</li>
+<li>
+<p><code>moe_recv_expert_counter</code>：int[NUM_MAX_LOCAL_EXPERTS]，每个本地的expert要接收的token数量</p>
+</li>
+</ul>
+<p>然后，创建接收数据的tensor。</p>
+<p><code>dispatch</code>的核心代码位于<code>csrc/kernels/internode.cu</code>，由于代码非常长，我们这里用文字来讲解它的流程。</p>
+<p>在MoE里，一个token可能会发往多个GPU，这些GPU可能位于多个节点上（Deepseek-V3规定了一个token最多发往4个节点）。对于一个token，它首先经过rdma channel，从本地传输到所有的远端节点上编号相同的GPU。然后再经过nvl_channel，传输远端节点中所有的目标GPU上。</p>
+<p>DeepEP使用多个channel发送数据。DeepEP将每个GPU上的数据划分为<code>num_channels</code>个连续的段，每一段用一个channel发送。其中每个channel包含一个rdma_channel和一个nvl_channel。rdma_channel和nvl_channel本质上都是环形队列。</p>
+<p>下面这张图展示了整体的工作流程，注意：为了方便，这里只展示了一个token发往一个目标GPU的过程。实际上，每个token至多发往4个dst rdma rank，8个dst nvl rank。图中的黄框代表GPU，实线代表数据流经的路径，虚线代表控制信息。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250819155731691.png" alt="image.png" /></p>
+<p>我们看看在这个过程中，kernel是如何分工的</p>
+<p>关于kernel的启动：</p>
+<ul>
+<li>
+<p>dispatch会启动<code>num_channels * 2</code>个SM，其中每两个SM对应一个channel</p>
+</li>
+<li>
+<p>每个SM有<code>kNumDispatchRDMASenderWarps + 1 + NUM_MAX_NVL_PEERS</code>个warp（默认<code>kNumDispatchRDMASenderWarps = 7</code>，<code>NUM_MAX_NVL_PEERS = 8</code>，所以每个SM有16个warp）</p>
+</li>
+<li>
+<p>H800中每个warp有32个线程</p>
+</li>
+</ul>
+<p>在每个channel内部，线程的分工如下：</p>
+<ul>
+<li>
+<p>对于第一个SM</p>
+<ul>
+<li>
+<p>前8个warp为<code>RDMAAndNVLForwarder</code>，负责将数据从RDMA传输到NVL</p>
+</li>
+<li>
+<p>1个warp为<code>ForwarderCoordinator</code>，负责协调<code>RDMAAndNVLForwarder</code></p>
+</li>
+</ul>
+</li>
+<li>
+<p>对于第二个SM</p>
+<ul>
+<li>
+<p>前7个warp为<code>RDMASender</code>，负责将数据拷贝到RDMA channel</p>
+</li>
+<li>
+<p>第8个warp为<code>RDMASenderCoordinator</code>，负责协调<code>RDMASender</code></p>
+</li>
+<li>
+<p>剩余8个warp为<code>NVLReceivers</code></p>
+</li>
+</ul>
+</li>
+</ul>
+<p>前面提到rdma_channel和nvl_channel都是队列。下面两张图解释了这些队列的头尾指针是什么，以及它们是如何维护的。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250819155738436.png" alt="image.png" /></p>
+<p>对于rdma_channel来说</p>
+<ul>
+<li>
+<p>src rdma rank和dst rdma rank各自维护了队列的头尾指针，这些指针需要进行同步</p>
+</li>
+<li>
+<p>src将数据放入send_buffer，使用nvshmem发往dst的recv_buffer</p>
+</li>
+</ul>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250819155744991.png" alt="image.png" /></p>
+<p>而对于nvl_channel来说，其头尾指针和数据都放在机内的IPC共享内存中，因此不需要特别的进行同步</p>
+<p>在了解了这些channel以及线程的分工之后，我们回到代码，具体地看一下这些warp的职责</p>
+<ul>
+<li>
+<p><code>RDMASender</code></p>
+<ul>
+<li>
+<p>7个<code>RDMASender</code>轮流取token，每个warp一次取一个token：</p>
+<ul>
+<li>
+<p>在warp内部，每个lane（线程）对应一个dst rdma rank</p>
+</li>
+<li>
+<p>如果当前lane对应的rank属于token要发往的rdma rank，则推进<code>rdma_send_channel_tail</code>，并等待远端发来的<code>rdma_channel_head</code>，要求tail-head&lt;队列大小<code>num_max_rdma_chunked_recv_tokens</code></p>
+</li>
+<li>
+<p>将token放入<code>send_buffer</code>中</p>
+</li>
+<li>
+<p>更新<code>rdma_channel_tail</code></p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><code>RDMASenderCoordinator</code></p>
+<ul>
+<li>
+<p>每个lane负责一个dst rdma rank</p>
+</li>
+<li>
+<p>如果还有未发送的数据，则轮训所有rdma rank：</p>
+<ul>
+<li>
+<p>如果某个rdma_channel中，待发送的数据超过<code>num_max_rdma_chunked_send_tokens</code>，则从<code>send_buffer</code>发送这些数量的token到远端的<code>recv_buffer</code>中</p>
+</li>
+<li>
+<p>更新远端的<code>rdma_channel_tail</code>+=发送的token数</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><code>RDMAAndNVLForwarder</code></p>
+<ul>
+<li>
+<p>每个warp负责一个机内的nvl rank（编号从自身的开始），这些warp同时处理来自rdma_channel的数据</p>
+</li>
+<li>
+<p>若有未转发的数据</p>
+<ul>
+<li>
+<p>等待nvl channel的剩余空间达到<code>num_max_nvl_chunked_send_tokens</code></p>
+</li>
+<li>
+<p>轮训所有src rdma rank，检查其<code>rdma_channel_tail</code>，看看有没有新来的token</p>
+</li>
+<li>
+<p>若找到了一个有token的src rdma rank，枚举收到的所有token，看它是否应发给当前warp对应的nvl rank</p>
+</li>
+<li>
+<p>若是，则将token从rdma_channel的<code>recv_buffer</code>拷贝到nvl_channel</p>
+</li>
+</ul>
+</li>
+<li>
+<p>更新<code>forward_channel_head=rdma_channel_tail</code>；<code>nvl_channel_tail</code>+=处理的数据</p>
+</li>
+</ul>
+</li>
+<li>
+<p><code>ForwarderCoordinator</code></p>
+<ul>
+<li>
+<p>每个lane负责一个src rdma rank</p>
+</li>
+<li>
+<p>若有<code>RDMAAndNVLForwarder</code>还没结束</p>
+<ul>
+<li>轮训rdma rank中的每个nvl rank，如果所有的8个<code>RDMAAndNVLForwarder</code>的<code>forward_channel_head</code>都更新了，则更新远端的<code>rdma_channel_head</code></li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><code>NVLReceivers</code></p>
+<ul>
+<li>
+<p>每个warp负责一个机内的nvl rank（从自身的下一个rank开始）</p>
+</li>
+<li>
+<p>若<code>nvl_channel_tail</code>更新了，则</p>
+<ul>
+<li>
+<p>枚举所有收到的token，从nvl_channel中拷贝到recv_x中</p>
+</li>
+<li>
+<p>更新<code>nvl_channel_head</code></p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="deepep-twostage-combine算子简析"><a class="markdownIt-Anchor" href="#deepep-twostage-combine算子简析"></a> DeepEP TwoStage Combine算子简析</h2>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250819155753064.png" alt="image.png" /></p>
+<p>大体上流程和<code>internode_dispatch</code>相近。不过<code>internode_combine</code>和<code>internode_dispatch</code>有一个区别：<code>internode_combine</code>必须依赖之前dispatch计算过的token数量信息，也就是没有<code>notify_dispatch</code>的过程，必须要进行<code>internode::cached_notify</code>。</p>
+<p>既然combine和dispatch的函数调用都差不多，我们直接看combine的核心kernel部分，这里依然是用文字讲解。</p>
+<p>启动kernel</p>
+<ul>
+<li>
+<p>combine会启动<code>num_channels * 2</code>个SM，其中每两个SM对应一个channel</p>
+</li>
+<li>
+<p>每个SM有<code>NUM_MAX_NVL_PEERS+kNumCombineForwarderWarps+1</code>个warp（默认<code>NUM_MAX_NVL_PEERS = 8</code>，<code>kNumCombineForwarderWarps = 16</code>，所以每个SM默认有25个warp）</p>
+</li>
+<li>
+<p>H800中每个warp有32个线程</p>
+</li>
+</ul>
+<p>在每个channel内部，线程的分工如下</p>
+<ul>
+<li>
+<p>第一个SM负责发送</p>
+<ul>
+<li>
+<p>前8个warp为<code>NVLSender</code>，负责NVL传输</p>
+</li>
+<li>
+<p>然后16个warp为<code>NVLAndRDMAForwarder</code>，负责将数据从NVL转发到RDMA</p>
+</li>
+<li>
+<p>一个warp为<code>Coordinator (send)</code></p>
+</li>
+</ul>
+</li>
+<li>
+<p>第二个SM负责接收</p>
+<ul>
+<li>
+<p>24个warp为<code>RDMAReceiver</code>，负责接受RDMA数据，将其写入<code>combined_x</code></p>
+</li>
+<li>
+<p>一个warp为<code>Coordinator (recv)</code></p>
+</li>
+</ul>
+</li>
+</ul>
+<p>下图展示了每个token的传输路径，差不多就是把dispatch反过来。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250819155759406.png" alt="image.png" /></p>
+<p>注意：为了方便理解，图中我用的src和dst指dispatch时的src和dst，这与comine代码中的src和dst正好相反。</p>
+<p>注意：这里nvl_channel为每个RDMA rank都分别创建了nvl_buffer。</p>
+<p>接下来讲这些线程的具体职责：</p>
+<ul>
+<li>
+<p><code>NVLSender</code></p>
+<ul>
+<li>
+<p>每个warp负责一个远端的nvl rank（对应dispatch的src nvl rank）</p>
+</li>
+<li>
+<p>每个lane对应一个远端的rdma rank（对应dispatch的src rdma rank）</p>
+</li>
+<li>
+<p>每个lane从<code>gbl_channel_prefix_matrix</code>获取到其负责的token范围，</p>
+</li>
+<li>
+<p>若有lane有未发送的token，且nvl_channel的剩余空间大于<code>num_max_nvl_chunked_send_tokens</code>，则</p>
+<ul>
+<li>每个符合条件的lane将至多<code>num_max_nvl_chunked_send_tokens</code>个token放入nvl_channel</li>
+</ul>
+</li>
+<li>
+<p>更新<code>nvl_channel_tail</code></p>
+</li>
+</ul>
+</li>
+<li>
+<p><code>NVLAndRDMAForwarder</code></p>
+<ul>
+<li>
+<p>所有warp平均分给每个远端的rdma rank（对应dispatch的src nvl rank）。我们称负责相同远端rdma rank的warp为一个warp组。</p>
+</li>
+<li>
+<p>枚举所有未转发的token</p>
+<ul>
+<li>
+<p>warp组中的第一个warp负责等待rdma_channel的剩余空间大于<code>num_max_rdma_chunked_send_tokens</code></p>
+</li>
+<li>
+<p>warp组中的warp轮流枚举待转发的token</p>
+<ul>
+<li>
+<p>在dispatch阶段，一个token会从(dst rdma rank, src nvl rank)转发到多个(dst rdma rank, dst nvl rank)上；因此，在combine阶段，这些不同dst nvl rank上的token要进行reduce</p>
+</li>
+<li>
+<p>这里<code>NVLAndRDMAForwarder</code>枚举的就是dispatch中(dst rdma rank, src nvl rank)要转发的所有token。使用之前dispatch留下的信息(<code>combined_nvl_head</code>)，我们可以知道每个token位于哪些dst nvl rank上。在等待这些nvl rank把所需的token发过来后，就可以对它们进行reduce。</p>
+</li>
+<li>
+<p>reduce后的结果写入rdma_channel。</p>
+</li>
+<li>
+<p>更新<code>forwarder_nvl_head</code></p>
+</li>
+</ul>
+</li>
+<li>
+<p>在token都reduce完成后，发送rdma_channel的数据，并更新远端的<code>rdma_channel_tail</code></p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><code>RDMAReceiver</code></p>
+<ul>
+<li>
+<p>每个warp轮流枚举待combine的token</p>
+<ul>
+<li>
+<p>这里跟<code>NVLAndRDMAForwarder</code>其实差不多。在dispatch时，一个token会从(src rdma rank, src nvl rank)发往多个(dst rdma rank, src nvl rank)；因此，在combine阶段，这些不同dst rdma rank上的token要进行reduce。</p>
+</li>
+<li>
+<p><code>RDMAReceiver</code>枚举的就是dispatch中一开始位于(src rdma rank, src nvl rank)的所有token。使用之前dispatch留下的信息(<code>combined_rdma_head</code>)，我们可以知道每个token位于哪些dst rdma rank上，然后就可以对它们进行reduce。在等待这些rdma rank把所需的token发过来后，就可以对它们进行reduce。</p>
+</li>
+<li>
+<p>reduce的结果写入<code>combined_x</code>。</p>
+</li>
+<li>
+<p>更新<code>rdma_receiver_rdma_head</code></p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><code>Coordinator (send)</code></p>
+<ul>
+<li>
+<p>每一个lane负责一个dispatch时的(dst rdma rank, dst nvl rank)，协调它的所有<code>NVLSender</code></p>
+</li>
+<li>
+<p>如果每个<code>NVLSender</code>的<code>forwarder_nvl_head</code>都推进了，则推进<code>nvl_channel_head</code></p>
+</li>
+</ul>
+</li>
+<li>
+<p><code>Coordinator (recv)</code></p>
+<ul>
+<li>
+<p>每个lane负责一个dispatch时的dst rdma rank，协调它的所有<code>RDMAReceiver</code></p>
+</li>
+<li>
+<p>如果所有<code>RDMAReceiver</code>的<code>rdma_receiver_rdma_head</code>都推进了，则推进远端的<code>rdma_channel_head</code></p>
+</li>
+</ul>
+</li>
+</ul>
+<p>至此combine也完成了。</p>
+<h2 id="deepep-twostage算子中的tuning以dispatch为例"><a class="markdownIt-Anchor" href="#deepep-twostage算子中的tuning以dispatch为例"></a> DeepEP TwoStage算子中的Tuning(以dispatch为例)</h2>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250819155807771.png" alt="image.png" /></p>
+<h2 id="deepep-twostage算子与计算的overlap"><a class="markdownIt-Anchor" href="#deepep-twostage算子与计算的overlap"></a> DeepEP TwoStage算子与计算的Overlap</h2>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250819155813932.png" alt="image.png" /></p>
+<ul>
+<li>
+<p>在专家复杂完全均衡的双流overlap场景，dispatch是计算慢于通信，combine是通信慢于计算</p>
+</li>
+<li>
+<p>Overlap场景下，通信时长比单测场景差15%</p>
+</li>
+<li>
+<p>主要原因：访存时延提升，相同SM/线程数下的copy效率退化</p>
+</li>
+</ul>
+<h2 id="decode实例中的ep通信极致时延要求与ibgda"><a class="markdownIt-Anchor" href="#decode实例中的ep通信极致时延要求与ibgda"></a> Decode实例中的EP通信：极致时延要求与IBGDA</h2>
+<p><strong>Decode与Prefill在EP通信上的差别</strong></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250819155820023.png" alt="image.png" /></p>
+<p><strong>Decode中EP通信的实现：</strong></p>
+<ul>
+<li>
+<p>不使用两阶段</p>
+<ul>
+<li>
+<p>EP规模大，两阶段几乎无收益</p>
+</li>
+<li>
+<p>两阶段需要复杂元数据交互</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Token粒度发送</p>
+<ul>
+<li>
+<p>bs小，无法chunk聚合</p>
+</li>
+<li>
+<p>CPU必然成为瓶颈，需要IBGDA</p>
+</li>
+</ul>
+</li>
+</ul>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250819155825267.png" alt="image.png" /></p>
+<p><strong>IBGDA传输彻底bypass CPU:</strong></p>
+<ol>
+<li>
+<p>SM写数据</p>
+</li>
+<li>
+<p>SM写WQE</p>
+</li>
+<li>
+<p>SMDoorbell Record</p>
+</li>
+<li>
+<p>SM通知网卡</p>
+</li>
+<li>
+<p>网卡从显存中读取WQE</p>
+</li>
+<li>
+<p>网卡从显存中读取数据</p>
+</li>
+<li>
+<p>网卡向网络发送数据</p>
+</li>
+<li>
+<p>网卡把completion写入显存</p>
+</li>
+</ol>
+<p>简单来说，普通的GPU-Direct RDMA使用CPU上的代理线程发起请求；而IBGDA直接从GPU发起请求，因此可以降低延迟。</p>
+<h2 id="deepep-low-latency算子简析"><a class="markdownIt-Anchor" href="#deepep-low-latency算子简析"></a> DeepEP Low Latency算子简析</h2>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250819155831779.png" alt="image.png" /></p>
+<p>相比于普通模式的dispatch，<code>low_latency_dispatch</code>额外提供了一个<code>return_recv_hook</code>选项。若<code>return_recv_hook=True</code>，则<code>low_latency_dispatch</code>只会发送RDMA请求，不会接收数据。用户必须调用<code>recv_hook</code>来确保数据到达。recv_hook的好处是可以避免让SM一直等待接收数据接收完成。比如在下图，在dispatch 0的发送请求发出后，可以直接开始attention 1的计算，计算后再进行dispatch 0的接收。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250819155837032.png" alt="image.png" /></p>
+<p>我们接着看<code>low_latency_dispatch</code>内部</p>
+<p>low_latency模式没有<code>notify_dispatch</code>的过程，即不会先进行一次通信来确定GPU之间互相发送token的数量。取而代之的是，一个rank最多只能发送<code>num_max_dispatch_tokens_per_rank</code>个token，而接收端会的每个expert都会准备能容纳<code>num_max_dispatch_tokens_per_rank * num_ranks</code>个token的buffer，因此内存开销是很高的。</p>
+<p><code>low_latency_dispatch</code>包含两个阶段：<code>LOW_LATENCY_SEND_PHASE</code>和<code>LOW_LATENCY_RECV_PHASE</code>。如果<code>return_recv_hook=true</code>，则dispatch时只会执行<code>LOW_LATENCY_SEND_PHASE</code>，在调用recv_hook的时候才会执行<code>LOW_LATENCY_RECV_PHASE</code>；否则，<code>LOW_LATENCY_SEND_PHASE</code>和<code>LOW_LATENCY_RECV_PHASE</code>都需要执行。</p>
+<p>kernel的代码在<code>internode_ll.cu</code>，由于代码比较长，这里还是用文字概括它的主要流程：</p>
+<p>kernel启动</p>
+<ul>
+<li>启动<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false">⌈</mo></mrow><annotation encoding="application/x-tex">\lceil</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">⌈</span></span></span></span>num_experts / 3<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false">⌉</mo></mrow><annotation encoding="application/x-tex">\rceil</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mclose">⌉</span></span></span></span>个SM，每个SM内有30个warp，每个warp有32个线程</li>
+</ul>
+<p><code>LOW_LATENCY_SEND_PHASE</code>的流程如下</p>
+<ul>
+<li>
+<p>首先，将所有warp分为两种：</p>
+<ul>
+<li>
+<p>所有SM的前29个warp负责将token转换为FP8类型，并发送到目标expert的接收buffer上</p>
+</li>
+<li>
+<p>第30个warp负责统计发往每个expert的token数量</p>
+</li>
+</ul>
+</li>
+<li>
+<p>然后，每个expert使用一个线程，将每个expert的token数量发往远端节点的<code>rdma_recv_count</code></p>
+</li>
+</ul>
+<p><code>LOW_LATENCY_RECV_PHASE</code>的流程如下</p>
+<ul>
+<li>
+<p>这里每个expert使用3个warp</p>
+</li>
+<li>
+<p>每个expert使用一个线程负责查看接收ibgda消息，读取<code>rdma_recv_count</code></p>
+</li>
+<li>
+<p>每个expert的3个warp轮流读取token，将其拷贝到<code>recv_x</code>中</p>
+</li>
+</ul>
+<p>到这里low_latency_dispatch就差不多完成了。</p>
+<p>low_latency_combine的kernel实现基本就是把low_latency_dispatch反过来。即在<code>SEND_PHASE</code>发送数据；在<code>RECV_PHASE</code>接收数据，进行reduce，再把数据从FP8转换回BF16。</p>
+<h2 id="deepep-low-latency算子与计算overlap"><a class="markdownIt-Anchor" href="#deepep-low-latency算子与计算overlap"></a> DeepEP Low Latency算子与计算Overlap</h2>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250819155847404.png" alt="image.png" /></p>
+<ul>
+<li>
+<p>在专家复杂完全均衡的双流overlap场景，dispatch是计算慢于通信，combine是通信慢于计算</p>
+</li>
+<li>
+<p>Issue和Recv不能overlap,需要异步化实现使网络传输（不需要SM)在时间上overlap</p>
+</li>
+<li>
+<p>当前开源实现完全不使用NVL,使用NVL Copy会导致Issue时长增加（需要SM)</p>
+<ul>
+<li>随着EP规模变小，NVLink带宽更大，使用NVL做机内copy的综合收益更大</li>
+</ul>
+</li>
+</ul>
+<p>为什么D阶段可以不消耗SM?</p>
+<ul>
+<li>P是两阶段, 需要用SM来做大量的copy工作, 无法省去</li>
+</ul>
+<h1 id="总结"><a class="markdownIt-Anchor" href="#总结"></a> 总结</h1>
+<ul>
+<li>
+<p>EP通信：路由专家收发token(dispatch、combine)</p>
+</li>
+<li>
+<p>EP通信的挑战：Prefill高带宽、Decode低时延</p>
+</li>
+<li>
+<p>传统EP通信的问题：Token冗余传输与CPU瓶颈</p>
+</li>
+<li>
+<p>DeepEP TwoStage实现：机内NVLink转发冗余副本</p>
+</li>
+<li>
+<p>DeepEP Low Latency实现：零同步开销与IBGDA</p>
+</li>
+<li>
+<p>EP通信的带宽有效性：网络拥塞与算法损耗</p>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" rel="tag"># 大模型</a>
+              <a href="/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%8E%A8%E7%90%86/" rel="tag"># 大模型推理</a>
+              <a href="/tags/Deepseek/" rel="tag"># Deepseek</a>
+              <a href="/tags/Deepseek%E4%BC%98%E5%8C%96/" rel="tag"># Deepseek优化</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/08/20/DeepSeek-%E5%A4%8D%E7%8E%B0%E6%8A%80%E6%9C%AF%E6%A6%82%E8%BF%B0/" rel="prev" title="DeepSeek 复现技术概述">
+                  <i class="fa fa-angle-left"></i> DeepSeek 复现技术概述
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2025/08/20/DeepSeek-%E4%B8%AD%E7%9A%84%E4%B8%93%E5%AE%B6%E5%9D%87%E8%A1%A1%E5%88%86%E6%9E%90%E4%B8%8E%E4%BC%98%E5%8C%96/" rel="next" title="DeepSeek 中的专家均衡分析与优化">
+                  DeepSeek 中的专家均衡分析与优化 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Ronny Lu</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">245k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">14:50</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">false</script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" integrity="sha256-UF1fgpAiu3tPJN/uCqEUHNe7pnr+QR0SQDNfgglgtcM=" crossorigin="anonymous">
+  <script class="next-config" data-name="katex" type="application/json">{"copy_tex_js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/copy-tex.min.js","integrity":"sha256-Us54+rSGDSTvIhKKUs4kygE2ipA0RXpWWh0/zLqw3bs="}}</script>
+  <script src="/js/third-party/math/katex.js"></script>
+
+
+
+</body>
+</html>

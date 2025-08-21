@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="https://avatars.githubusercontent.com/u/55233584?v=4">
+  <link rel="icon" type="image/png" sizes="32x32" href="https://avatars.githubusercontent.com/u/55233584?v=4">
+  <link rel="icon" type="image/png" sizes="16x16" href="https://avatars.githubusercontent.com/u/55233584?v=4">
+  <link rel="mask-icon" href="https://avatars.githubusercontent.com/u/55233584?v=4" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-minimal.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"luyiyun1021.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.22.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="KV Cache 的用途   KV Cache 是推理的中间结果   KV Cache 可以复用，以存储代计算   复用场景：   Prefix Cache:请复用，节省算力   P&#x2F;D分离：跨机复用，推理分布式化      以KV Cache 为中心   以 KV Cache 决定哪个节点来处理请求  增加 Prefix Cache 命中长度，节省更多算力    以KV Cache 接请求的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="以 KV-Cache 为中心的 PD 分离式架构">
+<meta property="og:url" content="https://luyiyun1021.github.io/2025/08/20/%E4%BB%A5-KV-Cache-%E4%B8%BA%E4%B8%AD%E5%BF%83%E7%9A%84-PD-%E5%88%86%E7%A6%BB%E5%BC%8F%E6%9E%B6%E6%9E%84/index.html">
+<meta property="og:site_name" content="Ronny Lu&#39;s blog">
+<meta property="og:description" content="KV Cache 的用途   KV Cache 是推理的中间结果   KV Cache 可以复用，以存储代计算   复用场景：   Prefix Cache:请复用，节省算力   P&#x2F;D分离：跨机复用，推理分布式化      以KV Cache 为中心   以 KV Cache 决定哪个节点来处理请求  增加 Prefix Cache 命中长度，节省更多算力    以KV Cache 接请求的">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820152601105.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820152611372.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820152617972.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820152624787.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820152636714.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250612213333954.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820152642962.png">
+<meta property="article:published_time" content="2025-08-20T07:58:21.000Z">
+<meta property="article:modified_time" content="2025-08-20T08:03:04.292Z">
+<meta property="article:author" content="Ronny Lu">
+<meta property="article:tag" content="大模型">
+<meta property="article:tag" content="大模型推理">
+<meta property="article:tag" content="Sglang">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820152601105.png">
+
+
+<link rel="canonical" href="https://luyiyun1021.github.io/2025/08/20/%E4%BB%A5-KV-Cache-%E4%B8%BA%E4%B8%AD%E5%BF%83%E7%9A%84-PD-%E5%88%86%E7%A6%BB%E5%BC%8F%E6%9E%B6%E6%9E%84/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://luyiyun1021.github.io/2025/08/20/%E4%BB%A5-KV-Cache-%E4%B8%BA%E4%B8%AD%E5%BF%83%E7%9A%84-PD-%E5%88%86%E7%A6%BB%E5%BC%8F%E6%9E%B6%E6%9E%84/","path":"2025/08/20/以-KV-Cache-为中心的-PD-分离式架构/","title":"以 KV-Cache 为中心的 PD 分离式架构"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>以 KV-Cache 为中心的 PD 分离式架构 | Ronny Lu's blog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<style>.darkmode--activated{--body-bg-color:#282828;--content-bg-color:#333;--card-bg-color:#555;--text-color:#ccc;--blockquote-color:#bbb;--link-color:#ccc;--link-hover-color:#eee;--brand-color:#ddd;--brand-hover-color:#ddd;--table-row-odd-bg-color:#282828;--table-row-hover-bg-color:#363636;--menu-item-bg-color:#555;--btn-default-bg:#222;--btn-default-color:#ccc;--btn-default-border-color:#555;--btn-default-hover-bg:#666;--btn-default-hover-color:#ccc;--btn-default-hover-border-color:#666;--highlight-background:#282b2e;--highlight-foreground:#a9b7c6;--highlight-gutter-background:#34393d;--highlight-gutter-foreground:#9ca9b6}.darkmode--activated img{opacity:.75}.darkmode--activated img:hover{opacity:.9}.darkmode--activated code{color:#69dbdc;background:0 0}button.darkmode-toggle{z-index:9999}.darkmode-ignore,img{display:flex!important}.beian img{display:inline-block!important}</style></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Ronny Lu's blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#kv-cache-%E7%9A%84%E7%94%A8%E9%80%94"><span class="nav-number">1.</span> <span class="nav-text"> KV Cache 的用途</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BB%A5kv-cache-%E4%B8%BA%E4%B8%AD%E5%BF%83"><span class="nav-number">2.</span> <span class="nav-text"> 以KV Cache 为中心</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#kv%E5%AD%98%E5%82%A8%E7%9A%84%E9%9C%80%E6%B1%82%E5%92%8C%E6%8C%91%E6%88%98"><span class="nav-number">3.</span> <span class="nav-text"> KV存储的需求和挑战</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#attentionstore"><span class="nav-number">4.</span> <span class="nav-text"> AttentionStore</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84"><span class="nav-number">4.1.</span> <span class="nav-text"> 整体架构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#as-master"><span class="nav-number">4.1.1.</span> <span class="nav-text"> AS Master</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#as-agent"><span class="nav-number">4.1.2.</span> <span class="nav-text"> AS Agent</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%BB%E8%A6%81%E6%95%B0%E6%8D%AE%E6%B5%81"><span class="nav-number">4.2.</span> <span class="nav-text"> 主要数据流</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%85%E5%88%86%E5%88%A9%E7%94%A8%E4%BD%8E%E9%80%9F%E8%AE%BE%E5%A4%87"><span class="nav-number">4.3.</span> <span class="nav-text"> 充分利用低速设备</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%A8%E5%B1%80%E6%8B%93%E6%89%91%E6%84%9F%E7%9F%A5"><span class="nav-number">4.4.</span> <span class="nav-text"> 全局拓扑感知</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B6%88%E9%99%A4%E5%AF%B9%E6%8E%A8%E7%90%86%E4%B8%BB%E6%B5%81%E7%A8%8B%E7%9A%84%E5%B9%B2%E6%89%B0"><span class="nav-number">4.5.</span> <span class="nav-text"> 消除对推理主流程的干扰</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Ronny Lu"
+      src="https://avatars.githubusercontent.com/u/55233584?v=4">
+  <p class="site-author-name" itemprop="name">Ronny Lu</p>
+  <div class="site-description" itemprop="description">Tech notes on LLM, LLM Infra, and others</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">75</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">16</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">19</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/08/20/%E4%BB%A5-KV-Cache-%E4%B8%BA%E4%B8%AD%E5%BF%83%E7%9A%84-PD-%E5%88%86%E7%A6%BB%E5%BC%8F%E6%9E%B6%E6%9E%84/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
+      <meta itemprop="name" content="Ronny Lu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ronny Lu's blog">
+      <meta itemprop="description" content="Tech notes on LLM, LLM Infra, and others">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="以 KV-Cache 为中心的 PD 分离式架构 | Ronny Lu's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          以 KV-Cache 为中心的 PD 分离式架构
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-08-20 15:58:21 / 修改时间：16:03:04" itemprop="dateCreated datePublished" datetime="2025-08-20T15:58:21+08:00">2025-08-20</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">大模型</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E6%8E%A8%E7%90%86%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index"><span itemprop="name">推理技术</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E6%8E%A8%E7%90%86%E6%8A%80%E6%9C%AF/Sglang/" itemprop="url" rel="index"><span itemprop="name">Sglang</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>684</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>2 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h1 id="kv-cache-的用途"><a class="markdownIt-Anchor" href="#kv-cache-的用途"></a> KV Cache 的用途</h1>
+<ol>
+<li>
+<p>KV Cache 是推理的中间结果</p>
+</li>
+<li>
+<p>KV Cache 可以复用，以存储代计算</p>
+</li>
+<li>
+<p>复用场景：</p>
+<ul>
+<li>
+<p>Prefix Cache:请复用，节省算力</p>
+</li>
+<li>
+<p>P/D分离：跨机复用，推理分布式化</p>
+</li>
+</ul>
+</li>
+</ol>
+<h1 id="以kv-cache-为中心"><a class="markdownIt-Anchor" href="#以kv-cache-为中心"></a> 以KV Cache 为中心</h1>
+<ol>
+<li>
+<p>以 KV Cache 决定哪个节点来处理请求</p>
+<ul>
+<li>增加 Prefix Cache 命中长度，节省更多算力</li>
+</ul>
+</li>
+<li>
+<p>以KV Cache 接请求的 P/D阶段</p>
+<ul>
+<li>Prefill 完成计算 → KV Cache 传输到 Decode → Decode 基于 KV Cache,继续自回归生成</li>
+</ul>
+</li>
+</ol>
+<span id="more"></span>
+<h1 id="kv存储的需求和挑战"><a class="markdownIt-Anchor" href="#kv存储的需求和挑战"></a> KV存储的需求和挑战</h1>
+<p><strong>需求：</strong></p>
+<ol>
+<li>
+<p>命中率高：大容量，全局数据拓扑感知</p>
+</li>
+<li>
+<p>性能高：低延迟，高吞吐</p>
+</li>
+<li>
+<p>无感接入：不干扰推理主流程</p>
+</li>
+</ol>
+<p><strong>挑战：</strong></p>
+<ol>
+<li>
+<p>大容量设备(DRAM/SSD)性能不足</p>
+</li>
+<li>
+<p>KV Cache 总量，难以保障索引改查性能</p>
+</li>
+<li>
+<p>如何充分异步，避免干扰主流程</p>
+</li>
+</ol>
+<h1 id="attentionstore"><a class="markdownIt-Anchor" href="#attentionstore"></a> AttentionStore</h1>
+<h2 id="整体架构"><a class="markdownIt-Anchor" href="#整体架构"></a> 整体架构</h2>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820152601105.png" alt="image.png" /></p>
+<h3 id="as-master"><a class="markdownIt-Anchor" href="#as-master"></a> AS Master</h3>
+<ul>
+<li>
+<p>全局索引构建</p>
+</li>
+<li>
+<p>全局索引查询和同步</p>
+</li>
+<li>
+<p>全局索引管理(GC、屏蔽等)</p>
+</li>
+</ul>
+<h3 id="as-agent"><a class="markdownIt-Anchor" href="#as-agent"></a> AS Agent</h3>
+<ul>
+<li>
+<p>单机整体索引构建</p>
+</li>
+<li>
+<p>单机内存和SSD KV Cache读写</p>
+</li>
+<li>
+<p>单机缓存淘汰管理等</p>
+</li>
+<li>
+<p>单机引擎元数据持久化</p>
+</li>
+</ul>
+<h2 id="主要数据流"><a class="markdownIt-Anchor" href="#主要数据流"></a> 主要数据流</h2>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820152611372.png" alt="image.png" /></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820152617972.png" alt="image.png" /></p>
+<h2 id="充分利用低速设备"><a class="markdownIt-Anchor" href="#充分利用低速设备"></a> 充分利用低速设备</h2>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820152624787.png" alt="image.png" /></p>
+<ol>
+<li>
+<p>叠加SSD读写能力：</p>
+<ul>
+<li>
+<p>KV Cache 打散到多个 SSD</p>
+</li>
+<li>
+<p>并行读出</p>
+</li>
+</ul>
+</li>
+<li>
+<p>加速内存-&gt;显存拷贝：</p>
+<ul>
+<li>
+<p>默认步骤：内存→临时锁页内存→显存</p>
+</li>
+<li>
+<p>优化后：锁页内存→显存</p>
+</li>
+</ul>
+</li>
+<li>
+<p>流水线并行：</p>
+<ul>
+<li>『SSD -&gt; 内存』、『内存 -&gt; 显存』并行执行</li>
+</ul>
+</li>
+</ol>
+<h2 id="全局拓扑感知"><a class="markdownIt-Anchor" href="#全局拓扑感知"></a> 全局拓扑感知</h2>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820152636714.png" alt="image.png" /></p>
+<p>纯正排索引(节点 -&gt; KV Cache)：查询慢，O(N*L)查询效率</p>
+<p>纯倒排索引(KV Cache -&gt; 节点)：更新慢，Agent 上报冲突严重</p>
+<ol>
+<li>
+<p>双索引分离读写路径：</p>
+<ul>
+<li>
+<p>写：Agent→ Master 正排索引</p>
+</li>
+<li>
+<p>读：调度器内存倒排索引，O(N*L)→O(L)</p>
+</li>
+</ul>
+</li>
+<li>
+<p>增量事件入队列，实时协同双索引</p>
+<ul>
+<li>
+<p>无阻塞设计：Agent、Master、调度器解耦</p>
+</li>
+<li>
+<p>自愈能力：自动断点续传</p>
+</li>
+</ul>
+</li>
+<li>
+<p>一致性保障：</p>
+<ul>
+<li>
+<p>正排索引作为唯一数据源</p>
+</li>
+<li>
+<p>倒排索引作为派生状态</p>
+</li>
+</ul>
+</li>
+</ol>
+<h2 id="消除对推理主流程的干扰"><a class="markdownIt-Anchor" href="#消除对推理主流程的干扰"></a> 消除对推理主流程的干扰</h2>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250612213333954.png" alt="image.png" /></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820152642962.png" alt="image.png" /></p>
+<p><strong>以传输为例，有以下干扰：</strong></p>
+<ol>
+<li>
+<p>传输动作插入到主流程，直接增加间隙</p>
+</li>
+<li>
+<p>P/D因为传输产生耦合：</p>
+<ol>
+<li>
+<p>Prefill等待传输完成，才能释放显存</p>
+</li>
+<li>
+<p>Decode等待传输完成，才能执行请求</p>
+</li>
+</ol>
+</li>
+</ol>
+<p><strong>消除干扰：</strong></p>
+<ol>
+<li>
+<p><strong>异步传输</strong>：线程异步执行传输，事件驱动（传输Worker卸载到C++,实现Python中真正并行)</p>
+</li>
+<li>
+<p><strong>异步发送</strong>：内置DRAM缓冲区，发送端完成D2H即可释放显存</p>
+</li>
+<li>
+<p><strong>异步接收</strong>：引擎侧将待传输缓冲在队列中，不阻塞其他请求执行</p>
+</li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" rel="tag"># 大模型</a>
+              <a href="/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%8E%A8%E7%90%86/" rel="tag"># 大模型推理</a>
+              <a href="/tags/Sglang/" rel="tag"># Sglang</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/07/16/Sglang-prefill%E9%98%B6%E6%AE%B5%E5%8F%8C%E6%B5%81%E4%BC%98%E5%8C%96%E6%94%B9%E8%BF%9B/" rel="prev" title="Sglang prefill阶段双流优化改进">
+                  <i class="fa fa-angle-left"></i> Sglang prefill阶段双流优化改进
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2025/08/20/DeepSeek-%E5%A4%8D%E7%8E%B0%E6%8A%80%E6%9C%AF%E6%A6%82%E8%BF%B0/" rel="next" title="DeepSeek 复现技术概述">
+                  DeepSeek 复现技术概述 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Ronny Lu</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">245k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">14:50</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">false</script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" integrity="sha256-UF1fgpAiu3tPJN/uCqEUHNe7pnr+QR0SQDNfgglgtcM=" crossorigin="anonymous">
+  <script class="next-config" data-name="katex" type="application/json">{"copy_tex_js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/copy-tex.min.js","integrity":"sha256-Us54+rSGDSTvIhKKUs4kygE2ipA0RXpWWh0/zLqw3bs="}}</script>
+  <script src="/js/third-party/math/katex.js"></script>
+
+
+
+</body>
+</html>

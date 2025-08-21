@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="https://avatars.githubusercontent.com/u/55233584?v=4">
+  <link rel="icon" type="image/png" sizes="32x32" href="https://avatars.githubusercontent.com/u/55233584?v=4">
+  <link rel="icon" type="image/png" sizes="16x16" href="https://avatars.githubusercontent.com/u/55233584?v=4">
+  <link rel="mask-icon" href="https://avatars.githubusercontent.com/u/55233584?v=4" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-minimal.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"luyiyun1021.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.22.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="1. 参数与开关    配置环境 作用     ServerArgs.chunked_prefill_size 每次预填（prefill）最多送进 GPU 的 token 数上限；≤0 表示关闭分片   ServerArgs.enable_mixed_chunk 为「边 decode 边 prefill」（mixed-chunk）提供条件；配合 pd_sep&#x3D;false   envs.ENABL">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Sglang chunked prefill 逻辑梳理">
+<meta property="og:url" content="https://luyiyun1021.github.io/2025/08/21/Sglang-chunked-prefill-%E9%80%BB%E8%BE%91%E6%A2%B3%E7%90%86/index.html">
+<meta property="og:site_name" content="Ronny Lu&#39;s blog">
+<meta property="og:description" content="1. 参数与开关    配置环境 作用     ServerArgs.chunked_prefill_size 每次预填（prefill）最多送进 GPU 的 token 数上限；≤0 表示关闭分片   ServerArgs.enable_mixed_chunk 为「边 decode 边 prefill」（mixed-chunk）提供条件；配合 pd_sep&#x3D;false   envs.ENABL">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820165733026.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820165739507.png">
+<meta property="article:published_time" content="2025-08-21T03:47:05.000Z">
+<meta property="article:modified_time" content="2025-08-21T03:47:33.464Z">
+<meta property="article:author" content="Ronny Lu">
+<meta property="article:tag" content="大模型">
+<meta property="article:tag" content="大模型推理">
+<meta property="article:tag" content="Sglang">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820165733026.png">
+
+
+<link rel="canonical" href="https://luyiyun1021.github.io/2025/08/21/Sglang-chunked-prefill-%E9%80%BB%E8%BE%91%E6%A2%B3%E7%90%86/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://luyiyun1021.github.io/2025/08/21/Sglang-chunked-prefill-%E9%80%BB%E8%BE%91%E6%A2%B3%E7%90%86/","path":"2025/08/21/Sglang-chunked-prefill-逻辑梳理/","title":"Sglang chunked prefill 逻辑梳理"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Sglang chunked prefill 逻辑梳理 | Ronny Lu's blog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<style>.darkmode--activated{--body-bg-color:#282828;--content-bg-color:#333;--card-bg-color:#555;--text-color:#ccc;--blockquote-color:#bbb;--link-color:#ccc;--link-hover-color:#eee;--brand-color:#ddd;--brand-hover-color:#ddd;--table-row-odd-bg-color:#282828;--table-row-hover-bg-color:#363636;--menu-item-bg-color:#555;--btn-default-bg:#222;--btn-default-color:#ccc;--btn-default-border-color:#555;--btn-default-hover-bg:#666;--btn-default-hover-color:#ccc;--btn-default-hover-border-color:#666;--highlight-background:#282b2e;--highlight-foreground:#a9b7c6;--highlight-gutter-background:#34393d;--highlight-gutter-foreground:#9ca9b6}.darkmode--activated img{opacity:.75}.darkmode--activated img:hover{opacity:.9}.darkmode--activated code{color:#69dbdc;background:0 0}button.darkmode-toggle{z-index:9999}.darkmode-ignore,img{display:flex!important}.beian img{display:inline-block!important}</style></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Ronny Lu's blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E5%8F%82%E6%95%B0%E4%B8%8E%E5%BC%80%E5%85%B3"><span class="nav-number">1.</span> <span class="nav-text"> 1. 参数与开关</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E5%85%B3%E9%94%AE%E7%8A%B6%E6%80%81%E5%8F%98%E9%87%8F"><span class="nav-number">2.</span> <span class="nav-text"> 2. 关键状态变量</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E9%80%89batch%E9%98%B6%E6%AE%B5schedulerget_new_batch_prefill"><span class="nav-number">3.</span> <span class="nav-text"> 3. 选batch阶段：Scheduler.get_new_batch_prefill()</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E6%89%A7%E8%A1%8C%E9%98%B6%E6%AE%B5schedulerrun_batch"><span class="nav-number">4.</span> <span class="nav-text"> 4. 执行阶段：Scheduler.run_batch()</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E5%A4%84%E7%90%86%E7%BB%93%E6%9E%9Cschedulerprocess_batch_result_prefill"><span class="nav-number">5.</span> <span class="nav-text"> 5. 处理结果：Scheduler.process_batch_result_prefill()</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-%E5%BE%AA%E7%8E%AF%E4%B8%8E%E9%80%80%E5%87%BA%E6%9D%A1%E4%BB%B6"><span class="nav-number">6.</span> <span class="nav-text"> 6. 循环与退出条件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-%E4%B8%8E-mixed-chunk%E8%BE%B9-decode-%E8%BE%B9-prefill%E5%8D%8F%E4%BD%9C"><span class="nav-number">7.</span> <span class="nav-text"> 7. 与 Mixed-Chunk（边 decode 边 prefill）协作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#8-%E5%AF%B9%E8%B5%84%E6%BA%90%E9%A2%84%E7%AE%97%E7%9A%84%E5%BD%B1%E5%93%8D"><span class="nav-number">8.</span> <span class="nav-text"> 8. 对资源预算的影响</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#9-%E5%B0%8F%E7%BB%93-%E6%95%B4%E4%BD%93%E7%8A%B6%E6%80%81%E6%9C%BA"><span class="nav-number">9.</span> <span class="nav-text"> 9. 小结 - 整体状态机</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Ronny Lu"
+      src="https://avatars.githubusercontent.com/u/55233584?v=4">
+  <p class="site-author-name" itemprop="name">Ronny Lu</p>
+  <div class="site-description" itemprop="description">Tech notes on LLM, LLM Infra, and others</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">75</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">16</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">19</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/08/21/Sglang-chunked-prefill-%E9%80%BB%E8%BE%91%E6%A2%B3%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
+      <meta itemprop="name" content="Ronny Lu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ronny Lu's blog">
+      <meta itemprop="description" content="Tech notes on LLM, LLM Infra, and others">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Sglang chunked prefill 逻辑梳理 | Ronny Lu's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Sglang chunked prefill 逻辑梳理
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-08-21 11:47:05 / 修改时间：11:47:33" itemprop="dateCreated datePublished" datetime="2025-08-21T11:47:05+08:00">2025-08-21</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">大模型</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E6%8E%A8%E7%90%86%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index"><span itemprop="name">推理技术</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E6%8E%A8%E7%90%86%E6%8A%80%E6%9C%AF/Sglang/" itemprop="url" rel="index"><span itemprop="name">Sglang</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>675</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>2 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h2 id="1-参数与开关"><a class="markdownIt-Anchor" href="#1-参数与开关"></a> 1. 参数与开关</h2>
+<table>
+<thead>
+<tr>
+<th>配置环境</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ServerArgs.chunked_prefill_size</code></td>
+<td>每次预填（prefill）最多送进 GPU 的 <strong>token 数上限</strong>；<code>≤0</code> 表示关闭分片</td>
+</tr>
+<tr>
+<td><code>ServerArgs.enable_mixed_chunk</code></td>
+<td>为「边 decode 边 prefill」（mixed-chunk）提供条件；配合 <code>pd_sep=false</code></td>
+</tr>
+<tr>
+<td><code>envs.ENABLE_PREFILL_OVERLAP</code></td>
+<td>是否允许其它 DP rank 与本 rank 并发预填</td>
+</tr>
+</tbody>
+</table>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable language_">self</span>.chunked_prefill_size = (</span><br><span class="line">    server_args.chunked_prefill_size <span class="keyword">if</span> server_args.chunked_prefill_size &gt; <span class="number">0</span> <span class="keyword">else</span> <span class="literal">None</span></span><br><span class="line">)</span><br><span class="line"><span class="variable language_">self</span>.is_mixed_chunk = <span class="variable language_">self</span>.chunked_prefill_size <span class="keyword">is</span> <span class="keyword">not</span> <span class="literal">None</span> <span class="keyword">and</span> \</span><br><span class="line">                      server_args.enable_mixed_chunk</span><br></pre></td></tr></table></figure>
+<span id="more"></span>
+<h2 id="2-关键状态变量"><a class="markdownIt-Anchor" href="#2-关键状态变量"></a> 2. 关键状态变量</h2>
+<table>
+<thead>
+<tr>
+<th>变量</th>
+<th>定义处</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Req.extend_input_len</code></td>
+<td><code>Req.init_next_round_input()</code></td>
+<td><strong>本轮</strong> 还需要写入 KV-cache 的 token 数（扣掉已命中前缀）</td>
+</tr>
+<tr>
+<td><code>Scheduler.being_chunked_req</code></td>
+<td><code>Scheduler.get_new_batch_prefill()</code></td>
+<td><strong>唯一</strong> 一个「正在分片的请求」句柄</td>
+</tr>
+<tr>
+<td><code>PrefillAdder.rem_chunk_tokens</code></td>
+<td><code>PrefillAdder.__init__()</code></td>
+<td>这一轮剩余的 chunk token 预算；源自 <code>chunked_prefill_size</code></td>
+</tr>
+<tr>
+<td><code>PrefillAdder.new_being_chunked_req</code></td>
+<td><code>add_one_req()</code> / <code>add_being_chunked_req()</code></td>
+<td>本轮新产生的 “未填完” 请求</td>
+</tr>
+</tbody>
+</table>
+<h2 id="3-选batch阶段schedulerget_new_batch_prefill"><a class="markdownIt-Anchor" href="#3-选batch阶段schedulerget_new_batch_prefill"></a> 3. 选batch阶段：<code>Scheduler.get_new_batch_prefill()</code></h2>
+<ol>
+<li><strong>优先递补</strong>上一轮没填完的 <code>being_chunked_req</code></li>
+</ol>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> <span class="variable language_">self</span>.being_chunked_req:</span><br><span class="line">    <span class="variable language_">self</span>.being_chunked_req.init_next_round_input()</span><br><span class="line">    adder.add_being_chunked_req(<span class="variable language_">self</span>.being_chunked_req)</span><br></pre></td></tr></table></figure>
+<ol start="2">
+<li>
+<p>遍历 <code>waiting_queue</code>，将请求交给 <code>PrefillAdder.add_one_req()</code></p>
+<ul>
+<li>判断是否 <strong>需要分片</strong>：</li>
+</ul>
+ <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> req.extend_input_len &gt; <span class="variable language_">self</span>.rem_chunk_tokens:</span><br><span class="line">    <span class="comment"># 走 Chunked 分支</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>
+<p>若触发分片：</p>
+<ul>
+<li>
+<p>截断 <code>req.extend_input_len = trunc_len</code></p>
+</li>
+<li>
+<p><code>req.fill_ids = req.fill_ids[:prefix + trunc_len]</code></p>
+</li>
+<li>
+<p>标记 <code>self.new_being_chunked_req = req</code></p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>选batch完成后，如果 <code>new_being_chunked_req</code> 不为 <code>None</code>，转交给调度器保存：</p>
+</li>
+</ol>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable language_">self</span>.being_chunked_req = adder.new_being_chunked_req   <span class="comment"># 进入下一轮循环</span></span><br></pre></td></tr></table></figure>
+<h2 id="4-执行阶段schedulerrun_batch"><a class="markdownIt-Anchor" href="#4-执行阶段schedulerrun_batch"></a> 4. 执行阶段：<code>Scheduler.run_batch()</code></h2>
+<ul>
+<li>
+<p>本轮送进 GPU 的 token 就是 <code>extend_input_len</code>。</p>
+</li>
+<li>
+<p><code>being_chunked_req.is_being_chunked</code> 会被设为 <strong>分片计数器</strong>：</p>
+<ul>
+<li>
+<p><code>add_being_chunked_req()</code> → 计数 +1</p>
+</li>
+<li>
+<p><code>process_batch_result_prefill()</code> 每次 forward 完成后 <code>-1</code></p>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="5-处理结果schedulerprocess_batch_result_prefill"><a class="markdownIt-Anchor" href="#5-处理结果schedulerprocess_batch_result_prefill"></a> 5. 处理结果：<code>Scheduler.process_batch_result_prefill()</code></h2>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> req.is_being_chunked &lt;= <span class="number">0</span>:            <span class="comment"># 本次 prefill 填完</span></span><br><span class="line">    req.output_ids.append(next_token_id) <span class="comment"># 推进 decode</span></span><br><span class="line">    req.check_finished()                 <span class="comment"># 判断是否总体结束</span></span><br><span class="line"><span class="keyword">else</span>:                                    <span class="comment"># 还没填完</span></span><br><span class="line">    req.is_being_chunked -= <span class="number">1</span>            <span class="comment"># 等待下一轮</span></span><br><span class="line">    skip_stream_req = req                <span class="comment"># 不对外 stream，防止半截输出</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>
+<p><strong>没填完</strong> → 请求留在 <code>being_chunked_req</code>，下一轮 <code>get_new_batch_prefill()</code> 会继续填剩余部分。</p>
+</li>
+<li>
+<p><strong>填完并且 max_new_tokens=0</strong> → 立即进入释放 KV-cache 和 send-kv-cache 分支。</p>
+</li>
+</ul>
+<h2 id="6-循环与退出条件"><a class="markdownIt-Anchor" href="#6-循环与退出条件"></a> 6. 循环与退出条件</h2>
+<ol>
+<li>
+<p>在 <strong>下一轮</strong><code>get_new_batch_prefill()</code> 里首先处理 <code>being_chunked_req</code>：</p>
+<ul>
+<li>
+<p>调整 <code>extend_input_len</code>（剩余量）</p>
+</li>
+<li>
+<p>如果再次超过 <code>rem_chunk_tokens</code> → 再切一片; 否则最后一片填完就置 <code>None</code>。</p>
+</li>
+</ul>
+</li>
+<li>
+<p>当 <strong>所有片段都完成</strong> 且 <code>max_new_tokens</code>==0 时：</p>
+<ul>
+<li>
+<p>正常走 <code>req.finished()</code> 流程</p>
+</li>
+<li>
+<p>从树缓存中回收节点；<code>being_chunked_req</code> 被彻底消失。</p>
+</li>
+</ul>
+</li>
+</ol>
+<h2 id="7-与-mixed-chunk边-decode-边-prefill协作"><a class="markdownIt-Anchor" href="#7-与-mixed-chunk边-decode-边-prefill协作"></a> 7. 与 Mixed-Chunk（边 decode 边 prefill）协作</h2>
+<p>当 <code>self.is_mixed_chunk</code> 为真并且 GPU 还有 decode batch 在跑：</p>
+<ol>
+<li>
+<p>Scheduler 会把当前 running batch 里的 decode 请求先 <strong>滤空</strong>，</p>
+</li>
+<li>
+<p>然后把拆分后的 prefill 片段 <strong>混到</strong> decode batch 中一起进 GPU，</p>
+</li>
+<li>
+<p>decode 端 token 返完后再在下一轮继续剩余 prefill。</p>
+</li>
+</ol>
+<h2 id="8-对资源预算的影响"><a class="markdownIt-Anchor" href="#8-对资源预算的影响"></a> 8. 对资源预算的影响</h2>
+<ul>
+<li>
+<p><code>PrefillAdder._prefill_one_req()</code> 会同步扣减</p>
+<ul>
+<li>
+<p><code>rem_total_tokens</code>：总 token 预算</p>
+</li>
+<li>
+<p><code>rem_input_tokens</code>：正在填 KV 的 token 预算</p>
+</li>
+<li>
+<p><code>rem_chunk_tokens</code>：本轮可用的 chunk token 预算</p>
+</li>
+</ul>
+</li>
+</ul>
+<p>这样可保证 <strong>单轮</strong> 不会送超过 <code>chunked_prefill_size</code> 的 token，也避免解码耗尽 KV-cache。</p>
+<h2 id="9-小结-整体状态机"><a class="markdownIt-Anchor" href="#9-小结-整体状态机"></a> 9. 小结 - 整体状态机</h2>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820165733026.png" alt="image.png" /></p>
+<ul>
+<li>
+<p><strong>ChunkedReq</strong> 只会同时存在一条。</p>
+</li>
+<li>
+<p>直到所有片段完成，它都会在 “Add → GPU → Check → Add” 环里循环。</p>
+</li>
+<li>
+<p>Mixed-chunk 时 decode / prefill 会在同一 GPU batch 中穿插。</p>
+</li>
+</ul>
+<p><strong>结合PD分离的视图</strong></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820165739507.png" alt="image.png" /></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" rel="tag"># 大模型</a>
+              <a href="/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%8E%A8%E7%90%86/" rel="tag"># 大模型推理</a>
+              <a href="/tags/Sglang/" rel="tag"># Sglang</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/08/21/Sglang-%E5%BC%82%E6%AD%A5%E4%B8%93%E5%AE%B6%E9%87%8D%E6%8E%92%E9%80%BB%E8%BE%91%E6%A2%B3%E7%90%86/" rel="prev" title="Sglang 异步专家重排逻辑梳理">
+                  <i class="fa fa-angle-left"></i> Sglang 异步专家重排逻辑梳理
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Ronny Lu</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">245k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">14:50</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">false</script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" integrity="sha256-UF1fgpAiu3tPJN/uCqEUHNe7pnr+QR0SQDNfgglgtcM=" crossorigin="anonymous">
+  <script class="next-config" data-name="katex" type="application/json">{"copy_tex_js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/copy-tex.min.js","integrity":"sha256-Us54+rSGDSTvIhKKUs4kygE2ipA0RXpWWh0/zLqw3bs="}}</script>
+  <script src="/js/third-party/math/katex.js"></script>
+
+
+
+</body>
+</html>

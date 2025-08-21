@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="https://avatars.githubusercontent.com/u/55233584?v=4">
+  <link rel="icon" type="image/png" sizes="32x32" href="https://avatars.githubusercontent.com/u/55233584?v=4">
+  <link rel="icon" type="image/png" sizes="16x16" href="https://avatars.githubusercontent.com/u/55233584?v=4">
+  <link rel="mask-icon" href="https://avatars.githubusercontent.com/u/55233584?v=4" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-minimal.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"luyiyun1021.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.22.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="0. 启动准备   Scheduler 启动时  如果启用了 enable_redundant_experts，Scheduler 会拉起一个守护线程 async_update_weight_thread。    线程一启动就调用  这里的 model_name 通常是 &quot;main&quot;（还有 draft worker 时会再加一个 &quot;mtp&quot;）。 mmap_">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Sglang 异步专家重排逻辑梳理">
+<meta property="og:url" content="https://luyiyun1021.github.io/2025/08/21/Sglang-%E5%BC%82%E6%AD%A5%E4%B8%93%E5%AE%B6%E9%87%8D%E6%8E%92%E9%80%BB%E8%BE%91%E6%A2%B3%E7%90%86/index.html">
+<meta property="og:site_name" content="Ronny Lu&#39;s blog">
+<meta property="og:description" content="0. 启动准备   Scheduler 启动时  如果启用了 enable_redundant_experts，Scheduler 会拉起一个守护线程 async_update_weight_thread。    线程一启动就调用  这里的 model_name 通常是 &quot;main&quot;（还有 draft worker 时会再加一个 &quot;mtp&quot;）。 mmap_">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250821113231272.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250821113907613.png">
+<meta property="article:published_time" content="2025-08-21T03:44:23.000Z">
+<meta property="article:modified_time" content="2025-08-21T03:45:31.245Z">
+<meta property="article:author" content="Ronny Lu">
+<meta property="article:tag" content="大模型">
+<meta property="article:tag" content="大模型推理">
+<meta property="article:tag" content="Deepseek">
+<meta property="article:tag" content="Deepseek优化">
+<meta property="article:tag" content="Sglang">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250821113231272.png">
+
+
+<link rel="canonical" href="https://luyiyun1021.github.io/2025/08/21/Sglang-%E5%BC%82%E6%AD%A5%E4%B8%93%E5%AE%B6%E9%87%8D%E6%8E%92%E9%80%BB%E8%BE%91%E6%A2%B3%E7%90%86/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://luyiyun1021.github.io/2025/08/21/Sglang-%E5%BC%82%E6%AD%A5%E4%B8%93%E5%AE%B6%E9%87%8D%E6%8E%92%E9%80%BB%E8%BE%91%E6%A2%B3%E7%90%86/","path":"2025/08/21/Sglang-异步专家重排逻辑梳理/","title":"Sglang 异步专家重排逻辑梳理"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Sglang 异步专家重排逻辑梳理 | Ronny Lu's blog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<style>.darkmode--activated{--body-bg-color:#282828;--content-bg-color:#333;--card-bg-color:#555;--text-color:#ccc;--blockquote-color:#bbb;--link-color:#ccc;--link-hover-color:#eee;--brand-color:#ddd;--brand-hover-color:#ddd;--table-row-odd-bg-color:#282828;--table-row-hover-bg-color:#363636;--menu-item-bg-color:#555;--btn-default-bg:#222;--btn-default-color:#ccc;--btn-default-border-color:#555;--btn-default-hover-bg:#666;--btn-default-hover-color:#ccc;--btn-default-hover-border-color:#666;--highlight-background:#282b2e;--highlight-foreground:#a9b7c6;--highlight-gutter-background:#34393d;--highlight-gutter-foreground:#9ca9b6}.darkmode--activated img{opacity:.75}.darkmode--activated img:hover{opacity:.9}.darkmode--activated code{color:#69dbdc;background:0 0}button.darkmode-toggle{z-index:9999}.darkmode-ignore,img{display:flex!important}.beian img{display:inline-block!important}</style></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Ronny Lu's blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#0-%E5%90%AF%E5%8A%A8%E5%87%86%E5%A4%87"><span class="nav-number">1.</span> <span class="nav-text"> 0. 启动准备</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E5%A4%96%E9%83%A8%E8%A7%A6%E5%8F%91"><span class="nav-number">1.1.</span> <span class="nav-text"> 1 . 外部触发</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-scheduler-%E5%85%A5%E5%8F%A3"><span class="nav-number">1.2.</span> <span class="nav-text"> 2 . Scheduler 入口</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E4%BA%8B%E4%BB%B6%E7%8E%AF%E9%87%8C%E7%9A%84%E5%8F%8C%E9%AD%94%E6%95%B0%E5%90%8C%E6%AD%A5"><span class="nav-number">1.3.</span> <span class="nav-text"> 3 . 事件环里的“双魔数”同步</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#4-%E7%AC%AC%E4%B8%80%E6%AC%A1%E9%AD%94%E6%95%B0-%E8%A7%A6%E5%8F%91%E8%AE%A1%E7%AE%97%E8%B7%AF%E7%94%B1%E8%A1%A8"><span class="nav-number">2.</span> <span class="nav-text"> 4 . 第一次魔数 → 触发计算路由表</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-%E5%85%88%E8%AE%A9%E6%9C%AC-rank-%E8%AE%A1%E7%AE%97%E6%96%B0%E8%B7%AF%E7%94%B1%E8%A1%A8"><span class="nav-number">2.0.0.1.</span> <span class="nav-text"> 1. 先让本 Rank 计算「新路由表」</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-%E7%94%A8-%E4%B8%89%E6%80%81%E7%A0%81-%E5%90%8C%E6%AD%A5%E6%89%80%E6%9C%89-expert-parallel-rank-%E7%9A%84%E7%BB%93%E6%9E%9C"><span class="nav-number">2.0.0.2.</span> <span class="nav-text"> 2. 用 三态码 同步所有 Expert-Parallel Rank 的结果</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-%E5%85%A8%E9%83%A8-ok-%E5%90%8E%E5%94%A4%E9%86%92%E5%90%8E%E5%8F%B0-loading_model_weights_thread"><span class="nav-number">2.0.0.3.</span> <span class="nav-text"> 3. 全部 OK 后，唤醒后台 loading_model_weights_thread</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-%E6%9C%AC%E5%87%BD%E6%95%B0%E4%B9%8B%E5%90%8E%E5%8F%91%E7%94%9F%E7%9A%84%E4%BA%8B"><span class="nav-number">2.0.0.4.</span> <span class="nav-text"> 4. 本函数之后发生的事</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B0%8F%E7%BB%93-%E6%97%B6%E5%BA%8F%E5%9B%BE"><span class="nav-number">2.0.1.</span> <span class="nav-text"> 小结 — 时序图</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E5%90%8E%E5%8F%B0-io%E7%A3%81%E7%9B%98-devshm-loading_model_weights_thread"><span class="nav-number">2.1.</span> <span class="nav-text"> 4 . 后台 I&#x2F;O：磁盘 → &#x2F;dev&#x2F;shm (loading_model_weights_thread)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BB%E5%BE%AA%E7%8E%AF-%E6%94%B6%E4%BB%B6-%E8%AF%BB%E7%9B%98-%E5%86%99-shm-%E5%9B%9E%E6%89%A7"><span class="nav-number">2.1.1.</span> <span class="nav-text"> 主循环 —— “收件 → 读盘 → 写 shm → 回执”</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%BE%E8%AE%A1%E8%A6%81%E7%82%B9%E5%92%8C%E8%83%8C%E5%90%8E%E7%9A%84%E7%9B%AE%E7%9A%84"><span class="nav-number">2.1.2.</span> <span class="nav-text"> 设计要点和背后的目的</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-cpu-%E8%A6%86%E7%9B%96devshm-cpu-async_update_weight_thread"><span class="nav-number">2.2.</span> <span class="nav-text"> 5 . CPU 覆盖：&#x2F;dev&#x2F;shm → CPU (async_update_weight_thread)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-ep-rank-0-%E6%94%B6%E5%88%B0%E5%85%B6%E5%AE%83-rank-%E7%9A%84-register_rearrange_result-%E4%B9%8B%E5%90%8E%E4%BC%9A%E5%81%9A%E7%9A%84%E4%BA%8B"><span class="nav-number">2.3.</span> <span class="nav-text"> 6 . ep-rank 0 收到其它 rank 的 register_rearrange_result 之后会做的事</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-%E7%AC%AC%E4%BA%8C%E6%AC%A1%E9%AD%94%E6%95%B0-%E7%9C%9F%E6%AD%A3%E9%87%8D%E6%8E%92"><span class="nav-number">2.4.</span> <span class="nav-text"> 6 . 第二次魔数 → 真正重排</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#8-scheduler-%E7%8A%B6%E6%80%81%E5%A4%8D%E4%BD%8D"><span class="nav-number">2.5.</span> <span class="nav-text"> 8 . Scheduler 状态复位</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#9-%E6%95%B4%E4%BD%93%E6%97%B6%E5%BA%8F%E5%9B%BE"><span class="nav-number">2.6.</span> <span class="nav-text"> 9 . 整体时序图</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#10-%E5%85%B3%E9%94%AE%E7%82%B9%E5%9B%9E%E9%A1%BE"><span class="nav-number">2.7.</span> <span class="nav-text"> 10 . 关键点回顾</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#qa"><span class="nav-number">3.</span> <span class="nav-text"> QA</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Ronny Lu"
+      src="https://avatars.githubusercontent.com/u/55233584?v=4">
+  <p class="site-author-name" itemprop="name">Ronny Lu</p>
+  <div class="site-description" itemprop="description">Tech notes on LLM, LLM Infra, and others</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">75</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">16</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">19</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/08/21/Sglang-%E5%BC%82%E6%AD%A5%E4%B8%93%E5%AE%B6%E9%87%8D%E6%8E%92%E9%80%BB%E8%BE%91%E6%A2%B3%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
+      <meta itemprop="name" content="Ronny Lu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ronny Lu's blog">
+      <meta itemprop="description" content="Tech notes on LLM, LLM Infra, and others">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Sglang 异步专家重排逻辑梳理 | Ronny Lu's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Sglang 异步专家重排逻辑梳理
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-08-21 11:44:23 / 修改时间：11:45:31" itemprop="dateCreated datePublished" datetime="2025-08-21T11:44:23+08:00">2025-08-21</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">大模型</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E6%8E%A8%E7%90%86%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index"><span itemprop="name">推理技术</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E6%8E%A8%E7%90%86%E6%8A%80%E6%9C%AF/Sglang/" itemprop="url" rel="index"><span itemprop="name">Sglang</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>3.6k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>13 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h1 id="0-启动准备"><a class="markdownIt-Anchor" href="#0-启动准备"></a> 0. 启动准备</h1>
+<ul>
+<li>
+<p><strong>Scheduler 启动时</strong></p>
+<ul>
+<li>如果启用了 <code>enable_redundant_experts</code>，<code>Scheduler</code> 会拉起一个守护线程 <code>async_update_weight_thread</code>。</li>
+</ul>
+</li>
+<li>
+<p><strong>线程一启动就调用</strong></p>
+<ul>
+<li>这里的 <code>model_name</code> 通常是 <code>&quot;main&quot;</code>（还有 draft worker 时会再加一个 <code>&quot;mtp&quot;</code>）。<br />
+<code>mmap_infos = async_expert_loader.create_mmap(model_name, ep_rank, ep_size)</code></li>
+</ul>
+</li>
+<li>
+<p><strong>create_mmap 内部做了四件事</strong></p>
+<ul>
+<li>
+<p>拼出路径 <code>/dev/shm/&#123;name&#125;_rank_&#123;ep_rank&#125;_ep_dyn.weights</code>。</p>
+</li>
+<li>
+<p><strong>若文件不存在</strong>：<code>open(..., 'wb').close()</code> 立刻创建空文件。</p>
+</li>
+<li>
+<p><code>os.ftruncate</code> 把文件扩展到预估的显存大小（TOTAL_MODEL_SIZE // ep_size + MAIN_MODEL_REDUNDANT_SHM_SIZE）。</p>
+</li>
+<li>
+<p><code>mmap</code> 再加 <code>cudaHostRegister</code>——把这块共享内存注册成可直接给 GPU DMA 的“pinned memory”。</p>
+</li>
+<li>
+<p>完成后返回的 <code>mmap_infos</code> 保存了 <strong>文件指针</strong>，供后续直接用 <code>ctypes</code>+<code>frombuffer</code> 建 Tensor 映射。</p>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>此时文件已经在 /dev/shm 出现并定长</strong>，随后的</p>
+<ul>
+<li>
+<p><code>loading_model_weights_thread.save_tensor_to_shm_mem</code> 只是 <strong>seek+写入</strong>；</p>
+</li>
+<li>
+<p>GPU 端 <code>load_tensor_from_shm_mem</code> 只是 <strong>从已映射地址构 Tensor</strong>。</p>
+</li>
+</ul>
+</li>
+<li>
+<p>等待接收<code>loading_model_weights_thread</code>发来的信息</p>
+</li>
+</ul>
+<span id="more"></span>
+<h2 id="1-外部触发"><a class="markdownIt-Anchor" href="#1-外部触发"></a> 1 . 外部触发</h2>
+<ol>
+<li>
+<p><strong>TokenizerManager</strong> 收到 HTTP→生成 <code>RearrangeExpertsReqInput</code>。</p>
+</li>
+<li>
+<p>通过 ZMQ <code>PUSH</code> 把该对象广播给 <strong>所有</strong> TP-rank 的 <strong>Scheduler</strong>。</p>
+</li>
+</ol>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">           +-----------+</span><br><span class="line">HTTP  ---&gt; | Tokenizer | --(ZMQ)--&gt;  Scheduler[rank-<span class="number">0</span>…]</span><br><span class="line">           +-----------+</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<h2 id="2-scheduler-入口"><a class="markdownIt-Anchor" href="#2-scheduler-入口"></a> 2 . Scheduler 入口</h2>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">process_input_requests()</span><br><span class="line">└─ <span class="built_in">isinstance</span>(recv_req, RearrangeExpertsReqInput) → <span class="variable language_">self</span>.rearrange_experts()</span><br></pre></td></tr></table></figure>
+<ul>
+<li>只有 <strong>experts-rank 0</strong>（EP 0）真正起调度, 设置如下变量；其余 rank 直接返回 success 信息。</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">need_caculate_expert_rank_table = <span class="literal">True</span></span><br><span class="line">is_doing_rearrange           = <span class="literal">True</span></span><br><span class="line">async_load_result.init_rearrange_round()</span><br></pre></td></tr></table></figure>
+<h2 id="3-事件环里的双魔数同步"><a class="markdownIt-Anchor" href="#3-事件环里的双魔数同步"></a> 3 . 事件环里的“双魔数”同步</h2>
+<p>在 <strong>prepare_dp_attn_batch()</strong> 里，每轮都会 <code>all_gather</code> 一次各 rank 的<code>num_tokens</code>。Scheduler 借此塞入 2 个特殊值：</p>
+<table>
+<thead>
+<tr>
+<th>魔数常量</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CACULATE_EXPERT_MAGIC_NUM</code></td>
+<td><strong>通知大家：先去算新路由表</strong></td>
+</tr>
+<tr>
+<td><code>REARRANGE_EXPERT_MAGIC_NUM</code></td>
+<td><strong>通知大家：权重已 OK，可以正式切</strong></td>
+</tr>
+</tbody>
+</table>
+<h1 id="4-第一次魔数-触发计算路由表"><a class="markdownIt-Anchor" href="#4-第一次魔数-触发计算路由表"></a> 4 . 第一次魔数 → 触发计算路由表</h1>
+<p><code>execute_caculate_expert_rank_table()</code></p>
+<blockquote>
+<p><strong>“把</strong> <em>**</em><strong>各 rank 最近的 token 统计 → 新专家-rank 映射</strong><em>**</em> <strong>先算出来，并且让所有 GPU 达成一致，随后把</strong> <em>**</em><strong>该算表</strong><em>**</em> <strong>交给后台权重加载守护进程。”</strong></p>
+</blockquote>
+<h4 id="1-先让本-rank-计算新路由表"><a class="markdownIt-Anchor" href="#1-先让本-rank-计算新路由表"></a> 1. 先让本 Rank 计算「新路由表」</h4>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> <span class="variable language_">self</span>.draft_worker:</span><br><span class="line">    success, fatal, msg = <span class="variable language_">self</span>.draft_worker.caculate_expert_rank_table(...)</span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">    success, fatal, msg = <span class="variable language_">self</span>.tp_worker   .caculate_expert_rank_table(...)</span><br></pre></td></tr></table></figure>
+<ul>
+<li><strong>真正干活的是 ModelRunner</strong> (<code>tp_worker / draft_worker</code> 内部)其核心代码片段↓</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">caculate_expert_rank_table</span>(<span class="params">self, need_all_reduce=<span class="literal">False</span></span>):</span><br><span class="line">    <span class="keyword">if</span> need_all_reduce:</span><br><span class="line">        stats = expert_model_parallel_all_reduce(stats)  <span class="comment"># 把各 EP 的累积 token 数做一次 all-reduce</span></span><br><span class="line">    rank_expert_list, logical2phy, expert_cnt = \</span><br><span class="line">        rebalance_experts(stats, num_replicas, num_groups, ...)</span><br><span class="line">    <span class="comment"># 把结果写进“tmp_”张量，供后续权重加载阶段用</span></span><br><span class="line">    <span class="variable language_">self</span>.tmp_model_ep_rank_to_expert_id_list.copy_(rank_expert_list)</span><br><span class="line">    ...</span><br><span class="line">    <span class="variable language_">self</span>.model_tokens_per_expert_stats_list.fill_(<span class="number">1</span>)     <span class="comment"># 统计归零，进入下一轮</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>
+<p><code>rebalance_experts()</code> 调用eplb的rebalance组件返回重排后物理专家到逻辑专家的映射</p>
+</li>
+<li>
+<p>结果写入 <em>**</em><strong>tmp_</strong><em>**</em> 张量，此时主模型仍用 <strong>old</strong> 表。</p>
+</li>
+</ul>
+<h4 id="2-用-三态码-同步所有-expert-parallel-rank-的结果"><a class="markdownIt-Anchor" href="#2-用-三态码-同步所有-expert-parallel-rank-的结果"></a> 2. 用 <strong>三态码</strong> 同步所有 Expert-Parallel Rank 的结果</h4>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">num_tokens = <span class="number">1</span>          <span class="comment"># 默认：本 rank 计算成功</span></span><br><span class="line"><span class="keyword">if</span> <span class="keyword">not</span> success:         <span class="comment"># 逻辑错误</span></span><br><span class="line">    num_tokens = -<span class="number">2</span></span><br><span class="line"><span class="keyword">if</span> fatal:               <span class="comment"># 程序错误（比如张量 shape 不匹配）</span></span><br><span class="line">    num_tokens = -<span class="number">1</span></span><br><span class="line">all_gather → global_num_tokens</span><br></pre></td></tr></table></figure>
+<table>
+<thead>
+<tr>
+<th>码值</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>本 rank 计算成功</td>
+</tr>
+<tr>
+<td>−2</td>
+<td>本 rank 失败，可回退</td>
+</tr>
+<tr>
+<td>−1</td>
+<td><strong>致命失败</strong>，必须整机重启</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>
+<p>只要任何 rank 上报 <strong>−1</strong> → 立即 <code>raise Exception</code> 让监控重启服务。</p>
+</li>
+<li>
+<p>若出现 <strong>−2</strong>（非致命），只有 EP 0 会调用<code>self.rearrange_experts_failed()</code> 写标志并放弃本轮重排。</p>
+</li>
+</ul>
+<h4 id="3-全部-ok-后唤醒后台-loading_model_weights_thread"><a class="markdownIt-Anchor" href="#3-全部-ok-后唤醒后台-loading_model_weights_thread"></a> 3. 全部 OK 后，唤醒后台 <strong>loading_model_weights_thread</strong></h4>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">infos = tp_worker.get_async_export_loader_info()   <span class="comment"># 或 draft_worker</span></span><br><span class="line"><span class="variable language_">self</span>.parent_mg_conn.send(infos)                   <span class="comment"># Pipe 到子进程</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>
+<p><code>infos</code> 包含</p>
+<ul>
+<li>
+<p>新旧<code>model_ep_rank_to_expert_id_list</code> 表格</p>
+</li>
+<li>
+<p>模型路径 / load_format / revision …</p>
+</li>
+</ul>
+</li>
+<li>
+<p>子进程拿到后开始 <strong>磁盘→/dev/shm</strong> 的权重搬运。</p>
+</li>
+</ul>
+<h4 id="4-本函数之后发生的事"><a class="markdownIt-Anchor" href="#4-本函数之后发生的事"></a> 4. 本函数之后发生的事</h4>
+<ul>
+<li>
+<p><code>need_caculate_expert_rank_table</code> 置 <code>False</code>，防止重复触发。</p>
+</li>
+<li>
+<p>Scheduler 的事件环会继续运行，直到下一轮 <code>all_gather</code> 看到<code>REARRANGE_EXPERT_MAGIC_NUM</code>，才进入真正的 <strong>execute_rearrange_experts()</strong>—— 也就是把刚才搬好的新权重切换进 GPU 模型。</p>
+</li>
+</ul>
+<h3 id="小结-时序图"><a class="markdownIt-Anchor" href="#小结-时序图"></a> 小结 — 时序图</h3>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250821113231272.png" alt="image.png" /></p>
+<p><code>execute_caculate_expert_rank_table()</code> 到此结束，真正的<strong>权重加载</strong>和后续</p>
+<p><code>execute_rearrange_experts()</code> 将在下一阶段完成。</p>
+<h2 id="4-后台-io磁盘-devshm-loading_model_weights_thread"><a class="markdownIt-Anchor" href="#4-后台-io磁盘-devshm-loading_model_weights_thread"></a> 4 . 后台 I/O：磁盘 → /dev/shm (loading_model_weights_thread)</h2>
+<h3 id="主循环-收件-读盘-写-shm-回执"><a class="markdownIt-Anchor" href="#主循环-收件-读盘-写-shm-回执"></a> 主循环 —— “收件 → 读盘 → 写 shm → 回执”</h3>
+<p>线程一直阻塞在 <code>mg_conn.recv()</code>。一旦收到了调度器发来的任务（数据结构其实是一个列表，里面的元素形如 <code>(model_name, AsyncEPLoader)</code>），就开始下面的步骤：</p>
+<ol>
+<li>
+<p><strong>遍历每个模型（main、mtp 等）</strong></p>
+<ul>
+<li>
+<p>从 <code>AsyncEPLoader</code> 拿到 <code>ep_rank</code>。</p>
+</li>
+<li>
+<p>调 <code>load_experts_weight_from_disk()</code> 把需要换的 expert 权重从磁盘读进 CPU tensor，并存到 <code>info.cached_weights</code>。</p>
+<ol>
+<li>
+<p><strong>确定本 rank 要管哪几个 expert</strong></p>
+<ul>
+<li>
+<p><code>expert_per_rank</code> 决定“一张卡托几个 expert”。</p>
+</li>
+<li>
+<p><code>start_idx / end_idx</code> 从全局专家表里切出属于当前 <code>ep_rank</code> 的那一段。</p>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>比对旧表 VS 新表</strong>遍历所有层：</p>
+<ul>
+<li>
+<p><code>old_expert_ids_all</code>：本 rank 在旧模型里托管的 expert id 列表。</p>
+</li>
+<li>
+<p><code>new_expert_ids_all</code>：新模型想让本 rank 托管的 id 列表。</p>
+</li>
+<li>
+<p>把两张表一行行、一列列对比——只要发现 <strong>“旧 id 不存在” 或 “旧 id ≠ 新 id”</strong>，就把 <code>(layer_id, new_expert_id)</code> 记进 <code>need_to_reload</code>。这说明这块权重必须重新加载。</p>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>真正去读盘（可能读 0 个，也可能很多个）</strong></p>
+<ul>
+<li>
+<p>如果 <code>need_to_reload</code> 为空，直接成功返回。</p>
+</li>
+<li>
+<p>否则调用 <code>self.load_expert_weight_from_disk(need_to_reload)</code></p>
+<ul>
+<li>这个子函数会用 vLLM 的 loader 把对应权重文件读成 <strong>CPU tensor</strong>，放进 <code>self.cached_weights</code>。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>返回值</strong></p>
+<ul>
+<li>
+<p>成功：<code>True, &quot;succeed&quot;</code></p>
+</li>
+<li>
+<p>失败：<code>False, errmsg</code>（任何异常都会记录详细 traceback，然后失败返回）</p>
+</li>
+</ul>
+</li>
+</ol>
+<p>此时权重还只是留在 Python 进程的 <strong>CPU 内存</strong>，并没有写到共享内存，也没有上 GPU。</p>
+</li>
+<li>
+<p>如果读取成功，统计一下本模型本 rank 读进来的总字节数，只用于打印；然后调用<code>save_tensor_to_shm_mem</code>把这些 tensor 写入 <code>/dev/shm/&#123;name&#125;_rank_&#123;ep_rank&#125;_ep_dyn.weights</code>。写入时同时生成一份索引：每个 tensor 的名字、在文件中的偏移、大小、shape、dtype；这些索引稍后要带回给主线程。</p>
+<ul>
+<li>
+<p><strong>文件准备</strong></p>
+<ul>
+<li><code>/dev/shm/&#123;name&#125;_rank_&#123;ep_rank&#125;_ep_dyn.weights</code> 在主线程里早就 <code>truncate</code> 好了，大小由环境变量或模型尺寸决定。</li>
+</ul>
+</li>
+<li>
+<p><strong>顺序写入 + 建索引</strong></p>
+  <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">offset = <span class="number">0</span></span><br><span class="line"><span class="keyword">for</span> name, tensor <span class="keyword">in</span> cached_weights:</span><br><span class="line">    size = tensor.numel() * tensor.element_size()</span><br><span class="line">    buffer = ctypes.string_at(tensor.data_ptr(), size)   <span class="comment"># 直接从 Tensor 的 data_ptr 拷整块 bytes</span></span><br><span class="line">    f.seek(offset)</span><br><span class="line">    f.write(buffer)</span><br><span class="line">    tensor_infos.append((name, offset, size, tensor.shape, tensor.dtype))</span><br><span class="line">    offset += size</span><br></pre></td></tr></table></figure>
+<ul>
+<li>
+<p><code>tensor_infos</code> 就是这块共享文件的“目录索引”：哪个 tensor、写在文件的哪儿、多大、shape、dtype。</p>
+</li>
+<li>
+<p>如果写超文件大小会抛 <code>IOError</code>——防止配置的 <code>/dev/shm</code> 容量不够。</p>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>日志与返回</strong></p>
+<ul>
+<li>打印“这次总共写了多少 GB”，然后把 <code>tensor_infos</code> 返回给调用方。之后外层线程会把 <code>(model_name, tensor_infos)</code> 回传给 GPU 侧的 <code>async_update_weight_thread</code>。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>如果读取失败，就记日志并把 <code>result</code> 标为 <code>False</code>。</p>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>异常兜底</strong></p>
+<ul>
+<li>整个 <code>for</code> 循环包在 <code>try/except</code> 里。发生未捕获异常时，会把 <code>weight_infos</code> 清空并把 <code>result</code> 置 <code>False</code>，保证不会把残缺数据传回去。</li>
+</ul>
+</li>
+<li>
+<p><strong>回传结果</strong></p>
+<ul>
+<li>
+<p>构造 <code>request_data</code>：用 <code>data_conn.send(request_data)</code> 送回给调度器里负责 GPU-侧覆写的 <code>async_update_weight_thread</code>。</p>
+  <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="string">&quot;result&quot;</span>: <span class="literal">True</span>/<span class="literal">False</span>,          <span class="comment"># 本次所有模型是否都成功</span></span><br><span class="line">    <span class="string">&quot;weights&quot;</span>: weight_infos        <span class="comment"># 成功时带 (model_name, tensor_infos) 列表，失败为空</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>发送完就回到 <code>while True</code> 头部，等待下一次 <code>mg_conn.recv()</code>。</p>
+</li>
+</ul>
+</li>
+</ol>
+<h3 id="设计要点和背后的目的"><a class="markdownIt-Anchor" href="#设计要点和背后的目的"></a> 设计要点和背后的目的</h3>
+<ul>
+<li>
+<p><strong>把 I/O 独立出来</strong>读磁盘、压缩解码等都是纯 CPU 操作；放在这个线程里做，不会阻塞主调度循环。</p>
+</li>
+<li>
+<p><strong>零拷贝切换</strong>线程把 tensor 原样写进 <code>/dev/shm</code> 的映射文件。调度器主线程拿到 offset 之后可以直接 <code>torch.frombuffer</code> 构造 tensor，再把 <code>cudaHostRegister</code> 过的页映射到 GPU，省掉一次 CPU→GPU 的 memcpy。</p>
+</li>
+<li>
+<p><strong>最小通信量</strong>线程和主进程之间只传“小索引表”，不传大块数据。因此 Pipe 或 ZMQ 只需要几 KB，而几 GB 的权重已经提前落在共享内存。</p>
+</li>
+<li>
+<p><strong>统一错误上报</strong><code>result=False</code> 表示本 rank 加载失败；主进程会和其他 rank 的结果做 <code>all_gather</code> 再决定是整体回滚还是继续。</p>
+</li>
+</ul>
+<p>整个过程保证了 <strong>读取-写共享内存-GPU 覆写</strong> 的流水线化，一次热更新对前端推理服务的阻塞时间大幅缩短。</p>
+<h2 id="5-cpu-覆盖devshm-cpu-async_update_weight_thread"><a class="markdownIt-Anchor" href="#5-cpu-覆盖devshm-cpu-async_update_weight_thread"></a> 5 . CPU 覆盖：/dev/shm → CPU (async_update_weight_thread)</h2>
+<ul>
+<li>
+<p>用 <code>load_tensor_from_shm_mem()</code> 对 <code>/dev/shm</code> 里的那段内存构造 <strong>CPU Tensor</strong>。这里调用 <code>torch.frombuffer(...)</code>，不做任何复制；Tensor 的 storage 直接指向那块 pinned host memory。</p>
+</li>
+<li>
+<p>把 <code>(tensor_name, tensor)</code> 列表交给 <code>update_weights_to_model_runner()</code>, <code>model_runner</code>仅做<code>self.cached_weights = weight</code>。<strong>此时权重还停留在 CPU</strong>（准确地说，在共享内存那块页锁定内存里）。</p>
+</li>
+<li>
+<p>线程随后用 HTTP <code>/register_rearrange_result</code> 告知 EP 0 自己权重已加载到cpu</p>
+</li>
+</ul>
+<h2 id="6-ep-rank-0-收到其它-rank-的-register_rearrange_result-之后会做的事"><a class="markdownIt-Anchor" href="#6-ep-rank-0-收到其它-rank-的-register_rearrange_result-之后会做的事"></a> 6 . ep-rank 0 收到其它 rank 的 <code>register_rearrange_result</code> 之后会做的事</h2>
+<ul>
+<li>
+<p><strong>HTTP 入口</strong></p>
+<p>每个 rank 在 <code>async_update_weight_thread</code> 里调用<code>sync_load_result_to_rank0(rank0_ip, rank0_port, ep_rank, success, message)</code></p>
+<p>这会对 rank 0 上运行的 Flask/FastAPI 路由<code>POST /register_rearrange_result</code> 发送 JSON <code>&#123; user, passwd, ep_rank, success, message &#125;</code>：</p>
+</li>
+<li>
+<p><strong>写结果文件（不阻塞主线程）</strong></p>
+<ul>
+<li>这个路由直接调用<code>RedundantAsyncLoadResult.register_rearrange_result()</code>内部逻辑只是把内容落到<code>REDUNDANT_ASYNC_LOAD_META_DIR/tmp_redundant_async_results/</code>下的一份 JSON 文件里，文件名形如<code>rank_&lt;ep_rank&gt;_async_load_result.json</code>。整个操作很短暂（几十毫秒），不会触碰 GPU，也不依赖<code>torch.distributed</code>，对 Scheduler 的主循环来说几乎无感。</li>
+</ul>
+</li>
+<li>
+<p><strong>rank 0 如何“等齐”</strong></p>
+<p>rank 0 自己的 <code>async_update_weight_thread</code> 会定时调用<code>self.async_load_result.is_all_success()</code> 轮询那个目录, 检查文件数量是否等于<code>rank_num</code>。</p>
+<ul>
+<li>
+<p>还没收齐：返回 <code>(all_succ, wait_register, fatal_error) = (False, True, False)</code>，线程什么也不做；Scheduler 继续正常排队、forward、采样，服务用户请求。</p>
+</li>
+<li>
+<p>全部收齐且都成功：</p>
+<ul>
+<li>
+<p>线程把 <code>self.need_rearrange_experts</code> 设成 <code>True</code></p>
+</li>
+<li>
+<p>把 <code>self.rearrange_experts_check_failed</code> 设成 <code>False</code></p>
+</li>
+</ul>
+</li>
+<li>
+<p>任意 rank 失败：</p>
+<ul>
+<li>线程把 <code>self.rearrange_experts_check_failed</code> 设成 <code>True</code>。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="6-第二次魔数-真正重排"><a class="markdownIt-Anchor" href="#6-第二次魔数-真正重排"></a> 6 . 第二次魔数 → 真正重排</h2>
+<p>再次 all-gather 遇到 <code>REARRANGE_EXPERT_MAGIC_NUM</code> → Scheduler 调 <code>execute_rearrange_experts()</code>→ <code>tp_worker.rearrange_experts()</code>→ <code>ModelRunner.rearrange_experts()</code>→<code>ModelRunner.do_rearrange_experts()</code>：</p>
+<ol>
+<li>
+<p><strong>更新路由表:</strong> <code>redundant_table_manger.update_expert_rank_table()</code></p>
+</li>
+<li>
+<p><strong>加载新专家权重:</strong> <code>update_experts_weight_from_disk(new_rank_expert_list, ep_rank)</code>→<code>load_expert_weight_from_disk(need_to_reload)</code></p>
+<ul>
+<li>
+<p>读取顺序：</p>
+<ul>
+<li>
+<p>若 <code>self.cached_weights</code> 已有对应张量 → <strong>直接用它</strong>（避免再拉磁盘）；</p>
+</li>
+<li>
+<p>否则调用 vLLM <code>DefaultModelLoader</code> 再读一次磁盘。</p>
+</li>
+</ul>
+</li>
+<li>
+<p><code>model.load_weights(weights_list, copy_expert_weight=True)</code>只覆盖需要变动的 Expert 子模块，并把它们移进 GPU。</p>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>All-gather</strong> 检查是否有 rank 失败</p>
+<ul>
+<li>
+<p><code>-1</code>：普通失败 → 回滚</p>
+</li>
+<li>
+<p><code>-10</code>：致命失败 → 抛异常，需整机重启</p>
+</li>
+</ul>
+</li>
+<li>
+<p>若前面失败且已复制权重，调用<code>rollback_experts_weight_from_disk()</code> 把旧专家重量回灌回来。</p>
+</li>
+<li>
+<p><code>cached_weights</code> 清零，<code>result.dump()</code> 记录 json。</p>
+</li>
+</ol>
+<h2 id="8-scheduler-状态复位"><a class="markdownIt-Anchor" href="#8-scheduler-状态复位"></a> 8 . Scheduler 状态复位</h2>
+<p>成功走完后：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">need_rearrange_experts = <span class="literal">False</span></span><br><span class="line">is_doing_rearrange     = <span class="literal">False</span></span><br><span class="line">async_load_result.destroy_rearrange_round()</span><br></pre></td></tr></table></figure>
+<p>并继续正常推理，已使用 <strong>新专家+新路由表</strong>。</p>
+<h2 id="9-整体时序图"><a class="markdownIt-Anchor" href="#9-整体时序图"></a> 9 . 整体时序图</h2>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250821113907613.png" alt="image.png" /></p>
+<h2 id="10-关键点回顾"><a class="markdownIt-Anchor" href="#10-关键点回顾"></a> 10 . 关键点回顾</h2>
+<ul>
+<li>
+<p><strong>双存储层</strong>：磁盘 → <code>/dev/shm</code>(pinned) → GPU；显存峰值可控，I/O 与推理并行。</p>
+</li>
+<li>
+<p><strong>两阶段同步</strong>：魔数 + <code>all_gather</code> 保证 <strong>所有</strong> rank 同步进/退。</p>
+</li>
+<li>
+<p><strong>ModelRunner</strong> 最终执行：</p>
+<ul>
+<li>
+<p>持有 <code>redundant_table_manger</code>，真正交换路由表；</p>
+</li>
+<li>
+<p>利用 <code>cached_weights</code> 避免重复 I/O；</p>
+</li>
+<li>
+<p>失败即回滚，致命失败抛异常，由外层监控重启。</p>
+</li>
+</ul>
+</li>
+</ul>
+<p>至此，结合 <strong>Scheduler</strong> 与 <strong>ModelRunner</strong>，整条「在线专家重排」链路闭环。</p>
+<h1 id="qa"><a class="markdownIt-Anchor" href="#qa"></a> QA</h1>
+<ol>
+<li>
+<p><strong>为何不直接“一条线程读盘→CPU”, 要分loading_model_weights_thread和async_update_weight_thread？</strong></p>
+<p>GPU side 线程和 I/O 线程不在同一进程空间；用管道传几 GB 的 tensor 不现实，<code>/dev/shm</code> 可被两边 mmap，天然是最快的共享媒介。</p>
+</li>
+<li>
+<p><strong>为什么loading_model_weights_thread是process, async_update_weight_thread是thread,</strong></p>
+<p><strong>核心思路：</strong></p>
+<p>搬磁盘 → /Dev/Shm 属于“纯 CPU + 大量 I/O”——放到单独 <strong>Process</strong>；</p>
+<p>把 /Dev/Shm 的页映射成 Tensor、再写进 GPU 模型属于“GPU-内部的轻量操作”——留在主进程用 <strong>Thread</strong>。</p>
+<p><strong>loading_model_weights_thread 为什么用 Process</strong></p>
+<ol>
+<li>
+<p><strong>彻底隔离 Python GIL 与 GPU Runtime:</strong> I/O 进程只做磁盘读写和文件 mmap，不需要任何 CUDA 句柄。放到独立 <strong>Process</strong> 完全绕过 GIL，也避免了“子进程 fork 后访问 CUDA context 会崩”的风险。</p>
+</li>
+<li>
+<p><strong>可随意申请、释放巨大临时 DRAM:</strong> 进程结束时内核直接回收虚拟内存，不会把几十 GB 的页留在主推理进程的 RSS 里；即使中途崩溃也不会污染 GPU 侧的状态。</p>
+</li>
+<li>
+<p><strong>专职 CPU-bound 任务，不打断推理:</strong> 读盘、解压、quantize 都是重 CPU 的；单独进程占满核不影响主进程调度 forward。</p>
+</li>
+<li>
+<p><strong>需要创建和 mmap 固定大小的</strong> <code>**/dev/shm/..._ep_dyn.weights**</code>: 这一步必须 <code>os.ftruncate</code> + <code>mmap</code> + <code>cudaHostRegister</code>，对每个 rank 写同一文件。让一个纯 CPU 进程集中做，比在持有活跃 CUDA context 的进程里做更可靠。</p>
+</li>
+</ol>
+<p><strong>async_update_weight_thread 为什么用 Thread</strong></p>
+<ol>
+<li>
+<p><strong>必须直接调用模型对象的方法:</strong> 它要执行 <code>model_runner.update_weights_to_model_runner()</code>和最终的 <code>model.load_weights()</code>，这些对象都只存在于主进程地址空间，如果用 fork 出来的子进程，会拿不到原始 Python 对象，也无法共享 CUDA handle。</p>
+</li>
+<li>
+<p><strong>需要复用主进程的 CUDA context:</strong> 调用 <code>torch.frombuffer(...).cuda()</code> 或 <code>tensor.to(device)</code> 时会触发 H2D，只有和 Scheduler/TpWorker 同一进程的线程才能安全复用当前 GPU 流和显存池。</p>
+</li>
+<li>
+<p><strong>工作量很小，不值得再开进程:</strong> thread 只是把索引表转成 Tensor view，再调用一次 <code>model.load_weights()</code>，整个过程在毫秒级；用线程就能利用现成锁与条件变量、无需跨进程通信。</p>
+</li>
+<li>
+<p><strong>需要持续轮询结果文件并设置内部标志位:</strong> 它会修改 <code>self.need_rearrange_experts</code> 等 Scheduler 字段，Thread 直接写共享内存即可，Process 则需要 Pipe／Queue，再加同步逻辑。</p>
+</li>
+</ol>
+</li>
+<li>
+<p><strong>GIL在磁盘读写方面会造成什么问题</strong></p>
+<p>在 CPython 里，任何执行 <strong>Python 字节码</strong> 的线程都要先拿到 GIL（Global Interpreter Lock）。读写磁盘这类 I/O 看似“阻塞系统调用会自动释放 GIL”，但实际上仍会出现下面几类掣肘，导致 <strong>重 I/O 线程和推理主线程无法真正并行</strong>。</p>
+<p><strong>1. 读写循环仍不断抢 GIL</strong></p>
+<p>读大文件通常是“读一块 → Python 逻辑 → 读下一块”，只要有 Python 层数据处理（解压、checksum、路径拼接、列表 append …），每次都重新占用 GIL。</p>
+<p>结果：即使 read(2) 本身会在内核态阻塞，线程 A 还是会<strong>频繁把 GIL 锁住</strong>，线程 B（负责推理调度）就只能等，下行延迟跟着抖。</p>
+<p><strong>2. 内存拷贝/解析是 CPU-bound，不会释放 GIL</strong></p>
+<ul>
+<li>
+<p><code>ctypes.string_at(ptr, size)</code></p>
+</li>
+<li>
+<p><code>pickle.loads(...)</code> / <code>torch.load</code> 里的反序列化</p>
+</li>
+<li>
+<p>Python 循环拼 tensor name、统计大小……</p>
+</li>
+</ul>
+<p>这部分属于纯 Python 计算；一旦开始就独占 GIL，其他线程全部停摆。重排时要搬几百 MB～数 GB 参数，这段 CPU 拷贝足以让推理线程卡顿百毫秒甚至秒级。</p>
+<p><strong>3. 垃圾回收、内存管理也受 GIL 保护</strong></p>
+<p>读完权重后会建很多临时 bytes / Tensor，再被 GC 回收。GC 的追踪和 <code>PyMem_Free</code> 都要持有 GIL，容易与实时推理线程“打架”。</p>
+<p><strong>为什么 换进程 就能规避</strong></p>
+<ul>
+<li>
+<p><strong>进程间没有共享 GIL</strong>，I/O 进程即使 100 % 占用 CPU，也不会阻塞主进程的 Python 解释器。</p>
+</li>
+<li>
+<p>mmap + <code>cudaHostRegister</code> 只在 I/O 进程里做一次；主进程后续 <code>torch.frombuffer</code> 不再触碰 Python 级 I/O。</p>
+</li>
+<li>
+<p>出错可直接杀 I/O 进程，主推理服务无感知，可靠性更高。</p>
+</li>
+<li>
+<p>释放内存更干净——I/O 进程退出，内核把巨大的 RSS 一次性回收，不污染主服务的 heap。</p>
+</li>
+</ul>
+<p>因此，在 SGLang 的重排链路里 <strong>loading_model_weights_thread 被设计成独立 Process</strong>，确保磁盘→/dev/shm 的“重 I/O + 重 CPU”阶段与持 GIL 的推理主循环彻底解耦，即使偶尔抢到 GIL 也不会对在线延迟造成可感知影响。</p>
+</li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" rel="tag"># 大模型</a>
+              <a href="/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%8E%A8%E7%90%86/" rel="tag"># 大模型推理</a>
+              <a href="/tags/Deepseek/" rel="tag"># Deepseek</a>
+              <a href="/tags/Deepseek%E4%BC%98%E5%8C%96/" rel="tag"># Deepseek优化</a>
+              <a href="/tags/Sglang/" rel="tag"># Sglang</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/08/20/%E5%88%86%E5%B8%83%E5%BC%8F%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF/" rel="prev" title="分布式推理框架核心技术">
+                  <i class="fa fa-angle-left"></i> 分布式推理框架核心技术
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2025/08/21/Sglang-chunked-prefill-%E9%80%BB%E8%BE%91%E6%A2%B3%E7%90%86/" rel="next" title="Sglang chunked prefill 逻辑梳理">
+                  Sglang chunked prefill 逻辑梳理 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Ronny Lu</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">245k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">14:50</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">false</script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" integrity="sha256-UF1fgpAiu3tPJN/uCqEUHNe7pnr+QR0SQDNfgglgtcM=" crossorigin="anonymous">
+  <script class="next-config" data-name="katex" type="application/json">{"copy_tex_js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/copy-tex.min.js","integrity":"sha256-Us54+rSGDSTvIhKKUs4kygE2ipA0RXpWWh0/zLqw3bs="}}</script>
+  <script src="/js/third-party/math/katex.js"></script>
+
+
+
+</body>
+</html>

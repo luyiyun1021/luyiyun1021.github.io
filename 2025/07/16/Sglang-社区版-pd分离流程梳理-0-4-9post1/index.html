@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="https://avatars.githubusercontent.com/u/55233584?v=4">
+  <link rel="icon" type="image/png" sizes="32x32" href="https://avatars.githubusercontent.com/u/55233584?v=4">
+  <link rel="icon" type="image/png" sizes="16x16" href="https://avatars.githubusercontent.com/u/55233584?v=4">
+  <link rel="mask-icon" href="https://avatars.githubusercontent.com/u/55233584?v=4" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-minimal.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"luyiyun1021.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.22.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="设计文档: https:&#x2F;&#x2F;docs.google.com&#x2F;document&#x2F;d&#x2F;1rQXJwKd5b9b1aOzLh98mnyMhBMhlxXA5ATZTHoQrwvc&#x2F;edit?tab&#x3D;t.0#heading&#x3D;h.i3s2t1j0e1ik 参考: https:&#x2F;&#x2F;zhuanlan.zhihu.com&#x2F;p&#x2F;1912106909617624371 https:&#x2F;&#x2F;zhuanlan.zhihu.co">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Sglang 社区版 pd分离流程梳理 (0.4.9post1)">
+<meta property="og:url" content="https://luyiyun1021.github.io/2025/07/16/Sglang-%E7%A4%BE%E5%8C%BA%E7%89%88-pd%E5%88%86%E7%A6%BB%E6%B5%81%E7%A8%8B%E6%A2%B3%E7%90%86-0-4-9post1/index.html">
+<meta property="og:site_name" content="Ronny Lu&#39;s blog">
+<meta property="og:description" content="设计文档: https:&#x2F;&#x2F;docs.google.com&#x2F;document&#x2F;d&#x2F;1rQXJwKd5b9b1aOzLh98mnyMhBMhlxXA5ATZTHoQrwvc&#x2F;edit?tab&#x3D;t.0#heading&#x3D;h.i3s2t1j0e1ik 参考: https:&#x2F;&#x2F;zhuanlan.zhihu.com&#x2F;p&#x2F;1912106909617624371 https:&#x2F;&#x2F;zhuanlan.zhihu.co">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250716154607788.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250716154618245.png">
+<meta property="article:published_time" content="2025-07-16T08:05:25.000Z">
+<meta property="article:modified_time" content="2025-08-20T07:45:03.096Z">
+<meta property="article:author" content="Ronny Lu">
+<meta property="article:tag" content="大模型">
+<meta property="article:tag" content="大模型推理">
+<meta property="article:tag" content="Sglang">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250716154607788.png">
+
+
+<link rel="canonical" href="https://luyiyun1021.github.io/2025/07/16/Sglang-%E7%A4%BE%E5%8C%BA%E7%89%88-pd%E5%88%86%E7%A6%BB%E6%B5%81%E7%A8%8B%E6%A2%B3%E7%90%86-0-4-9post1/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://luyiyun1021.github.io/2025/07/16/Sglang-%E7%A4%BE%E5%8C%BA%E7%89%88-pd%E5%88%86%E7%A6%BB%E6%B5%81%E7%A8%8B%E6%A2%B3%E7%90%86-0-4-9post1/","path":"2025/07/16/Sglang-社区版-pd分离流程梳理-0-4-9post1/","title":"Sglang 社区版 pd分离流程梳理 (0.4.9post1)"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Sglang 社区版 pd分离流程梳理 (0.4.9post1) | Ronny Lu's blog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<style>.darkmode--activated{--body-bg-color:#282828;--content-bg-color:#333;--card-bg-color:#555;--text-color:#ccc;--blockquote-color:#bbb;--link-color:#ccc;--link-hover-color:#eee;--brand-color:#ddd;--brand-hover-color:#ddd;--table-row-odd-bg-color:#282828;--table-row-hover-bg-color:#363636;--menu-item-bg-color:#555;--btn-default-bg:#222;--btn-default-color:#ccc;--btn-default-border-color:#555;--btn-default-hover-bg:#666;--btn-default-hover-color:#ccc;--btn-default-hover-border-color:#666;--highlight-background:#282b2e;--highlight-foreground:#a9b7c6;--highlight-gutter-background:#34393d;--highlight-gutter-foreground:#9ca9b6}.darkmode--activated img{opacity:.75}.darkmode--activated img:hover{opacity:.9}.darkmode--activated code{color:#69dbdc;background:0 0}button.darkmode-toggle{z-index:9999}.darkmode-ignore,img{display:flex!important}.beian img{display:inline-block!important}</style></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Ronny Lu's blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%BB%84%E4%BB%B6%E6%A6%82%E8%A7%88"><span class="nav-number">1.</span> <span class="nav-text"> 组件概览</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%95%B4%E4%BD%93%E6%B5%81%E7%A8%8B"><span class="nav-number">2.</span> <span class="nav-text"> 整体流程</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#prefill-server"><span class="nav-number">2.1.</span> <span class="nav-text"> Prefill Server</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#decode-server"><span class="nav-number">2.2.</span> <span class="nav-text"> Decode Server</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%88%9D%E5%A7%8B%E5%8C%96%E9%98%B6%E6%AE%B5"><span class="nav-number">3.</span> <span class="nav-text"> 初始化阶段</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#prefill-%E8%8A%82%E7%82%B9"><span class="nav-number">3.1.</span> <span class="nav-text"> Prefill 节点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#decode-%E8%8A%82%E7%82%B9"><span class="nav-number">3.2.</span> <span class="nav-text"> Decode 节点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#mooncake-engine%E7%9B%B8%E5%85%B3"><span class="nav-number">3.3.</span> <span class="nav-text"> Mooncake engine相关</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%AF%B7%E6%B1%82%E5%A4%84%E7%90%86%E9%98%B6%E6%AE%B5"><span class="nav-number">4.</span> <span class="nav-text"> 请求处理阶段</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80-prefill-%E8%8A%82%E7%82%B9"><span class="nav-number">4.1.</span> <span class="nav-text"> 一、Prefill 节点</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-%E4%B8%BB%E6%B5%81%E7%A8%8Bevent_loop_normal_disagg_prefill"><span class="nav-number">4.1.1.</span> <span class="nav-text"> 1. 主流程（event_loop_normal_disagg_prefill）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-bootstrap_thread"><span class="nav-number">4.1.2.</span> <span class="nav-text"> 2. bootstrap_thread</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-transfer_worker"><span class="nav-number">4.1.3.</span> <span class="nav-text"> 3. transfer_worker</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C-decode-%E8%8A%82%E7%82%B9"><span class="nav-number">4.2.</span> <span class="nav-text"> 二、Decode 节点</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-%E4%B8%BB%E6%B5%81%E7%A8%8Bevent_loop_normal_disagg_decode"><span class="nav-number">4.2.1.</span> <span class="nav-text"> 1. 主流程（event_loop_normal_disagg_decode）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-decode_thread"><span class="nav-number">4.2.2.</span> <span class="nav-text"> 2. decode_thread</span></a></li></ol></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Ronny Lu"
+      src="https://avatars.githubusercontent.com/u/55233584?v=4">
+  <p class="site-author-name" itemprop="name">Ronny Lu</p>
+  <div class="site-description" itemprop="description">Tech notes on LLM, LLM Infra, and others</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">75</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">16</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">19</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/07/16/Sglang-%E7%A4%BE%E5%8C%BA%E7%89%88-pd%E5%88%86%E7%A6%BB%E6%B5%81%E7%A8%8B%E6%A2%B3%E7%90%86-0-4-9post1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
+      <meta itemprop="name" content="Ronny Lu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ronny Lu's blog">
+      <meta itemprop="description" content="Tech notes on LLM, LLM Infra, and others">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Sglang 社区版 pd分离流程梳理 (0.4.9post1) | Ronny Lu's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Sglang 社区版 pd分离流程梳理 (0.4.9post1)
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2025-07-16 16:05:25" itemprop="dateCreated datePublished" datetime="2025-07-16T16:05:25+08:00">2025-07-16</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2025-08-20 15:45:03" itemprop="dateModified" datetime="2025-08-20T15:45:03+08:00">2025-08-20</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">大模型</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E6%8E%A8%E7%90%86%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index"><span itemprop="name">推理技术</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E6%8E%A8%E7%90%86%E6%8A%80%E6%9C%AF/Sglang/" itemprop="url" rel="index"><span itemprop="name">Sglang</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>3.2k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>12 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p><strong>设计文档:</strong> <a target="_blank" rel="noopener" href="https://docs.google.com/document/d/1rQXJwKd5b9b1aOzLh98mnyMhBMhlxXA5ATZTHoQrwvc/edit?tab=t.0#heading=h.i3s2t1j0e1ik"><strong>https://docs.google.com/document/d/1rQXJwKd5b9b1aOzLh98mnyMhBMhlxXA5ATZTHoQrwvc/edit?tab=t.0#heading=h.i3s2t1j0e1ik</strong></a></p>
+<p>参考:</p>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/1912106909617624371">https://zhuanlan.zhihu.com/p/1912106909617624371</a></p>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/1924856844867867827">https://zhuanlan.zhihu.com/p/1924856844867867827</a></p>
+<h1 id="组件概览"><a class="markdownIt-Anchor" href="#组件概览"></a> 组件概览</h1>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250716154607788.png" alt="image.png" /></p>
+<span id="more"></span>
+<p>Mooncake pd 分离组件分为以下几个</p>
+<ul>
+<li>
+<p>MooncakeKVManager: 只用于prefill，记录prefill和decode交互所用的信息，可以有很多种，decode会请求该信息和prefill进行连接</p>
+</li>
+<li>
+<p>MooncakeKVSender: 负责初始化内存、Bootstrap server以及发送kv cache，prefill和decode都有，作为KV connector的管理器</p>
+</li>
+<li>
+<p>MooncakeKVReceiver: 专属于prefill，发送kv cache</p>
+</li>
+<li>
+<p>MooncakeKVBootstrapServer: 专属于decode，和prefill握手，获取bootstrap server的交互信息，接收kv cache</p>
+</li>
+</ul>
+<p>处理流程状态（类似于 tcp 握手的状态机）</p>
+<ul>
+<li>
+<p>Failed = 0</p>
+</li>
+<li>
+<p>Bootstrapping = 1</p>
+</li>
+<li>
+<p>WaitingForInput = 2</p>
+</li>
+<li>
+<p>Transferring = 3 # no used</p>
+</li>
+<li>
+<p>Success = 4</p>
+</li>
+</ul>
+<p>mini_lb(sglang提供的pd分离proxy server)</p>
+<ul>
+<li>对每个req，会生成一个随机int room id, 以及从候选prefill和decode实例中随机挑选一对获得prefill_config.url, prefill_config.bootstrap_port, decode_server, 并添加到原始的req中, 随后同时向prefill和deocde节点发送modified_req, 等待响应</li>
+</ul>
+<h1 id="整体流程"><a class="markdownIt-Anchor" href="#整体流程"></a> <strong>整体流程</strong></h1>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250716154618245.png" alt="image.png" /></p>
+<p>在原生 SGLang 调度事件循环之上，额外加入了 非阻塞的发送端（sender）与接收端（receiver）操作。</p>
+<h2 id="prefill-server"><a class="markdownIt-Anchor" href="#prefill-server"></a> <strong>Prefill Server</strong></h2>
+<ol>
+<li>
+<p>Bootstrap Queue</p>
+<ol>
+<li>
+<p>为每个请求初始化一个 sender</p>
+</li>
+<li>
+<p>将尚未完成启动阶段（握手与显存预分配）的请求放入队列</p>
+</li>
+<li>
+<p>轮询 sender，检测启动状态</p>
+</li>
+<li>
+<p>启动完成后，将请求移至 Waiting Queue</p>
+</li>
+</ol>
+</li>
+<li>
+<p>Waiting Queue</p>
+<ol>
+<li>
+<p>使用 PrefillAdder 弹出请求</p>
+</li>
+<li>
+<p>执行 forward （Prefill 前向计算）</p>
+</li>
+<li>
+<p>计算完毕后把请求加入 Infight Queue</p>
+</li>
+</ol>
+</li>
+<li>
+<p>Infight Queue</p>
+<ol>
+<li>
+<p>非阻塞轮询该请求对应的 sender</p>
+</li>
+<li>
+<p>传输完成后，将请求返回（标记为已完成）</p>
+</li>
+</ol>
+</li>
+</ol>
+<h2 id="decode-server"><a class="markdownIt-Anchor" href="#decode-server"></a> <strong>Decode Server</strong></h2>
+<ol>
+<li>
+<p>Prealloc Queue</p>
+<ol>
+<li>
+<p>为每个请求初始化一个 receiver</p>
+</li>
+<li>
+<p>先完成握手；当有空闲 KV 显存时立即预分配</p>
+</li>
+<li>
+<p>预分配完成后，将请求移入 Transfer Queue</p>
+</li>
+</ol>
+</li>
+<li>
+<p>Transfer Queue</p>
+<ol>
+<li>
+<p>轮询 receiver，检查传输进度</p>
+</li>
+<li>
+<p>传输完成后，将请求移入 Waiting Queue</p>
+</li>
+</ol>
+</li>
+<li>
+<p>Waiting Queue</p>
+<ol>
+<li>
+<p>用队列中的请求构造 PrebuiltExtendBatch</p>
+</li>
+<li>
+<p>跳过Prefill forward，只填充元数据</p>
+</li>
+</ol>
+</li>
+<li>
+<p>Running Batch</p>
+<ol>
+<li>将已解析的 PrebuiltExtendBatch 合并到运行批中，执行 Decode 阶段</li>
+</ol>
+</li>
+</ol>
+<h1 id="初始化阶段"><a class="markdownIt-Anchor" href="#初始化阶段"></a> <strong>初始化阶段</strong></h1>
+<h2 id="prefill-节点"><a class="markdownIt-Anchor" href="#prefill-节点"></a> <strong>Prefill 节点</strong></h2>
+<ul>
+<li>
+<p><strong>TokenizerManager 初始化</strong></p>
+<ul>
+<li>启动 <code>MooncakeKVBootstrapServer</code></li>
+</ul>
+</li>
+<li>
+<p><code>MooncakeKVBootstrapServer 提供 /route</code> <strong>接口</strong>负责传递prefill的ip和port等信息</p>
+<ul>
+<li>
+<p><code>PUT /route</code>（节点注册）</p>
+<ul>
+<li>
+<p>接收：<code>role</code>、<code>ip</code>、<code>port</code>、<code>rank</code></p>
+</li>
+<li>
+<p>计算 <code>dp_group</code>、<code>tp_rank_in_dp_group</code></p>
+</li>
+<li>
+<p>存入 <code>prefill_port_table[dp_group][tp_rank_in_dp_group]</code></p>
+</li>
+</ul>
+</li>
+<li>
+<p><code>GET /route</code>（信息查询）</p>
+<ul>
+<li>
+<p>根据 <code>engine_rank</code> 和 <code>target_dp_group</code> 从 <code>prefill_port_table</code> 获取节点信息</p>
+</li>
+<li>
+<p>若两参数均为 <code>-1</code>，返回 <strong>并行配置</strong></p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Scheduler.init_disaggregation 中的初始化</strong></p>
+<ol>
+<li>
+<p>实例化 <strong>PrefillBootstrapQueue</strong>（存放正在等待 Bootstrap 的请求）</p>
+<ol>
+<li>
+<p>实例化 <strong>MooncakeKVManager</strong></p>
+<ol>
+<li>
+<p>调用 <code>register_buffer_to_engine</code>：</p>
+<ul>
+<li>将已分配的 KV cache 地址和 metadata 地址注册到 Transfer Engine</li>
+</ul>
+</li>
+<li>
+<p>调用 <code>start_prefill_thread</code>：</p>
+<ul>
+<li>
+<p>创建 ZMQ server socket，绑定空闲端口为 <code>rank_port</code></p>
+</li>
+<li>
+<p>启动 <code>bootstrap_thread</code>，监听来自 Decode 的 pre-allocated 信号</p>
+</li>
+<li>
+<p>收到信号后，将对应请求的 <code>request_status</code> 设为 <code>WaitingForInput</code></p>
+</li>
+</ul>
+</li>
+<li>
+<p>调用 <code>_register_to_bootstrap</code>：</p>
+<ul>
+<li>通过 <code>PUT /route</code> 向 Master（<code>dist_init_addr</code>）注册：<code>role=PREFILL</code>、<code>tp_size</code>、<code>dp_size</code>、本地 <code>ip</code>、<code>rank_port</code>、全局 <code>rank</code></li>
+</ul>
+</li>
+<li>
+<p>创建 <strong>transfer_queues</strong>（缓冲 KV 数据块），并启动 <code>transfer_worker</code> 消费线程</p>
+<ul>
+<li><strong>数据流向</strong>：<code>[KV 数据块] → add_transfer_request → transfer_queues → transfer_worker → 网络传输</code></li>
+</ul>
+</li>
+<li>
+<p>创建 <strong>disagg_prefill_inflight_queue</strong>（存储正在发送 KV cache 的 Prefill 请求）</p>
+</li>
+</ol>
+</li>
+</ol>
+</li>
+</ol>
+</li>
+</ul>
+<h2 id="decode-节点"><a class="markdownIt-Anchor" href="#decode-节点"></a> <strong>Decode 节点</strong></h2>
+<ul>
+<li>
+<p><strong>Scheduler.init_disaggregation 中的初始化</strong></p>
+<ol>
+<li>
+<p>实例化 <strong>DecodePreallocQueue</strong>（存放正在等待 pre-allocation 的请求）</p>
+<ol>
+<li>
+<p>实例化 <strong>MooncakeKVManager</strong></p>
+<ol>
+<li>
+<p>调用 <code>start_decode_thread</code>：</p>
+<ul>
+<li>
+<p>创建 ZMQ server socket，绑定空闲端口</p>
+</li>
+<li>
+<p>启动 <code>decode_thread</code>，接收 Prefill <code>transfer_worker</code> 同步的 room-id 状态（<code>Success</code>/<code>Failed</code>）</p>
+</li>
+</ul>
+</li>
+</ol>
+</li>
+</ol>
+</li>
+<li>
+<p>初始化 <strong>DecodeTransferQueue</strong>（存放正在拉取 KV cache 的请求）</p>
+</li>
+</ol>
+</li>
+</ul>
+<h2 id="mooncake-engine相关"><a class="markdownIt-Anchor" href="#mooncake-engine相关"></a> <strong>Mooncake engine相关</strong></h2>
+<p>初始化阶段，prefill和decode在KVManager都需要初始化一个Mooncake engine</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">MooncakeTransferEngine</span>:</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, hostname: <span class="built_in">str</span>, gpu_id: <span class="built_in">int</span>, ib_device: <span class="type">Optional</span>[<span class="built_in">str</span>] = <span class="literal">None</span></span>):</span><br><span class="line">        <span class="keyword">try</span>:</span><br><span class="line">            <span class="keyword">from</span> mooncake.engine <span class="keyword">import</span> TransferEngine</span><br><span class="line">        <span class="keyword">except</span> ImportError <span class="keyword">as</span> e:</span><br><span class="line">            <span class="keyword">raise</span> ImportError(</span><br><span class="line">                <span class="string">&quot;Please install mooncake by following the instructions at &quot;</span></span><br><span class="line">                <span class="string">&quot;https://github.com/kvcache-ai/Mooncake/blob/main/doc/en/build.md &quot;</span>  <span class="comment"># noqa: E501</span></span><br><span class="line">                <span class="string">&quot;to run SGLang with MooncakeTransferEngine.&quot;</span></span><br><span class="line">            ) <span class="keyword">from</span> e</span><br><span class="line"></span><br><span class="line">        <span class="variable language_">self</span>.engine = TransferEngine()</span><br><span class="line">        <span class="variable language_">self</span>.hostname = hostname</span><br><span class="line">        <span class="variable language_">self</span>.gpu_id = gpu_id</span><br><span class="line">        <span class="comment"># 可以在外指定infiniband设备，不指定mooncake会自动检测</span></span><br><span class="line">        <span class="variable language_">self</span>.ib_device = ib_device</span><br><span class="line"></span><br><span class="line">        <span class="variable language_">self</span>.initialize(</span><br><span class="line">            hostname=<span class="variable language_">self</span>.hostname,</span><br><span class="line">            device_name=<span class="variable language_">self</span>.ib_device,</span><br><span class="line">        )</span><br><span class="line">        <span class="variable language_">self</span>.session_id = <span class="string">f&quot;<span class="subst">&#123;self.hostname&#125;</span>:<span class="subst">&#123;self.engine.get_rpc_port()&#125;</span>&quot;</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">initialize</span>(<span class="params"></span></span><br><span class="line"><span class="params">        self,</span></span><br><span class="line"><span class="params">        hostname: <span class="built_in">str</span>,</span></span><br><span class="line"><span class="params">        device_name: <span class="type">Optional</span>[<span class="built_in">str</span>],</span></span><br><span class="line"><span class="params">    </span>) -&gt; <span class="literal">None</span>:</span><br><span class="line">        <span class="string">&quot;&quot;&quot;Initialize the mooncake instance.&quot;&quot;&quot;</span></span><br><span class="line">        <span class="comment"># 四个参数分别为</span></span><br><span class="line">        <span class="comment"># ip</span></span><br><span class="line">        <span class="comment"># metadata server地址，可以是etcd，P2PHANDSHAKE代表只用socket进行握手，不会创建metadata storage</span></span><br><span class="line">        <span class="comment"># Transport的数据传输方式，rdma/tcp/nvmeof</span></span><br><span class="line">        <span class="comment"># infiniband设备名</span></span><br><span class="line">        ret_value = <span class="variable language_">self</span>.engine.initialize(</span><br><span class="line">            hostname,</span><br><span class="line">            <span class="string">&quot;P2PHANDSHAKE&quot;</span>,</span><br><span class="line">            <span class="string">&quot;rdma&quot;</span>,</span><br><span class="line">            device_name <span class="keyword">if</span> device_name <span class="keyword">is</span> <span class="keyword">not</span> <span class="literal">None</span> <span class="keyword">else</span> <span class="string">&quot;&quot;</span>,</span><br><span class="line">        )</span><br><span class="line">        <span class="keyword">if</span> ret_value != <span class="number">0</span>:</span><br><span class="line">            logger.error(<span class="string">&quot;Mooncake Transfer Engine initialization failed.&quot;</span>)</span><br><span class="line">            <span class="keyword">raise</span> RuntimeError(<span class="string">&quot;Mooncake Transfer Engine initialization failed.&quot;</span>)</span><br></pre></td></tr></table></figure>
+<p>infiniband device指的是nvidia的infiniband网卡，参考<a href="https://link.zhihu.com/?target=https%3A//www.nvidia.cn/networking/infiniband-adapters/">NVIDIA InfiniBand 网卡</a>，支持GPUDirect RDMA。</p>
+<p>mooncake的transfer engine的初始化：其一创建TransferMeta，用于管理mooncake的所有元数据，包含两个plugin</p>
+<ul>
+<li>
+<p>基于rpc的handshake socket。</p>
+</li>
+<li>
+<p>metadata storage管理plugin，元数据存储，可以是etcd、redis或者http，本地一般用redis即可。</p>
+</li>
+</ul>
+<p>其二创建MultiTransport，实现Mooncake的数据传输功能，支持tcp、rdma及nvmeof。</p>
+<p>我们结合SGLang的源代码看，在初始化KVManager时，sglang会把已经分配的kv cache地址信息以及metadata的地址信息注册到Transfer Engine里，这一步prefill和decode的逻辑是一致的。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">PrefillBootstrapQueue</span>:</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">_init_kv_manager</span>(<span class="params">self</span>) -&gt; BaseKVManager:</span><br><span class="line">        kv_args = KVArgs()</span><br><span class="line">        <span class="comment"># 记录tp的rank，tp组内，prefill和decode一一对应</span></span><br><span class="line">        kv_args.engine_rank = <span class="variable language_">self</span>.tp_rank</span><br><span class="line">        <span class="comment"># 格式为N层K的地址+N层V地地址</span></span><br><span class="line">        <span class="comment"># KV_item存的是单个K和V page的字节数</span></span><br><span class="line">        kv_data_ptrs, kv_data_lens, kv_item_lens = (</span><br><span class="line">            <span class="variable language_">self</span>.token_to_kv_pool.get_contiguous_buf_infos()</span><br><span class="line">        )</span><br><span class="line"></span><br><span class="line">        kv_args.kv_data_ptrs = kv_data_ptrs</span><br><span class="line">        kv_args.kv_data_lens = kv_data_lens</span><br><span class="line">        kv_args.kv_item_lens = kv_item_lens</span><br><span class="line"></span><br><span class="line">        <span class="comment"># Define req -&gt; input ids buffer</span></span><br><span class="line">        kv_args.aux_data_ptrs = [</span><br><span class="line">            metadata_buffer.data_ptr() <span class="keyword">for</span> metadata_buffer <span class="keyword">in</span> <span class="variable language_">self</span>.metadata_buffers</span><br><span class="line">        ]</span><br><span class="line">        kv_args.aux_data_lens = [</span><br><span class="line">            metadata_buffer.nbytes <span class="keyword">for</span> metadata_buffer <span class="keyword">in</span> <span class="variable language_">self</span>.metadata_buffers</span><br><span class="line">        ]</span><br><span class="line">        kv_args.aux_item_lens = [</span><br><span class="line">            metadata_buffer[<span class="number">0</span>].nbytes <span class="keyword">for</span> metadata_buffer <span class="keyword">in</span> <span class="variable language_">self</span>.metadata_buffers</span><br><span class="line">        ]</span><br><span class="line">        kv_args.ib_device = <span class="variable language_">self</span>.scheduler.server_args.disaggregation_ib_device</span><br><span class="line">        kv_args.gpu_id = <span class="variable language_">self</span>.scheduler.gpu_id</span><br><span class="line">        kv_manager_class = get_kv_class(<span class="variable language_">self</span>.transfer_backend, KVClassType.MANAGER)</span><br><span class="line">        kv_manager = kv_manager_class(</span><br><span class="line">            kv_args, DisaggregationMode.PREFILL, <span class="variable language_">self</span>.scheduler.server_args</span><br><span class="line">        )</span><br><span class="line">        <span class="keyword">return</span> kv_manager</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">MooncakeKVManager</span>(<span class="title class_ inherited__">BaseKVManager</span>):</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">register_buffer_to_engine</span>(<span class="params">self</span>):</span><br><span class="line">        <span class="keyword">for</span> kv_data_ptr, kv_data_len <span class="keyword">in</span> <span class="built_in">zip</span>(</span><br><span class="line">            <span class="variable language_">self</span>.kv_args.kv_data_ptrs, <span class="variable language_">self</span>.kv_args.kv_data_lens</span><br><span class="line">        ):</span><br><span class="line">            <span class="comment"># 逐层注册memory，先注册所有K，再注册所有V</span></span><br><span class="line">            <span class="variable language_">self</span>.engine.register(kv_data_ptr, kv_data_len)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> aux_data_ptr, aux_data_len <span class="keyword">in</span> <span class="built_in">zip</span>(</span><br><span class="line">            <span class="variable language_">self</span>.kv_args.aux_data_ptrs, <span class="variable language_">self</span>.kv_args.aux_data_lens</span><br><span class="line">        ):</span><br><span class="line">            <span class="variable language_">self</span>.engine.register(aux_data_ptr, aux_data_len)</span><br></pre></td></tr></table></figure>
+<p>Transfer Engine调用的是Transport的注册方法，如果使用RDMA，则是将KV cache的物理地址和infiniband设备做一个映射。我们前面提到KV sender会并行地发送每层的KV cache，在prefill forward出一个chunk之后，调用KV sender的send方法将kv_indices发送给prefill的transfer thread，kv_indices的定义为</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">kv_indices = (</span><br><span class="line">    <span class="variable language_">self</span>.req_to_token_pool.req_to_token[req.req_pool_idx, start_idx:end_idx]</span><br><span class="line">    .cpu()</span><br><span class="line">    .numpy()</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<p>得到的是虚拟地址，即在物理地址上的索引，transfer thread调用send_kvcache，需要三个信息：kv chunk在prefill的虚拟地址、<strong>在decode上</strong>全局的kv物理地址、<strong>在decode上</strong>kv cache物理地址上的索引</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">ret = <span class="variable language_">self</span>.send_kvcache(</span><br><span class="line">    req.mooncake_session_id,</span><br><span class="line">    kv_chunk.prefill_kv_indices,</span><br><span class="line">    <span class="variable language_">self</span>.decode_kv_args_table[req.mooncake_session_id].dst_kv_ptrs,</span><br><span class="line">    chunked_dst_kv_indice,</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<p>send_kvcache会将prefill_kv_indices和dst_kv_indices做一个连续内存的聚类，连续的内存地址一次性发送</p>
+<p>比如prefill_kv_indices=[1,2,3,5,6]，dst_kv_indices=[2,3,4,7,8]，则发送就是</p>
+<p>transfer_sync(src=[1,2,3], dst=[2,3,4])和transfer_sync(src=[5,6], dst=[7,8])</p>
+<p>每chunk prefill跑完一次性发送所有层的kv cache。前面提到在prefill最后一个chunk完成后，transfer engine还会发送一些辅助信息，这个辅助信就是prefill的第一个token id，decode收到后将其初始化到decode batch的output_ids结果里面</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># sglang/srt/disaggregation/decode.py</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">process_prebuilt_extend</span>(<span class="params"></span></span><br><span class="line"><span class="params">    self: ScheduleBatch, server_args: ServerArgs, model_config: ModelConfig</span></span><br><span class="line"><span class="params"></span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;Assign the buffered last input id to schedule batch&quot;&quot;&quot;</span></span><br><span class="line">    <span class="variable language_">self</span>.output_ids = []</span><br><span class="line">    <span class="keyword">for</span> req <span class="keyword">in</span> <span class="variable language_">self</span>.reqs:</span><br><span class="line">        <span class="keyword">if</span> req.output_ids <span class="keyword">and</span> <span class="built_in">len</span>(req.output_ids) &gt; <span class="number">0</span>:</span><br><span class="line">            <span class="comment"># resumed retracted req</span></span><br><span class="line">            <span class="variable language_">self</span>.output_ids.append(req.output_ids[-<span class="number">1</span>])</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            <span class="keyword">assert</span> req.transferred_output_id <span class="keyword">is</span> <span class="keyword">not</span> <span class="literal">None</span></span><br><span class="line">            req.output_ids.append(req.transferred_output_id)</span><br><span class="line">            <span class="variable language_">self</span>.output_ids.append(req.transferred_output_id)</span><br><span class="line">        <span class="variable language_">self</span>.tree_cache.cache_unfinished_req(req)</span><br><span class="line">    <span class="variable language_">self</span>.output_ids = torch.tensor(<span class="variable language_">self</span>.output_ids, device=<span class="variable language_">self</span>.device)</span><br></pre></td></tr></table></figure>
+<p>这里first token是交给Decode，等Decode做一次前向再统一返回给Proxy，所以TTFT的时间其实是Prefill+一次Decode，也就是说TTFT被Decode影响，如果Decode里因为资源问题还在排队那么当前请求的TTFT会显著上升。</p>
+<p>总结来看，SGLang给出了一个标准的PD分离方案实现，prefill得到所有层的kv cache，然后一次性发送给decode，prefill的第一个token不会直接返回给proxy，而是交给decode继续处理。<strong>对于KV cache的存储</strong>，其实也是交给prefill和decode自己，尚未利用mooncake的store，也就是<strong>P2P的KV cache存储方案。</strong></p>
+<h1 id="请求处理阶段"><a class="markdownIt-Anchor" href="#请求处理阶段"></a> <strong>请求处理阶段</strong></h1>
+<p>在scheduler中，prefill和decode分别会创建一个MooncakeKVSender和MooncakeKVReceiver与req绑定，KV receiver会从bootstrap server中得到prefill的ip和port，DP group和TP group都是一一对应的</p>
+<h2 id="一-prefill-节点"><a class="markdownIt-Anchor" href="#一-prefill-节点"></a> 一、Prefill 节点</h2>
+<h3 id="1-主流程event_loop_normal_disagg_prefill"><a class="markdownIt-Anchor" href="#1-主流程event_loop_normal_disagg_prefill"></a> 1. 主流程（<code>event_loop_normal_disagg_prefill</code>）</h3>
+<ol>
+<li>
+<p><strong>接收新生成请求</strong></p>
+<p>-﻿<code>process_input_requests</code> → <code>handle_generate_request</code> → <code>disagg_prefill_bootstrap_queue.add</code></p>
+<ul>
+<li>
+<p>为每个 <strong>Req</strong> 创建并绑定一个 <strong>MooncakeKVSender</strong></p>
+<ul>
+<li>通过 <code>kv_mgr</code> 将对应的 <code>bootstrap_room</code> 状态更新为 <strong>Bootstrapping</strong></li>
+</ul>
+</li>
+<li>
+<p>调用 <code>_process_req</code>：<code>req.sampling_params.max_new_tokens = 1</code></p>
+</li>
+<li>
+<p>把 <strong>Req</strong> 添加到 <code>disagg_prefill_bootstrap_queue</code></p>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Bootstrap 阶段轮询</strong></p>
+<ul>
+<li>
+<p>调用 <code>BootstrapQueue.pop_bootstrapped</code></p>
+</li>
+<li>
+<p>对每个 <strong>Req</strong> 调用其 <strong>KVSender.poll</strong>，从 <code>kv_mgr.check_status(bootstrap_room)</code> 获取状态</p>
+</li>
+<li>
+<p><strong>仅当状态为WaitingForInput</strong> 时：</p>
+<ul>
+<li>
+<p>初始化该 <strong>KVSender</strong>（设置 <code>num_kv_indices</code>、<code>metadata_buffer_index</code>）</p>
+</li>
+<li>
+<p>将 <strong>Req</strong> 移动到 <code>waiting_queue</code></p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>分块 Prefill 并发送 KV</strong></p>
+<ul>
+<li>
+<p>在 <code>process_prefill_chunk</code> 中处理：</p>
+<ul>
+<li>
+<p>如果上一个 batch 中有 <code>chunked_req</code>：</p>
+<ul>
+<li>
+<p>将它从 <code>last_batch</code> 中移出</p>
+</li>
+<li>
+<p>缓存到 Radix Cache</p>
+</li>
+<li>
+<p>调用 <code>send_kv_chunk</code>，把 <code>req_to_token[req.req_pool_idx, start_idx:end_idx]</code> 对应的 KV 索引发送到 Decode Server</p>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>KV Transfer 结束条件</strong>：</p>
+<ul>
+<li>
+<p>每执行完一个 chunk，Prefill Scheduler 会调用 <code>send_kv_chunk</code>，由 <strong>KVSender</strong> 多线程一次性发送所有 layer 的 KV cache</p>
+</li>
+<li>
+<p>在最后一个 chunk，<strong>Sender</strong> 会额外发送辅助数据，并把 <code>room id</code> + 状态 <strong>Success</strong> 发送给 Decode 的监听线程</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><code>MooncakeKVSender.send</code> <strong>的实现要点</strong>：</p>
+<ul>
+<li>
+<p>调用 <code>kv_mgr.add_transfer_request</code></p>
+</li>
+<li>
+<p>创建 <code>TransferKVChunk</code>，放入 <code>transfer_queue</code></p>
+</li>
+<li>
+<p><code>TransferKVChunk</code> 包含 <code>room</code>、<code>prefill_kv_indices</code>、<code>index_slice</code>、<code>is_last</code> 和 <code>prefill_aux_index</code></p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>获取新 Prefill Batch</strong></p>
+<ul>
+<li>
+<p>调用 <code>get_new_batch_prefill</code> 从 <code>waiting_queue</code> 中获得 Prefill 请求</p>
+</li>
+<li>
+<p>为即将处理的请求创建 <code>ScheduleBatch</code></p>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>模型前向执行</strong></p>
+<ul>
+<li>
+<p>Scheduler 调用 <code>run_batch</code>，将 <code>ScheduleBatch</code> 转换为 <code>ModelWorkerBatch</code></p>
+</li>
+<li>
+<p>调用 <code>TpModelWorker.forward_batch_generation</code>，等待 <code>logits_output</code> 和 <code>next_token_ids</code></p>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Batch 结果处理</strong></p>
+<ul>
+<li>
+<p>调用 <code>process_batch_result_disagg_prefill</code>：</p>
+<ul>
+<li>
+<p>调用 <code>send_kv_chunk</code> 传输完成 Prefill 的请求</p>
+</li>
+<li>
+<p><strong>锁定</strong> Radix Tree</p>
+</li>
+<li>
+<p>将请求加入 <code>disagg_prefill_inflight_queue</code></p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>监控 Inflight 队列</strong></p>
+<ul>
+<li>
+<p>调用 <code>process_disagg_prefill_inflight_queue</code>：</p>
+<ul>
+<li>
+<p>对每个请求执行 <strong>KVSender.poll</strong>，通过 <code>kv_mgr.check_status(bootstrap_room)</code> 获取状态</p>
+</li>
+<li>
+<p>如果状态为 <strong>Success</strong>：</p>
+<ul>
+<li>
+<p>从队列中拿出请求</p>
+</li>
+<li>
+<p><strong>解锁</strong> Radix Tree</p>
+</li>
+<li>
+<p>调用 <code>stream_output</code> 返回结果给 Detokenizer</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+<h3 id="2-bootstrap_thread"><a class="markdownIt-Anchor" href="#2-bootstrap_thread"></a> 2. <code>bootstrap_thread</code></h3>
+<ul>
+<li>
+<p>接收 Decode 节点在 <strong>KVReceiver</strong> 初始化阶段和 <code>disagg_decode_prealloc_queue.pop_preallocated</code> 阶段发送的握手信息</p>
+<ul>
+<li>
+<p>如果 <strong>room ID = None</strong>：</p>
+<ul>
+<li>将握手信息解析为 <strong>KVArgsRegisterInfo</strong>，存入 <code>decode_kv_args_table</code></li>
+</ul>
+</li>
+<li>
+<p>如果 <strong>room ID != None</strong>：</p>
+<ul>
+<li>
+<p>将握手信息解析为 <strong>TransferInfo</strong>，存入 <code>transfer_infos[room]</code></p>
+</li>
+<li>
+<p>当该 TP rank 收到所有需要发送 KV cache 的 Decode 节点握手后，调用<code>kv_mgr.update_status(bootstrap_room, WaitingForInput)</code></p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="3-transfer_worker"><a class="markdownIt-Anchor" href="#3-transfer_worker"></a> 3. <code>transfer_worker</code></h3>
+<ul>
+<li>
+<p>处理 Prefill 节点在 <code>process_prefill_chunk</code> 和 <code>process_batch_result_disagg_prefill</code> 阶段放入 <code>transfer_queue</code> 的传输任务</p>
+</li>
+<li>
+<p>从 <code>transfer_queue</code> 中取出 <code>TransferKVChunk</code></p>
+<ul>
+<li>读取该请求的 <code>transfer_infos</code>（包含 Decode 端的 <code>mooncake_session_id</code>、KV 索引、物理地址，以及 Prefill 端的索引）</li>
+</ul>
+</li>
+<li>
+<p><strong>发送 KV Cache</strong>：</p>
+<ul>
+<li>调用 <code>send_kvcache</code>：按 layer 提交 <code>engine.batch_transfer_sync</code> 任务，底层调用 <code>batch_transfer_sync_write</code></li>
+</ul>
+</li>
+<li>
+<p>如果 <code>kv_chunk.is_last</code>：</p>
+<ul>
+<li>
+<p>调用 <code>send_aux</code> → <code>engine.batch_transfer_sync</code></p>
+</li>
+<li>
+<p>通过 <code>kv_mgr.update_status(bootstrap_room, Success)</code></p>
+</li>
+<li>
+<p>调用 <code>sync_status_to_decode_endpoint</code>，向 Decode 线程同步 <code>room id</code> 的状态（Success/Failed）</p>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="二-decode-节点"><a class="markdownIt-Anchor" href="#二-decode-节点"></a> 二、Decode 节点</h2>
+<h3 id="1-主流程event_loop_normal_disagg_decode"><a class="markdownIt-Anchor" href="#1-主流程event_loop_normal_disagg_decode"></a> 1. 主流程（<code>event_loop_normal_disagg_decode</code>）</h3>
+<ol>
+<li>
+<p><strong>接收新生成请求</strong></p>
+<p>-﻿<code>process_input_requests</code> → <code>handle_generate_request</code> → <code>disagg_decode_prealloc_queue.add</code></p>
+<ul>
+<li>
+<p>为每个 <strong>Req</strong> 创建并绑定一个 <strong>MooncakeKVReceiver</strong></p>
+<ul>
+<li>
+<p>通过 <code>kv_mgr</code> 将 <code>bootstrap_room</code> 状态更新为 <strong>Bootstrapping</strong></p>
+</li>
+<li>
+<p>调用 <code>_get_prefill_parallel_info_from_server</code>：</p>
+<ul>
+<li>
+<p>通过 <code>/route</code> 获取 Prefill 的 <code>tp_size</code>、<code>dp_size</code>，并存入 <code>kv_mgr.prefill_tp_size_table</code></p>
+</li>
+<li>
+<p>计算并设置 <code>target_tp_ranks</code>（支持三种 TP 配置策略）</p>
+<ul>
+<li>
+<p><code>local_tp_size_per_dp_rank == prefill_tp_size_per_dp_rank</code>: Prefill-Decode 一对一模式, Decode端需要收到一个tp_rank发来的kv cache会把Req设为Success状态, Prefill端需要发送kv cache给一个tp_rank会把Req设为Success状态</p>
+</li>
+<li>
+<p><code>local_tp_size_per_dp_rank &gt; prefill_tp_size_per_dp_rank</code>: Prefill-Decode 一对多模式, Decode端需要收到一个tp_rank发来的kv cache会把Req设为Success状态, Prefill端需要发送kv cache给多个tp_rank才会把Req设为Success状态(<code>required_dst_info_num != 1</code>)</p>
+</li>
+<li>
+<p><code>local_tp_size_per_dp_rank &lt; prefill_tp_size_per_dp_rank</code>: Prefill-Decode 多对一模式, Decode端需要收到多个tp_rank发来的kv cache才会把Req设为Success状态(<code>required_prefill_response_num != 1</code>), Prefill端需要发送kv cache给一个tp_rank会把Req设为Success状态</p>
+</li>
+<li>
+<p>目前只在 mla 模型中支持 decode 和 prefill tp 配置不同, 对于 mla 模型, 我们可以只从一个 prefill 节点获取 KV 缓存，但仍需要在连接池中维护多个连接，并且必须向其他 prefill 节点发送空请求，否则 KVPoll 状态将无法正确设置</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>构造 <code>bootstrap_key = &quot;&#123;bootstrap_addr&#125;_&#123;target_dp_group&#125;_&#123;target_tp_rank&#125;&quot;</code></p>
+</li>
+<li>
+<p>从 <code>/route</code> 查询对应 Prefill 节点的 IP/port，缓存到 <code>kv_mgr.connection_pool[bootstrap_key]</code></p>
+</li>
+<li>
+<p>调用 <code>_register_kv_args</code>，向 Prefill 节点发送初始化信息（包含 room ID=None、decode IP/port、session ID、KV cache pool 地址、MetadataBuffers 地址）</p>
+</li>
+<li>
+<p>通过 <code>kv_mgr.update_status(bootstrap_room, WaitingForInput)</code></p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Pre-allocation 阶段</strong></p>
+<ul>
+<li>
+<p>调用 <code>disagg_decode_prealloc_queue.pop_preallocated</code>：</p>
+<ul>
+<li>
+<p><code>KVReceiver.poll</code> → <code>kv_mgr.check_status(bootstrap_room)</code> → 将所有 <strong>WaitingForInput</strong> 的请求标记 <code>waiting_for_input=True</code></p>
+</li>
+<li>
+<p>调用 <code>_pre_alloc</code>，为每个请求分配 <code>req_to_token</code> 和 <code>token_kv_pool</code> 空间</p>
+</li>
+<li>
+<p>调用 <code>KVReceiver.init</code>，向 Prefill 的 <code>bootstrap_thread</code> 发送五个信息：<code>room ID, decode IP/port, session ID, kv cache 索引, first token 的输出位置</code></p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Transfer 拉取阶段</strong></p>
+</li>
+</ol>
+<ul>
+<li>
+<p>将预分配完成的请求加入 <code>disagg_decode_transfer_queue</code></p>
+<ul>
+<li>
+<p>调用 <code>disagg_decode_transfer_queue.pop_transferred</code>：</p>
+<ul>
+<li>
+<p>对每个请求执行 <code>KVReceiver.poll</code> → <code>kv_mgr.check_status</code></p>
+</li>
+<li>
+<p>对于 <strong>Success</strong> 状态的请求，使用 <code>metadata_buffer_index</code> 获取 <code>output_id</code> 等元数据，并移出队列</p>
+</li>
+<li>
+<p>将传输完成的请求加入 <code>waiting_queue</code></p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ol start="4">
+<li>
+<p><strong>Batch 构建与执行</strong></p>
+<ul>
+<li>
+<p>调用 <code>get_next_disagg_decode_batch_to_run</code>：</p>
+<ul>
+<li>
+<p>从 <code>waiting_queue</code> 中获取已完成传输的请求</p>
+</li>
+<li>
+<p>调用 <code>get_new_prebuilt_batch</code> 创建“伪 Prefill” <code>ScheduleBatch</code></p>
+<ul>
+<li>第一 token 交给 Decode，Decode 再执行一次前向后统一返回给 Proxy</li>
+</ul>
+</li>
+<li>
+<p>若 <code>waiting_queue</code> 为空，则将之前的伪 Prefill Batch 合并至当前 Running Batch，继续 <strong>continuous batching</strong></p>
+</li>
+</ul>
+</li>
+<li>
+<p>Scheduler 调用 <code>run_batch</code> → <code>TpModelWorker.forward_batch_generation</code>，等待 <code>logits_output</code> 与 <code>next_token_ids</code></p>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>解码结果处理</strong></p>
+<ul>
+<li>
+<p>调用 <code>process_batch_result_decode</code>：</p>
+<ul>
+<li>
+<p>通过 <code>check_finished</code> 验证请求完成状态</p>
+</li>
+<li>
+<p>未完成的继续循环，完成的调用 <code>tree_cache.cache_finished_req(req)</code> 并 <code>stream_output</code></p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+<h3 id="2-decode_thread"><a class="markdownIt-Anchor" href="#2-decode_thread"></a> 2. <code>decode_thread</code></h3>
+<ul>
+<li>
+<p>监听 Prefill 节点的 <code>transfer_worker</code> 在最后一个 chunk 时同步的 <code>room id</code> + 状态（Success/Failed）</p>
+</li>
+<li>
+<p>当收到预期数量的 Success 响应后，调用<code>kv_mgr.update_status(bootstrap_room, Success)</code></p>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" rel="tag"># 大模型</a>
+              <a href="/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%8E%A8%E7%90%86/" rel="tag"># 大模型推理</a>
+              <a href="/tags/Sglang/" rel="tag"># Sglang</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/06/13/Sglang-prefill%E9%98%B6%E6%AE%B5%E4%B8%93%E5%AE%B6%E8%B0%83%E5%BA%A6%E9%80%BB%E8%BE%91%E6%A2%B3%E7%90%86/" rel="prev" title="Sglang prefill阶段专家调度逻辑梳理">
+                  <i class="fa fa-angle-left"></i> Sglang prefill阶段专家调度逻辑梳理
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2025/07/16/Sglang-prefill%E9%98%B6%E6%AE%B5%E5%8F%8C%E6%B5%81%E4%BC%98%E5%8C%96%E6%94%B9%E8%BF%9B/" rel="next" title="Sglang prefill阶段双流优化改进">
+                  Sglang prefill阶段双流优化改进 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Ronny Lu</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">245k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">14:50</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">false</script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" integrity="sha256-UF1fgpAiu3tPJN/uCqEUHNe7pnr+QR0SQDNfgglgtcM=" crossorigin="anonymous">
+  <script class="next-config" data-name="katex" type="application/json">{"copy_tex_js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/copy-tex.min.js","integrity":"sha256-Us54+rSGDSTvIhKKUs4kygE2ipA0RXpWWh0/zLqw3bs="}}</script>
+  <script src="/js/third-party/math/katex.js"></script>
+
+
+
+</body>
+</html>

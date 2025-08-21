@@ -153,18 +153,18 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">55</span>
+          <span class="site-state-item-count">75</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
           <a href="/categories/">
-        <span class="site-state-item-count">14</span>
+        <span class="site-state-item-count">16</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-count">19</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -190,7 +190,7 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/02/12/RLHF-PPO-Deepseek-R%E4%B8%AD%E7%9A%84%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0-GRPO/">
+    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/08/21/Sglang-chunked-prefill-%E9%80%BB%E8%BE%91%E6%A2%B3%E7%90%86/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
@@ -208,7 +208,7 @@
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/2025/02/12/RLHF-PPO-Deepseek-R%E4%B8%AD%E7%9A%84%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0-GRPO/" class="post-title-link" itemprop="url">RLHF & PPO & Deepseek-R中的强化学习 (GRPO)</a>
+          <a href="/2025/08/21/Sglang-chunked-prefill-%E9%80%BB%E8%BE%91%E6%A2%B3%E7%90%86/" class="post-title-link" itemprop="url">Sglang chunked prefill 逻辑梳理</a>
         </h2>
 
         <div class="post-meta-container">
@@ -220,901 +220,7 @@
       <span class="post-meta-item-text">发表于</span>
       
 
-      <time title="创建时间：2025-02-12 19:31:34 / 修改时间：19:34:44" itemprop="dateCreated datePublished" datetime="2025-02-12T19:31:34+08:00">2025-02-12</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">分类于</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">大模型</span></a>
-        </span>
-          ，
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E8%AE%BA%E6%96%87%E7%B2%BE%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">论文精读</span></a>
-        </span>
-          ，
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E8%AE%BA%E6%96%87%E7%B2%BE%E8%AF%BB/nlp/" itemprop="url" rel="index"><span itemprop="name">nlp</span></a>
-        </span>
-    </span>
-
-  
-    <span class="post-meta-break"></span>
-    <span class="post-meta-item" title="本文字数">
-      <span class="post-meta-item-icon">
-        <i class="far fa-file-word"></i>
-      </span>
-      <span class="post-meta-item-text">本文字数：</span>
-      <span>16k</span>
-    </span>
-    <span class="post-meta-item" title="阅读时长">
-      <span class="post-meta-item-icon">
-        <i class="far fa-clock"></i>
-      </span>
-      <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>58 分钟</span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <p>参考链接:</p>
-<ul>
-<li>
-<p>Deepseek:<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/21046265072">https://zhuanlan.zhihu.com/p/21046265072</a></p>
-</li>
-<li>
-<p>PPO: <a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/468828804">https://zhuanlan.zhihu.com/p/468828804</a></p>
-</li>
-<li>
-<p>PPO: <a target="_blank" rel="noopener" href="https://www.bilibili.com/video/av24724071">李宏毅深度强化学习(国语)课程(2018)_哔哩哔哩_bilibili</a></p>
-</li>
-<li>
-<p>PPO: <a target="_blank" rel="noopener" href="https://speech.ee.ntu.edu.tw/~tlkagk/courses/MLDS_2018/Lecture/PPO%20(v3).pdf">https://speech.ee.ntu.edu.tw/~tlkagk/courses/MLDS_2018/Lecture/PPO%20(v3).pdf</a></p>
-</li>
-<li>
-<p>PPO: <a target="_blank" rel="noopener" href="https://datawhalechina.github.io/easy-rl/#/chapter5/chapter5?id=_51-%e9%87%8d%e8%a6%81%e6%80%a7%e9%87%87%e6%a0%b7">https://datawhalechina.github.io/easy-rl/#/chapter5/chapter5</a></p>
-</li>
-<li>
-<p>Deepseek: <a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/20021693569">https://zhuanlan.zhihu.com/p/20021693569</a></p>
-</li>
-<li>
-<p>RLHF: <a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/17569409591">https://zhuanlan.zhihu.com/p/17569409591</a></p>
-</li>
-<li>
-<p>Deepseek:<a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/wckZqmgSmocnIgUPcg5QcQ">DeepSeek R1 论文解读&amp;关键技术点梳理</a></p>
-</li>
-<li>
-<p>Deepseek:<a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/Z-wRuqsQTF_6TeV7ao_9Yw">DeepSeek 背后的数学原理：深入探究群体相对策略优化 (GRPO)</a></p>
-</li>
-<li>
-<p>RLHF: <a target="_blank" rel="noopener" href="https://juejin.cn/post/7414734189109952524">https://juejin.cn/post/7414734189109952524</a></p>
-</li>
-<li>
-<p>RLHF: <a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/677607581">https://zhuanlan.zhihu.com/p/677607581</a></p>
-</li>
-</ul>
-<p>在deepseek-R1模型中，使用到的强化学习算法GRPO是DeepSeek之前的文章《DeepSeekMath: Pushing the Limits of Mathematical Reasoning in Open Language Models》中所提出的高效RL方法</p>
-<h2 id="预备知识"><a class="markdownIt-Anchor" href="#预备知识"></a> 预备知识</h2>
-<h3 id="强化学习概述"><a class="markdownIt-Anchor" href="#强化学习概述"></a> 强化学习概述</h3>
-<h4 id="强化学习整体流程"><a class="markdownIt-Anchor" href="#强化学习整体流程"></a> 强化学习整体流程</h4>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250212191836467.png" alt="image.png" /></p>
-<ul>
-<li>
-<p>强化学习的两个实体：<strong>智能体（Agent）<strong>与</strong>环境（Environment）</strong></p>
-</li>
-<li>
-<p>强化学习中两个实体的交互：</p>
-<ul>
-<li>
-<p><strong>状态空间S</strong>：S即为State，指环境中所有可能状态的集合</p>
-</li>
-<li>
-<p><strong>动作空间A</strong>：A即为Action，指智能体所有可能动作的集合</p>
-</li>
-<li>
-<p>**奖励R：**R即为Reward，指智能体在环境的某一状态下所获得的奖励。</p>
-</li>
-</ul>
-</li>
-</ul>
-<p>以上图为例，智能体与环境的交互过程如下：</p>
-<ul>
-<li>
-<p>在 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>t</mi></mrow><annotation encoding="application/x-tex">t</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.61508em;vertical-align:0em;"></span><span class="mord mathnormal">t</span></span></span></span> 时刻，环境的状态为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>S</mi><mi>t</mi></msub></mrow><annotation encoding="application/x-tex">S_{t}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.05764em;">S</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2805559999999999em;"><span style="top:-2.5500000000000003em;margin-left:-0.05764em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">t</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> ，达到这一状态所获得的奖励为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>R</mi><mi>t</mi></msub></mrow><annotation encoding="application/x-tex">R_{t}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.00773em;">R</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2805559999999999em;"><span style="top:-2.5500000000000003em;margin-left:-0.00773em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">t</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span></p>
-</li>
-<li>
-<p>智能体观测到 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>S</mi><mi>t</mi></msub></mrow><annotation encoding="application/x-tex">S_{t}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.05764em;">S</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2805559999999999em;"><span style="top:-2.5500000000000003em;margin-left:-0.05764em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">t</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> 与 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>R</mi><mi>t</mi></msub></mrow><annotation encoding="application/x-tex">R_{t}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.00773em;">R</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2805559999999999em;"><span style="top:-2.5500000000000003em;margin-left:-0.00773em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">t</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> ，采取相应动作 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>A</mi><mi>t</mi></msub></mrow><annotation encoding="application/x-tex">A_{t}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal">A</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2805559999999999em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">t</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span></p>
-</li>
-<li>
-<p>智能体采取 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>A</mi><mi>t</mi></msub></mrow><annotation encoding="application/x-tex">A_{t}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal">A</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2805559999999999em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">t</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> 后，环境状态变为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>S</mi><mrow><mi>t</mi><mo>+</mo><mn>1</mn></mrow></msub></mrow><annotation encoding="application/x-tex">S_{t+1}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.891661em;vertical-align:-0.208331em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.05764em;">S</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.301108em;"><span style="top:-2.5500000000000003em;margin-left:-0.05764em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">t</span><span class="mbin mtight">+</span><span class="mord mtight">1</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.208331em;"><span></span></span></span></span></span></span></span></span></span> ，得到相应的奖励 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>R</mi><mrow><mi>t</mi><mo>+</mo><mn>1</mn></mrow></msub></mrow><annotation encoding="application/x-tex">R_{t+1}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.891661em;vertical-align:-0.208331em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.00773em;">R</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.301108em;"><span style="top:-2.5500000000000003em;margin-left:-0.00773em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">t</span><span class="mbin mtight">+</span><span class="mord mtight">1</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.208331em;"><span></span></span></span></span></span></span></span></span></span></p>
-</li>
-</ul>
-<p>智能体在这个过程中学习，它的最终目标是：<strong>找到一个策略，这个策略根据当前观测到的环境状态和奖励反馈，来选择最佳的动作。</strong></p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2025/02/12/RLHF-PPO-Deepseek-R%E4%B8%AD%E7%9A%84%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0-GRPO/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/02/12/Deepseek-R/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
-      <meta itemprop="name" content="Ronny Lu">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ronny Lu's blog">
-      <meta itemprop="description" content="Tech notes on LLM, LLM Infra, and others">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="undefined | Ronny Lu's blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2025/02/12/Deepseek-R/" class="post-title-link" itemprop="url">Deepseek-R</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2025-02-12 18:13:21 / 修改时间：19:33:25" itemprop="dateCreated datePublished" datetime="2025-02-12T18:13:21+08:00">2025-02-12</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">分类于</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">大模型</span></a>
-        </span>
-          ，
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E8%AE%BA%E6%96%87%E7%B2%BE%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">论文精读</span></a>
-        </span>
-          ，
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E8%AE%BA%E6%96%87%E7%B2%BE%E8%AF%BB/nlp/" itemprop="url" rel="index"><span itemprop="name">nlp</span></a>
-        </span>
-    </span>
-
-  
-    <span class="post-meta-break"></span>
-    <span class="post-meta-item" title="本文字数">
-      <span class="post-meta-item-icon">
-        <i class="far fa-file-word"></i>
-      </span>
-      <span class="post-meta-item-text">本文字数：</span>
-      <span>5.2k</span>
-    </span>
-    <span class="post-meta-item" title="阅读时长">
-      <span class="post-meta-item-icon">
-        <i class="far fa-clock"></i>
-      </span>
-      <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>19 分钟</span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <p>github仓库: <a target="_blank" rel="noopener" href="https://github.com/deepseek-ai/DeepSeek-R1">https://github.com/deepseek-ai/DeepSeek-R1</a></p>
-<p>论文链接: <a target="_blank" rel="noopener" href="https://github.com/deepseek-ai/DeepSeek-R1/blob/main/DeepSeek_R1.pdf">https://github.com/deepseek-ai/DeepSeek-R1/blob/main/DeepSeek_R1.pdf</a></p>
-<h1 id="1背景"><a class="markdownIt-Anchor" href="#1背景"></a> 1.背景</h1>
-<hr />
-<p>2025年01月20日，DeepSeek 发布了两个参数为 660B 的 DeepSeek-R1-Zero 和 DeepSeek-R1，并选择开源了模型权重，同时允许用户使用 R1 来训练其他模型。</p>
-<ul>
-<li>
-<p>开源 <strong>DeepSeek-R1</strong> 推理大模型，与 o1 性能相近。‍‍</p>
-</li>
-<li>
-<p>开源 <strong>DeepSeek-R1-Zero</strong>，预训练模型直接 RL，不走 SFT。</p>
-</li>
-<li>
-<p>开源用 R1 <strong>数据蒸馏</strong>的 Qwen、Llama 系列小模型，蒸馏模型超过 o1-mini 和 QWQ。</p>
-</li>
-</ul>
-<p>模型开源的同时，技术报告也同步放出： <a href="https://link.zhihu.com/?target=https%3A//github.com/deepseek-ai/DeepSeek-R1/blob/main/DeepSeek_R1.pdf">DeepSeek-R1: Incentivizing Reasoning Capability in LLMs viaReinforcement Learning</a></p>
-<p>在技术层面，R1 在后训练阶段大规模使用了强化学习（RL）技术，在仅用非常少标注数据的情况下，极大提升了模型推理能力。下图为 R1 与 o1-1217、o1-mini、自家 DeepSeek-V3 在多个数据集上的性能比较，可以看到，R1 与 o1-1217 不相上下、互有胜负。</p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250212180418096.png" alt="image.png" /></p>
-<p>另外，使用 DeepSeek-R1 整理的 <strong>80 万个样本</strong>对 Qwen 和 Llama 等开源模型进行了微调，蒸馏出了六个小模型，参数从小到大分别为 1.5B、7B、8B、14B、32B 以及 70B。这六个模型同样完全开源，旨在回馈开源社区，推动「Open AI」的边界。</p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250212180427508.png" alt="image.png" /></p>
-<p>模型下载地址：<a target="_blank" rel="noopener" href="https://huggingface.co/deepseek-ai?continueFlag=f18057c998f54575cb0608a591c993fb">https://huggingface.co/deepseek-ai?continueFlag=f18057c998f54575cb0608a591c993fb</a></p>
-<p>性能方面，蒸馏后的 R1 32B 和 70B 版本远远超过了 GPT-4o、Claude 3.5 Sonnet 和 QwQ-32B，并逼近 o1-mini。<br />
-<img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250212180435310.png" alt="image.png" /></p>
-<p>至于很多开发者关心的 DeepSeek-R1 API 价格，可以说是一如既往地给力。</p>
-<p>DeepSeek-R1 API 服务的定价为每百万输入 tokens 1 元（缓存命中）/ 4 元（缓存未命中），每百万输出 tokens 16 元。</p>
-<p>与 o1 的 API 定价比起来（每百万输入 tokens 15 美元、每百万输出 tokens 60 美元），DeepSeek 具有极高的性价比。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2025/02/12/Deepseek-R/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/02/12/Deepseek-V3/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
-      <meta itemprop="name" content="Ronny Lu">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ronny Lu's blog">
-      <meta itemprop="description" content="Tech notes on LLM, LLM Infra, and others">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="undefined | Ronny Lu's blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2025/02/12/Deepseek-V3/" class="post-title-link" itemprop="url">Deepseek-V3</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2025-02-12 18:00:32 / 修改时间：19:32:53" itemprop="dateCreated datePublished" datetime="2025-02-12T18:00:32+08:00">2025-02-12</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">分类于</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">大模型</span></a>
-        </span>
-          ，
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E8%AE%BA%E6%96%87%E7%B2%BE%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">论文精读</span></a>
-        </span>
-          ，
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E8%AE%BA%E6%96%87%E7%B2%BE%E8%AF%BB/nlp/" itemprop="url" rel="index"><span itemprop="name">nlp</span></a>
-        </span>
-    </span>
-
-  
-    <span class="post-meta-break"></span>
-    <span class="post-meta-item" title="本文字数">
-      <span class="post-meta-item-icon">
-        <i class="far fa-file-word"></i>
-      </span>
-      <span class="post-meta-item-text">本文字数：</span>
-      <span>9.3k</span>
-    </span>
-    <span class="post-meta-item" title="阅读时长">
-      <span class="post-meta-item-icon">
-        <i class="far fa-clock"></i>
-      </span>
-      <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>34 分钟</span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <p>github仓库: <a target="_blank" rel="noopener" href="https://github.com/deepseek-ai/DeepSeek-V3">https://github.com/deepseek-ai/DeepSeek-V3</a></p>
-<p>论文链接: <a target="_blank" rel="noopener" href="https://github.com/deepseek-ai/DeepSeek-V3/blob/main/DeepSeek_V3.pdf">https://github.com/deepseek-ai/DeepSeek-V3/blob/main/DeepSeek_V3.pdf</a></p>
-<blockquote>
-<p>🔗 原文链接：<a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/DKdXcguKcCS5gcwIRLH-Cg">https://mp.weixin.qq.com/s/DKdXcguKcCS5gcwIRLH-Cg</a></p>
-</blockquote>
-<h2 id="一-背景"><a class="markdownIt-Anchor" href="#一-背景"></a> 一、背景</h2>
-<p>最近 DeepSeek V3 受到了国内外的广泛关注，也有很多文章进行解读，然而很多都是简单提到其中的一些关键技术，并没有详细介绍；此外，也有很多文章存在拉踩的情况，比如通过对比 LLaMA 3.1 来夸大的说明 DeepSeek V3 将训练成本降低了 99%。</p>
-<p>本着求真务实的态度，我们这里详细介绍一下 DeepSeek V3 技术报告中的</p>
-<p>关键技术，也补充了一些细节；考虑到已经很多文章提到 DeepSeek V3 的各种评估指标，我们这里就不再赘述，聚焦在模型结构和 Infra 建设两个部分。</p>
-<p>对应的论文为：[2412.19437] DeepSeek-V3 Technical Report [1]</p>
-<p>对应的代码库为：GitHub - deepseek-ai/DeepSeek-V3 [2]</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2025/02/12/Deepseek-V3/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/02/12/Deepseek%E7%9A%84MoE%E6%9E%B6%E6%9E%84%E6%BC%94%E5%8F%98/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
-      <meta itemprop="name" content="Ronny Lu">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ronny Lu's blog">
-      <meta itemprop="description" content="Tech notes on LLM, LLM Infra, and others">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="undefined | Ronny Lu's blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2025/02/12/Deepseek%E7%9A%84MoE%E6%9E%B6%E6%9E%84%E6%BC%94%E5%8F%98/" class="post-title-link" itemprop="url">Deepseek的MoE架构演变</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2025-02-12 17:45:15 / 修改时间：18:14:18" itemprop="dateCreated datePublished" datetime="2025-02-12T17:45:15+08:00">2025-02-12</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">分类于</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">大模型</span></a>
-        </span>
-          ，
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E8%AE%BA%E6%96%87%E7%B2%BE%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">论文精读</span></a>
-        </span>
-          ，
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E8%AE%BA%E6%96%87%E7%B2%BE%E8%AF%BB/nlp/" itemprop="url" rel="index"><span itemprop="name">nlp</span></a>
-        </span>
-    </span>
-
-  
-    <span class="post-meta-break"></span>
-    <span class="post-meta-item" title="本文字数">
-      <span class="post-meta-item-icon">
-        <i class="far fa-file-word"></i>
-      </span>
-      <span class="post-meta-item-text">本文字数：</span>
-      <span>2.8k</span>
-    </span>
-    <span class="post-meta-item" title="阅读时长">
-      <span class="post-meta-item-icon">
-        <i class="far fa-clock"></i>
-      </span>
-      <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>10 分钟</span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote>
-<p>🔗 原文链接：<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/20527211450">https://zhuanlan.zhihu.com/p/20527211450</a></p>
-</blockquote>
-<h2 id="引言"><a class="markdownIt-Anchor" href="#引言"></a> 引言</h2>
-<p>最近deepseek比较火，本文就先回顾下MoE框架的经典工作，再浅谈下deepseek系列工作中MoE架构的演变。</p>
-<h2 id="aaptive-mixtures-of-local-experts0"><a class="markdownIt-Anchor" href="#aaptive-mixtures-of-local-experts0"></a> Aaptive Mixtures of Local Experts[0]</h2>
-<p>在多任务上训练单一神经网络，不同的任务和目标之间会出现干扰。如果事先能够提前知道数据中的某些子集属于特征的一些类别，则可以使用不同的专家（experts）和gate网络，每一个专家可以处理不同的任务，同时在不同的数据子集中训练。</p>
-<p>这种思想此前已经有人实现过，[1]假设整体的输出是不同local expert的线性组合， 如下公式所示。其中，对于数据 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>c</mi></mrow><annotation encoding="application/x-tex">c</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.43056em;vertical-align:0em;"></span><span class="mord mathnormal">c</span></span></span></span> ， <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>p</mi><mi>i</mi><mi>c</mi></msubsup></mrow><annotation encoding="application/x-tex">p^c_i</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.923056em;vertical-align:-0.258664em;"></span><span class="mord"><span class="mord mathnormal">p</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.664392em;"><span style="top:-2.441336em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">i</span></span></span><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">c</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.258664em;"><span></span></span></span></span></span></span></span></span></span> 是第 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>i</mi></mrow><annotation encoding="application/x-tex">i</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.65952em;vertical-align:0em;"></span><span class="mord mathnormal">i</span></span></span></span> 个expert占的比重，由gate网络控制， <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>o</mi><mi>i</mi><mi>c</mi></msubsup></mrow><annotation encoding="application/x-tex">{o}^c_i</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.923056em;vertical-align:-0.258664em;"></span><span class="mord"><span class="mord"><span class="mord mathnormal">o</span></span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.664392em;"><span style="top:-2.441336em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">i</span></span></span><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">c</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.258664em;"><span></span></span></span></span></span></span></span></span></span> 是第 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>i</mi></mrow><annotation encoding="application/x-tex">i</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.65952em;vertical-align:0em;"></span><span class="mord mathnormal">i</span></span></span></span> 个expert的输出， <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>d</mi><mi>c</mi></msup></mrow><annotation encoding="application/x-tex">{d}^c</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.69444em;vertical-align:0em;"></span><span class="mord"><span class="mord"><span class="mord mathnormal">d</span></span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.664392em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">c</span></span></span></span></span></span></span></span></span></span></span> 是最终期望的整体ouptut。</p>
-<p><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>E</mi><mi>c</mi></msup><mo>=</mo><mi mathvariant="normal">∥</mi><msup><mi mathvariant="bold">d</mi><mi>c</mi></msup><mo>−</mo><msub><mo>∑</mo><mi>i</mi></msub><msubsup><mi>p</mi><mi>i</mi><mi>c</mi></msubsup><msubsup><mi mathvariant="bold">o</mi><mi>i</mi><mi>c</mi></msubsup><msup><mi mathvariant="normal">∥</mi><mn>2</mn></msup><mspace linebreak="newline"></mspace></mrow><annotation encoding="application/x-tex">E^c = \| \mathbf{d}^c - \sum_ip^c_i\mathbf{o}^c_i \|^2 \\</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.05764em;">E</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.664392em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">c</span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">∥</span><span class="mord"><span class="mord"><span class="mord mathbf">d</span></span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.664392em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">c</span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1.113818em;vertical-align:-0.29971000000000003em;"></span><span class="mop"><span class="mop op-symbol small-op" style="position:relative;top:-0.0000050000000000050004em;">∑</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.16195399999999993em;"><span style="top:-2.40029em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.29971000000000003em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathnormal">p</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.664392em;"><span style="top:-2.441336em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">i</span></span></span><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">c</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.258664em;"><span></span></span></span></span></span></span><span class="mord"><span class="mord"><span class="mord mathbf">o</span></span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.664392em;"><span style="top:-2.441336em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">i</span></span></span><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">c</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.258664em;"><span></span></span></span></span></span></span><span class="mord"><span class="mord">∥</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141079999999999em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span><span class="mspace newline"></span></span></span></p>
-<p>然而，这种设计会有一个非常严重的问题，即不同的expert会互相影响，一个expert的参数更新了，其他expert的参数会相应更新，对于每一条数据，会有很多expert参与计算。 所以，针对这个问题，直觉上改进就是每个expert单独计算loss，多个expert的loss加权得到整体的loss，如下公式所示，如下图所示。 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>E</mi><mi>c</mi></msup><mo>=</mo><msub><mo>∑</mo><mi>i</mi></msub><msubsup><mi>p</mi><mi>i</mi><mi>c</mi></msubsup><mi mathvariant="normal">∥</mi><msup><mi mathvariant="bold">d</mi><mi>c</mi></msup><mo>−</mo><msubsup><mi mathvariant="bold">o</mi><mi>i</mi><mi>c</mi></msubsup><msup><mi mathvariant="normal">∥</mi><mn>2</mn></msup><mspace linebreak="newline"></mspace></mrow><annotation encoding="application/x-tex">E^c = \sum_ip^c_i\| \mathbf{d}^c - \mathbf{o}^c_i \|^2 \\</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.05764em;">E</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.664392em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">c</span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1.0497100000000001em;vertical-align:-0.29971000000000003em;"></span><span class="mop"><span class="mop op-symbol small-op" style="position:relative;top:-0.0000050000000000050004em;">∑</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.16195399999999993em;"><span style="top:-2.40029em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.29971000000000003em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathnormal">p</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.664392em;"><span style="top:-2.441336em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">i</span></span></span><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">c</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.258664em;"><span></span></span></span></span></span></span><span class="mord">∥</span><span class="mord"><span class="mord"><span class="mord mathbf">d</span></span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.664392em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">c</span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1.072772em;vertical-align:-0.258664em;"></span><span class="mord"><span class="mord"><span class="mord mathbf">o</span></span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.664392em;"><span style="top:-2.441336em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">i</span></span></span><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">c</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.258664em;"><span></span></span></span></span></span></span><span class="mord"><span class="mord">∥</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141079999999999em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span><span class="mspace newline"></span></span></span></p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250212174712773.png" alt="image.png" /></p>
-<p>Aaptive Mixtures of Local Experts</p>
-<p>以上两种形式，其实已经包含了两种思想，前者鼓励合作，后者鼓励竞争。</p>
-<h2 id="switch-transformers2"><a class="markdownIt-Anchor" href="#switch-transformers2"></a> Switch Transformers[2]</h2>
-<p>switch transformer已经跟最近两年使用的MoE的形式非常接近了，其gate network每次只route一个expert。</p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250212174724312.png" alt="image.png" /></p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2025/02/12/Deepseek%E7%9A%84MoE%E6%9E%B6%E6%9E%84%E6%BC%94%E5%8F%98/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/02/12/DeepSeek-V2%E4%B8%AD%E7%9A%84MLA/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
-      <meta itemprop="name" content="Ronny Lu">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ronny Lu's blog">
-      <meta itemprop="description" content="Tech notes on LLM, LLM Infra, and others">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="undefined | Ronny Lu's blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2025/02/12/DeepSeek-V2%E4%B8%AD%E7%9A%84MLA/" class="post-title-link" itemprop="url">DeepSeek-V2中的MLA</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2025-02-12 17:39:41 / 修改时间：18:14:12" itemprop="dateCreated datePublished" datetime="2025-02-12T17:39:41+08:00">2025-02-12</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">分类于</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">大模型</span></a>
-        </span>
-          ，
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E8%AE%BA%E6%96%87%E7%B2%BE%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">论文精读</span></a>
-        </span>
-          ，
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E8%AE%BA%E6%96%87%E7%B2%BE%E8%AF%BB/nlp/" itemprop="url" rel="index"><span itemprop="name">nlp</span></a>
-        </span>
-    </span>
-
-  
-    <span class="post-meta-break"></span>
-    <span class="post-meta-item" title="本文字数">
-      <span class="post-meta-item-icon">
-        <i class="far fa-file-word"></i>
-      </span>
-      <span class="post-meta-item-text">本文字数：</span>
-      <span>3.2k</span>
-    </span>
-    <span class="post-meta-item" title="阅读时长">
-      <span class="post-meta-item-icon">
-        <i class="far fa-clock"></i>
-      </span>
-      <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>11 分钟</span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote>
-<p>🔗 参考链接：<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/696380978">https://zhuanlan.zhihu.com/p/696380978</a></p>
-<p>🔗 参考链接：<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/697781431">https://zhuanlan.zhihu.com/p/697781431</a></p>
-<p>🔗 参考链接：<a target="_blank" rel="noopener" href="https://blog.csdn.net/bqw18744018044/article/details/138751458">【自然语言处理】【大模型】DeepSeek-V2论文解析_deepseek v2-CSDN博客</a></p>
-</blockquote>
-<p>paper link: <a target="_blank" rel="noopener" href="https://arxiv.org/pdf/2405.04434">https://arxiv.org/pdf/2405.04434</a></p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250212173429988.png" alt="image.png" /></p>
-<p>DeepSeek在5月6号重磅开源了其最新的<strong>MoE架构</strong>的LLM底座DeepSeek-V2，<strong>总参数量为</strong><em><strong>236B</strong></em><strong>，每个token的激活参数量为</strong><em><strong>21B</strong></em><strong>，支持上下文长度为</strong><em><strong>128K tokens</strong></em>。</p>
-<p>在DeepSeek-V2的模型结果层面，有两个值得关注的点：</p>
-<ul>
-<li>
-<p><strong>Multi-head Latent Attention（MLA）</strong>：这个结构对传统Transformer中的MHA结构进行改进，主要目标有两个：<em>（1）降低推理时KV Cache的存储开销</em>；<em>（2）缓解GQA和MQA等方法导致的模型性能损耗</em>。</p>
-</li>
-<li>
-<p><strong>DeepSeekMoE</strong>：这部分结构和DeepSeek-MoE 中保持一致，两个核心思想是：（1）<code>Fine-grained Expert Segmentation</code>，<strong>即将FFN中间层隐层维度拆分成多个更小的维度</strong>；（2）<code>Shared Expert Isolation</code><strong>，设置共享专家捕获常识性知识</strong>。</p>
-</li>
-</ul>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250212173438772.png" alt="image.png" /></p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2025/02/12/DeepSeek-V2%E4%B8%AD%E7%9A%84MLA/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/01/26/HuggingFace%E7%9A%84Transformers%E5%BA%93%E5%AD%A6%E4%B9%A0/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
-      <meta itemprop="name" content="Ronny Lu">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ronny Lu's blog">
-      <meta itemprop="description" content="Tech notes on LLM, LLM Infra, and others">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="undefined | Ronny Lu's blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2025/01/26/HuggingFace%E7%9A%84Transformers%E5%BA%93%E5%AD%A6%E4%B9%A0/" class="post-title-link" itemprop="url">HuggingFace的Transformers库学习</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2025-01-26 17:36:52 / 修改时间：17:37:42" itemprop="dateCreated datePublished" datetime="2025-01-26T17:36:52+08:00">2025-01-26</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">分类于</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">大模型</span></a>
-        </span>
-          ，
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E5%B7%A5%E7%A8%8B%E8%83%BD%E5%8A%9B%E6%8F%90%E5%8D%87/" itemprop="url" rel="index"><span itemprop="name">工程能力提升</span></a>
-        </span>
-    </span>
-
-  
-    <span class="post-meta-break"></span>
-    <span class="post-meta-item" title="本文字数">
-      <span class="post-meta-item-icon">
-        <i class="far fa-file-word"></i>
-      </span>
-      <span class="post-meta-item-text">本文字数：</span>
-      <span>19</span>
-    </span>
-    <span class="post-meta-item" title="阅读时长">
-      <span class="post-meta-item-icon">
-        <i class="far fa-clock"></i>
-      </span>
-      <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>1 分钟</span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <p><a target="_blank" rel="noopener" href="https://github.com/huggingface/transformers">https://github.com/huggingface/transformers</a></p>
-<h1 id="llama模型架构"><a class="markdownIt-Anchor" href="#llama模型架构"></a> LLAMA模型架构</h1>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126173626337.png" alt="image.png" /></p>
-<h1 id="trainer解读"><a class="markdownIt-Anchor" href="#trainer解读"></a> Trainer解读</h1>
-<h2 id="trainer构建流程"><a class="markdownIt-Anchor" href="#trainer构建流程"></a> Trainer构建流程</h2>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126173633263.png" alt="image.png" /></p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/01/26/Conditional-Variable/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
-      <meta itemprop="name" content="Ronny Lu">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ronny Lu's blog">
-      <meta itemprop="description" content="Tech notes on LLM, LLM Infra, and others">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="undefined | Ronny Lu's blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2025/01/26/Conditional-Variable/" class="post-title-link" itemprop="url">Conditional Variable</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2025-01-26 17:30:43 / 修改时间：17:32:42" itemprop="dateCreated datePublished" datetime="2025-01-26T17:30:43+08:00">2025-01-26</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">分类于</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/os/" itemprop="url" rel="index"><span itemprop="name">os</span></a>
-        </span>
-    </span>
-
-  
-    <span class="post-meta-break"></span>
-    <span class="post-meta-item" title="本文字数">
-      <span class="post-meta-item-icon">
-        <i class="far fa-file-word"></i>
-      </span>
-      <span class="post-meta-item-text">本文字数：</span>
-      <span>271</span>
-    </span>
-    <span class="post-meta-item" title="阅读时长">
-      <span class="post-meta-item-icon">
-        <i class="far fa-clock"></i>
-      </span>
-      <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>1 分钟</span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <p><strong>条件变量和互斥锁的配合</strong><br />
-消费者 Thread:</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">while</span> (<span class="number">1</span>)</span><br><span class="line">&#123;</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="comment">// 为线程环境加锁，互访问工作线程的休眠和唤醒</span></span><br><span class="line">		<span class="function">unique_lock&lt;mutex&gt; <span class="title">lock</span><span class="params">(mtx)</span></span>;​</span><br><span class="line">		<span class="comment">// 如果任务队列为空，阻塞当前线程</span></span><br><span class="line">		<span class="keyword">while</span> (queue.<span class="built_in">empty</span>())</span><br><span class="line">		&#123;</span><br><span class="line">			conditional_lock.<span class="built_in">wait</span>(lock); <span class="comment">// 等待条件变量通知，开启线程</span></span><br><span class="line">		&#125;​</span><br><span class="line">		<span class="comment">// 取出任务队列中的元素</span></span><br><span class="line">		dequeued = queue.<span class="built_in">dequeue</span>();</span><br><span class="line">		...</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>Submit a task:</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">unique_lock&lt;mutex&gt; <span class="title">lock</span><span class="params">(mtx)</span></span>;</span><br><span class="line"><span class="comment">// 压入任务队列</span></span><br><span class="line">queue.<span class="built_in">enqueue</span>(task);</span><br><span class="line"><span class="comment">// 唤醒一个等待中的线程</span></span><br><span class="line">conditional_lock.<span class="built_in">notify_one</span>();</span><br></pre></td></tr></table></figure>
-<p><strong>conditional_wait 做了什么事？</strong><br />
-conditional_wait 将解锁互斥锁，允许其他人访问条件变量（用于发信号）。然后，当条件变量收到信号或广播时，等待列表中的一个或多个线程将被唤醒，并且该线程的互斥体将再次锁定。整个操作是原子的</p>
-<p><strong>如果不用条件变量会怎么样？</strong><br />
-消费者 Thread:</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">while</span> (<span class="number">1</span>)</span><br><span class="line">&#123;</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="function">unique_lock&lt;mutex&gt; <span class="title">lock</span><span class="params">(mtx)</span></span>;​</span><br><span class="line">		<span class="keyword">if</span> (!queue.<span class="built_in">empty</span>())</span><br><span class="line">		&#123;</span><br><span class="line">			dequeued = queue.<span class="built_in">dequeue</span>();</span><br><span class="line">			...</span><br><span class="line">		&#125;​		</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>不停加锁释放锁 占用资源</p>
-<p><strong>为什么需要锁？</strong><br />
-保护共享条件变量，如果没有mutex，<code>signal()</code>可能发生在<code>cond</code>判断和<code>wait()</code>之间，会错过这次唤醒。</p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/01/26/RadixAttention/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
-      <meta itemprop="name" content="Ronny Lu">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ronny Lu's blog">
-      <meta itemprop="description" content="Tech notes on LLM, LLM Infra, and others">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="undefined | Ronny Lu's blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2025/01/26/RadixAttention/" class="post-title-link" itemprop="url">RadixAttention</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2025-01-26 17:29:36 / 修改时间：17:30:07" itemprop="dateCreated datePublished" datetime="2025-01-26T17:29:36+08:00">2025-01-26</time>
+      <time title="创建时间：2025-08-21 11:47:05 / 修改时间：11:47:33" itemprop="dateCreated datePublished" datetime="2025-08-21T11:47:05+08:00">2025-08-21</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -1128,6 +234,10 @@ conditional_wait 将解锁互斥锁，允许其他人访问条件变量（用于
         <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
           <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E6%8E%A8%E7%90%86%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index"><span itemprop="name">推理技术</span></a>
         </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E6%8E%A8%E7%90%86%E6%8A%80%E6%9C%AF/Sglang/" itemprop="url" rel="index"><span itemprop="name">Sglang</span></a>
+        </span>
     </span>
 
   
@@ -1137,14 +247,14 @@ conditional_wait 将解锁互斥锁，允许其他人访问条件变量（用于
         <i class="far fa-file-word"></i>
       </span>
       <span class="post-meta-item-text">本文字数：</span>
-      <span>740</span>
+      <span>675</span>
     </span>
     <span class="post-meta-item" title="阅读时长">
       <span class="post-meta-item-icon">
         <i class="far fa-clock"></i>
       </span>
       <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>3 分钟</span>
+      <span>2 分钟</span>
     </span>
 </div>
 
@@ -1155,23 +265,33 @@ conditional_wait 将解锁互斥锁，允许其他人访问条件变量（用于
     
     
     <div class="post-body" itemprop="articleBody">
-          <blockquote>
-<p>🔗 原文链接：<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/715740300">https://zhuanlan.zhihu.com/p/715740300</a></p>
-</blockquote>
-<p>论文地址：<a href="https://link.zhihu.com/?target=https%3A//arxiv.org/pdf/2312.07104">https://arxiv.org/pdf/2312.07104</a></p>
-<p>博客地址：<a href="https://link.zhihu.com/?target=https%3A//lmsys.org/blog/2024-01-17-sglang/">https://lmsys.org/blog/2024-01-17-sglang/</a></p>
-<h2 id="prefix-cache"><a class="markdownIt-Anchor" href="#prefix-cache"></a> Prefix Cache</h2>
-<p>在讲 RadixAttention 之前我觉得有必要简单讲一下 Prefix Cache：</p>
-<p>假设我们现在有这样一个场景，多次请求的 Prompt 可能会共享同一个前缀（Prefix），例如文档查询：</p>
-<p>假设我们有一个很长的prompt如下所示是一个 markdown 表格:</p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126155952377.png" alt="image.png" /></p>
-<p>然后我们有下面两条 Query 分别将表格与问题拼接起来进行查询表格：</p>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126155959088.png" alt="image.png" /></p>
-<p>明显这两个 Prompt 都有共同的很长的前缀，如果我们把 Prompt 中共同的前缀产生的 KV Cache 给缓存下来，无疑会极大的减少 Prefill 阶段的时间从而减少 TTFT，并且如果不缓存，这个共同前缀的 KV Cache 将会被存两次，导致浪费显存，因此缓存下来还能减少显存从而增大吞吐！</p>
-<p>这就是 Prefix Cache 所做的事情：将共享前缀的 KV Cache 给缓存起来，并且是一个能<strong>无损同时增加 TTFT 和吞吐</strong>的技术。</p>
+          <h2 id="1-参数与开关"><a class="markdownIt-Anchor" href="#1-参数与开关"></a> 1. 参数与开关</h2>
+<table>
+<thead>
+<tr>
+<th>配置环境</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ServerArgs.chunked_prefill_size</code></td>
+<td>每次预填（prefill）最多送进 GPU 的 <strong>token 数上限</strong>；<code>≤0</code> 表示关闭分片</td>
+</tr>
+<tr>
+<td><code>ServerArgs.enable_mixed_chunk</code></td>
+<td>为「边 decode 边 prefill」（mixed-chunk）提供条件；配合 <code>pd_sep=false</code></td>
+</tr>
+<tr>
+<td><code>envs.ENABLE_PREFILL_OVERLAP</code></td>
+<td>是否允许其它 DP rank 与本 rank 并发预填</td>
+</tr>
+</tbody>
+</table>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable language_">self</span>.chunked_prefill_size = (</span><br><span class="line">    server_args.chunked_prefill_size <span class="keyword">if</span> server_args.chunked_prefill_size &gt; <span class="number">0</span> <span class="keyword">else</span> <span class="literal">None</span></span><br><span class="line">)</span><br><span class="line"><span class="variable language_">self</span>.is_mixed_chunk = <span class="variable language_">self</span>.chunked_prefill_size <span class="keyword">is</span> <span class="keyword">not</span> <span class="literal">None</span> <span class="keyword">and</span> \</span><br><span class="line">                      server_args.enable_mixed_chunk</span><br></pre></td></tr></table></figure>
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/2025/01/26/RadixAttention/#more" rel="contents">
+              <a class="btn" href="/2025/08/21/Sglang-chunked-prefill-%E9%80%BB%E8%BE%91%E6%A2%B3%E7%90%86/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -1202,7 +322,7 @@ conditional_wait 将解锁互斥锁，允许其他人访问条件变量（用于
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/01/26/PagedAttention/">
+    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/08/21/Sglang-%E5%BC%82%E6%AD%A5%E4%B8%93%E5%AE%B6%E9%87%8D%E6%8E%92%E9%80%BB%E8%BE%91%E6%A2%B3%E7%90%86/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
@@ -1220,7 +340,7 @@ conditional_wait 将解锁互斥锁，允许其他人访问条件变量（用于
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/2025/01/26/PagedAttention/" class="post-title-link" itemprop="url">PagedAttention</a>
+          <a href="/2025/08/21/Sglang-%E5%BC%82%E6%AD%A5%E4%B8%93%E5%AE%B6%E9%87%8D%E6%8E%92%E9%80%BB%E8%BE%91%E6%A2%B3%E7%90%86/" class="post-title-link" itemprop="url">Sglang 异步专家重排逻辑梳理</a>
         </h2>
 
         <div class="post-meta-container">
@@ -1232,7 +352,7 @@ conditional_wait 将解锁互斥锁，允许其他人访问条件变量（用于
       <span class="post-meta-item-text">发表于</span>
       
 
-      <time title="创建时间：2025-01-26 17:28:06 / 修改时间：17:29:16" itemprop="dateCreated datePublished" datetime="2025-01-26T17:28:06+08:00">2025-01-26</time>
+      <time title="创建时间：2025-08-21 11:44:23 / 修改时间：11:45:31" itemprop="dateCreated datePublished" datetime="2025-08-21T11:44:23+08:00">2025-08-21</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -1246,6 +366,10 @@ conditional_wait 将解锁互斥锁，允许其他人访问条件变量（用于
         <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
           <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E6%8E%A8%E7%90%86%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index"><span itemprop="name">推理技术</span></a>
         </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E6%8E%A8%E7%90%86%E6%8A%80%E6%9C%AF/Sglang/" itemprop="url" rel="index"><span itemprop="name">Sglang</span></a>
+        </span>
     </span>
 
   
@@ -1255,14 +379,14 @@ conditional_wait 将解锁互斥锁，允许其他人访问条件变量（用于
         <i class="far fa-file-word"></i>
       </span>
       <span class="post-meta-item-text">本文字数：</span>
-      <span>7.6k</span>
+      <span>3.6k</span>
     </span>
     <span class="post-meta-item" title="阅读时长">
       <span class="post-meta-item-icon">
         <i class="far fa-clock"></i>
       </span>
       <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>28 分钟</span>
+      <span>13 分钟</span>
     </span>
 </div>
 
@@ -1273,30 +397,59 @@ conditional_wait 将解锁互斥锁，允许其他人访问条件变量（用于
     
     
     <div class="post-body" itemprop="articleBody">
-          <p>论文链接: <a target="_blank" rel="noopener" href="https://arxiv.org/pdf/2309.06180">https://arxiv.org/pdf/2309.06180</a></p>
-<p>论文作者 Presentation: <a target="_blank" rel="noopener" href="https://www.youtube.com/watch?v=Oq2SN7uutbQ">https://www.youtube.com/watch?v=Oq2SN7uutbQ</a></p>
-<h1 id="llm推理的两阶段"><a class="markdownIt-Anchor" href="#llm推理的两阶段"></a> LLM推理的两阶段</h1>
-<p>一个常规的LLM推理过程通常分为两个阶段：<strong>prefill和decode</strong>。<strong>通常会使用KV cache技术加速推理</strong>。</p>
-<h2 id="kv-cache"><a class="markdownIt-Anchor" href="#kv-cache"></a> KV cache</h2>
-<h5 id="kv-cache占用的显存空间"><a class="markdownIt-Anchor" href="#kv-cache占用的显存空间"></a> KV Cache占用的显存空间</h5>
-<p>Q, K的形状为:[b,head_num,s,per_head_hidden_size], 那么对于每个decoder layer，每个 token 的 K、V 矩阵都是 embedding_size=num_heads * head_size，再乘上 seqlen和 batch size，那就是每个layer的 kv Cache 所需的存储容量了。</p>
-<p><strong>例如，在 LLaMA 2-13B 中，head_num = 40, layer_num = 40, dimension = 5120, 对于1个token的 KV Cache 一共需要 2 (key and value vectors) × 5120 (hidden state size) × 40 (number of layers) × 2 (bytes per FP16) = 800KB</strong>。</p>
-<p><strong>以模型支持的最大的上下文长度4096为例，对于4096个token, 需要800KB * 4096 = 3.2GB的KV cache, 每增加一个batch则需要3.2GB显存，对于一张A100 40GB来说，在加载完模型26GB之后，余下的显存也仅能支持4个batch</strong></p>
+          <h1 id="0-启动准备"><a class="markdownIt-Anchor" href="#0-启动准备"></a> 0. 启动准备</h1>
 <ul>
-<li><strong>Activation</strong>：Activation在整个Self-Attention的计算过程中，最大的Activation是qkv的MatMul计算，Q,K,V的形状为：[b,head_num,s,per_head_hidden_size], 占用显存大小为2 * batch_size * seq_len * embedding_size, K^T的形状为：[b,head_num,per_head_hidden_size,s], QK^T的形状为：[b,head_num,s,s]，占用显存大小为2 * batch_size * head_num * seq_len^2, <strong>以模型支持的最大的上下文长度4096为例，对于4096个token, 每一层需要保存的峰值激活为大小为QK^T和V的输入, 大小为Q的输出, 4 * batch_size * seq_len * embedding_size + 2 * batch_size * head_num * seq_len^2 = 4 * 4096 * 5120 + 2 * 40 * 4096^2 = 1.3GB</strong></li>
+<li>
+<p><strong>Scheduler 启动时</strong></p>
+<ul>
+<li>如果启用了 <code>enable_redundant_experts</code>，<code>Scheduler</code> 会拉起一个守护线程 <code>async_update_weight_thread</code>。</li>
 </ul>
-<h5 id="kv-cache能省下的flops"><a class="markdownIt-Anchor" href="#kv-cache能省下的flops"></a> KV Cache能省下的FLOPs</h5>
-<p><strong>每个token的 K、V 矩阵计算一共需要 2 (K+V) * 2 (mul+add) * embedding size * embedding size = 4 * 5120 * 5120 这么多计算量，乘以seqlen、num_layer和 batch size，一共省了 4096 * 40 * 4 * 5120 * 5120 = 17 TFLOPs的计算量</strong>，当然，因seqlen和embedding size和num layer而异。</p>
-<h2 id="llm推理"><a class="markdownIt-Anchor" href="#llm推理"></a> LLM推理</h2>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126153612578.png" alt="image.png" /></p>
-<h3 id="prefill"><a class="markdownIt-Anchor" href="#prefill"></a> Prefill</h3>
-<p><strong>预填充阶段。在这个阶段中，我们把整段prompt喂给模型做forward计算。如果采用KV cache技术，在这个阶段中我们会把prompt过后得到的保存在cache</strong> <em><strong>k和cache</strong></em> **v中。**这样在对后面的token计算attention时，我们就不需要对前面的token重复计算了，可以帮助我们节省推理时间。</p>
-<p>在上面的图例中，我们假设prompt中含有3个token，prefill阶段结束后，这三个token相关的KV值都被装进了cache。</p>
-<h3 id="decode"><a class="markdownIt-Anchor" href="#decode"></a> Decode</h3>
-<p><strong>生成response的阶段</strong>。在这个阶段中，<strong>我们根据prompt的prefill结果，一个token一个token地生成response。</strong></p>
+</li>
+<li>
+<p><strong>线程一启动就调用</strong></p>
+<ul>
+<li>这里的 <code>model_name</code> 通常是 <code>&quot;main&quot;</code>（还有 draft worker 时会再加一个 <code>&quot;mtp&quot;</code>）。<br />
+<code>mmap_infos = async_expert_loader.create_mmap(model_name, ep_rank, ep_size)</code></li>
+</ul>
+</li>
+<li>
+<p><strong>create_mmap 内部做了四件事</strong></p>
+<ul>
+<li>
+<p>拼出路径 <code>/dev/shm/&#123;name&#125;_rank_&#123;ep_rank&#125;_ep_dyn.weights</code>。</p>
+</li>
+<li>
+<p><strong>若文件不存在</strong>：<code>open(..., 'wb').close()</code> 立刻创建空文件。</p>
+</li>
+<li>
+<p><code>os.ftruncate</code> 把文件扩展到预估的显存大小（TOTAL_MODEL_SIZE // ep_size + MAIN_MODEL_REDUNDANT_SHM_SIZE）。</p>
+</li>
+<li>
+<p><code>mmap</code> 再加 <code>cudaHostRegister</code>——把这块共享内存注册成可直接给 GPU DMA 的“pinned memory”。</p>
+</li>
+<li>
+<p>完成后返回的 <code>mmap_infos</code> 保存了 <strong>文件指针</strong>，供后续直接用 <code>ctypes</code>+<code>frombuffer</code> 建 Tensor 映射。</p>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>此时文件已经在 /dev/shm 出现并定长</strong>，随后的</p>
+<ul>
+<li>
+<p><code>loading_model_weights_thread.save_tensor_to_shm_mem</code> 只是 <strong>seek+写入</strong>；</p>
+</li>
+<li>
+<p>GPU 端 <code>load_tensor_from_shm_mem</code> 只是 <strong>从已映射地址构 Tensor</strong>。</p>
+</li>
+</ul>
+</li>
+<li>
+<p>等待接收<code>loading_model_weights_thread</code>发来的信息</p>
+</li>
+</ul>
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/2025/01/26/PagedAttention/#more" rel="contents">
+              <a class="btn" href="/2025/08/21/Sglang-%E5%BC%82%E6%AD%A5%E4%B8%93%E5%AE%B6%E9%87%8D%E6%8E%92%E9%80%BB%E8%BE%91%E6%A2%B3%E7%90%86/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -1327,7 +480,7 @@ conditional_wait 将解锁互斥锁，允许其他人访问条件变量（用于
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/01/26/Mooncake%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0%EF%BC%9A%E6%B7%B1%E5%85%A5%E5%AD%A6%E4%B9%A0%E4%BB%A5Cache%E4%B8%BA%E4%B8%AD%E5%BF%83%E7%9A%84%E8%B0%83%E5%BA%A6%E6%80%9D%E6%83%B3%EF%BC%8C%E8%B0%B1%E5%86%99LLM%E6%9C%8D%E5%8A%A1%E9%99%8D%E6%9C%AC%E5%A2%9E%E6%95%88%E6%96%B0%E7%AF%87%E7%AB%A0/">
+    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/08/20/%E5%88%86%E5%B8%83%E5%BC%8F%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
@@ -1345,7 +498,7 @@ conditional_wait 将解锁互斥锁，允许其他人访问条件变量（用于
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/2025/01/26/Mooncake%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0%EF%BC%9A%E6%B7%B1%E5%85%A5%E5%AD%A6%E4%B9%A0%E4%BB%A5Cache%E4%B8%BA%E4%B8%AD%E5%BF%83%E7%9A%84%E8%B0%83%E5%BA%A6%E6%80%9D%E6%83%B3%EF%BC%8C%E8%B0%B1%E5%86%99LLM%E6%9C%8D%E5%8A%A1%E9%99%8D%E6%9C%AC%E5%A2%9E%E6%95%88%E6%96%B0%E7%AF%87%E7%AB%A0/" class="post-title-link" itemprop="url">Mooncake阅读笔记：深入学习以Cache为中心的调度思想，谱写LLM服务降本增效新篇章</a>
+          <a href="/2025/08/20/%E5%88%86%E5%B8%83%E5%BC%8F%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF/" class="post-title-link" itemprop="url">分布式推理框架核心技术</a>
         </h2>
 
         <div class="post-meta-container">
@@ -1357,7 +510,7 @@ conditional_wait 将解锁互斥锁，允许其他人访问条件变量（用于
       <span class="post-meta-item-text">发表于</span>
       
 
-      <time title="创建时间：2025-01-26 17:27:10 / 修改时间：17:34:04" itemprop="dateCreated datePublished" datetime="2025-01-26T17:27:10+08:00">2025-01-26</time>
+      <time title="创建时间：2025-08-20 16:43:54 / 修改时间：16:44:39" itemprop="dateCreated datePublished" datetime="2025-08-20T16:43:54+08:00">2025-08-20</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -1371,6 +524,10 @@ conditional_wait 将解锁互斥锁，允许其他人访问条件变量（用于
         <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
           <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E6%8E%A8%E7%90%86%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index"><span itemprop="name">推理技术</span></a>
         </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E6%8E%A8%E7%90%86%E6%8A%80%E6%9C%AF/Sglang/" itemprop="url" rel="index"><span itemprop="name">Sglang</span></a>
+        </span>
     </span>
 
   
@@ -1380,14 +537,126 @@ conditional_wait 将解锁互斥锁，允许其他人访问条件变量（用于
         <i class="far fa-file-word"></i>
       </span>
       <span class="post-meta-item-text">本文字数：</span>
-      <span>4.6k</span>
+      <span>635</span>
     </span>
     <span class="post-meta-item" title="阅读时长">
       <span class="post-meta-item-icon">
         <i class="far fa-clock"></i>
       </span>
       <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>17 分钟</span>
+      <span>2 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h1 id="sgalng主体框架"><a class="markdownIt-Anchor" href="#sgalng主体框架"></a> Sgalng主体框架</h1>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250819155453217.png" alt="image.png" /></p>
+<ul>
+<li>
+<p>四大独立组件：tokenizer、scheduler、modelrunner、detokenizer</p>
+</li>
+<li>
+<p>各部分都在独立的进程中，异步流水的方式运行，简单高效</p>
+</li>
+</ul>
+<h1 id="复现技术架构总览"><a class="markdownIt-Anchor" href="#复现技术架构总览"></a> 复现技术架构总览</h1>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250819155459976.png" alt="image.png" /></p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2025/08/20/%E5%88%86%E5%B8%83%E5%BC%8F%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/08/20/sgemv-%E4%BC%98%E5%8C%96/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
+      <meta itemprop="name" content="Ronny Lu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ronny Lu's blog">
+      <meta itemprop="description" content="Tech notes on LLM, LLM Infra, and others">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | Ronny Lu's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2025/08/20/sgemv-%E4%BC%98%E5%8C%96/" class="post-title-link" itemprop="url">sgemv 优化</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-08-20 16:23:50 / 修改时间：16:24:15" itemprop="dateCreated datePublished" datetime="2025-08-20T16:23:50+08:00">2025-08-20</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/cuda/" itemprop="url" rel="index"><span itemprop="name">cuda</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>2.4k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>9 分钟</span>
     </span>
 </div>
 
@@ -1399,14 +668,794 @@ conditional_wait 将解锁互斥锁，允许其他人访问条件变量（用于
     
     <div class="post-body" itemprop="articleBody">
           <blockquote>
-<p>🔗 原文链接：<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/706097807">https://zhuanlan.zhihu.com/p/706097807</a></p>
+<p>🔗 原文链接：<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/494144694">https://zhuanlan.zhihu.com/p/494144694</a></p>
 </blockquote>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250126170549822.png" alt="image.png" /></p>
-<p>这周，清华和Moonshot发了一个技术报告，介绍Kimi背后的LLM服务系统Mooncake，它采用分离式设计，将Prefill和Decode两阶段解耦，构建了一个全局KVCache Pool，实现以Cache为中心的调度。</p>
-<p>Moonshot作为MaaS头部厂商，以其过硬的技术产品实力和明星的团队阵容闻名于世。和其他大模型公司不一样，他们很少发技术报告或对外做技术分享。这次Mooncake技术报告，让大家得对其技术得以管中窥豹。</p>
+<p>本篇文章是深入浅出GPU优化系列的第4个专题，主要是介绍<strong>如何对gemv算法进行优化</strong>。gemv，即矩阵向量乘，即计算一个矩阵A与一个向量x的乘积，这是并行计算中的经典话题。个人感觉，<strong>gemv的优化核心是需要考虑不同shape的情况，然后针对型地进行优化</strong>。本篇文章会先介绍一下针对不同shape设计不同的并行算法，然后说明一下优化思路和相关优化技巧，最后说一下实验效果，在A矩阵列数为16 128的时候，我写的gemv能拥有超越cublas的性能表现。</p>
+<p><strong>一、前言</strong></p>
+<p>首先介绍一下gemv算法。给定矩阵A: m * n 和向量x: n * 1，gemv需要计算两者的乘积，示意图如下：</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250716171050133.png" alt="image.png" /></p>
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/2025/01/26/Mooncake%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0%EF%BC%9A%E6%B7%B1%E5%85%A5%E5%AD%A6%E4%B9%A0%E4%BB%A5Cache%E4%B8%BA%E4%B8%AD%E5%BF%83%E7%9A%84%E8%B0%83%E5%BA%A6%E6%80%9D%E6%83%B3%EF%BC%8C%E8%B0%B1%E5%86%99LLM%E6%9C%8D%E5%8A%A1%E9%99%8D%E6%9C%AC%E5%A2%9E%E6%95%88%E6%96%B0%E7%AF%87%E7%AB%A0/#more" rel="contents">
+              <a class="btn" href="/2025/08/20/sgemv-%E4%BC%98%E5%8C%96/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/08/20/sgemm-%E4%BC%98%E5%8C%96/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
+      <meta itemprop="name" content="Ronny Lu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ronny Lu's blog">
+      <meta itemprop="description" content="Tech notes on LLM, LLM Infra, and others">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | Ronny Lu's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2025/08/20/sgemm-%E4%BC%98%E5%8C%96/" class="post-title-link" itemprop="url">sgemm 优化</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2025-08-20 16:22:51" itemprop="dateCreated datePublished" datetime="2025-08-20T16:22:51+08:00">2025-08-20</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2025-08-21 11:55:46" itemprop="dateModified" datetime="2025-08-21T11:55:46+08:00">2025-08-21</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/cuda/" itemprop="url" rel="index"><span itemprop="name">cuda</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>12k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>43 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p>通用矩阵乘法 (General Matrix Multiplication，GEMM) 是各种模型和计算中的核心部分，同时也是评估计算硬件性能 (FLOPS) 的标准技术。本文将通过对 GEMM 的实现和优化，来试图理解高性能计算和软硬件系统。</p>
+<h1 id="gemm的基本特征"><a class="markdownIt-Anchor" href="#gemm的基本特征"></a> GEMM的基本特征</h1>
+<h3 id="gemm计算过程及复杂度"><a class="markdownIt-Anchor" href="#gemm计算过程及复杂度"></a> GEMM计算过程及复杂度</h3>
+<p>GEMM 的定义为：</p>
+<p><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="bold-italic">C</mi><mo>←</mo><mi>α</mi><mi mathvariant="bold-italic">A</mi><mi mathvariant="bold-italic">B</mi><mo>+</mo><mi>β</mi><mi mathvariant="bold-italic">C</mi></mrow><annotation encoding="application/x-tex">\boldsymbol{C} \leftarrow \alpha \boldsymbol{A} \boldsymbol{B} + \beta \boldsymbol{C}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68611em;vertical-align:0em;"></span><span class="mord"><span class="mord"><span class="mord boldsymbol" style="margin-right:0.06979em;">C</span></span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">←</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.76944em;vertical-align:-0.08333em;"></span><span class="mord mathnormal" style="margin-right:0.0037em;">α</span><span class="mord"><span class="mord"><span class="mord boldsymbol">A</span></span></span><span class="mord"><span class="mord"><span class="mord boldsymbol" style="margin-right:0.04835em;">B</span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="mord mathnormal" style="margin-right:0.05278em;">β</span><span class="mord"><span class="mord"><span class="mord boldsymbol" style="margin-right:0.06979em;">C</span></span></span></span></span></span></p>
+<p>即将矩阵 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="bold-italic">A</mi></mrow><annotation encoding="application/x-tex">\boldsymbol{A}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68611em;vertical-align:0em;"></span><span class="mord"><span class="mord"><span class="mord boldsymbol">A</span></span></span></span></span></span> 和 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="bold-italic">B</mi></mrow><annotation encoding="application/x-tex">\boldsymbol{B}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68611em;vertical-align:0em;"></span><span class="mord"><span class="mord"><span class="mord boldsymbol" style="margin-right:0.04835em;">B</span></span></span></span></span></span> 进行矩阵相乘，并将结果缩放 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>α</mi></mrow><annotation encoding="application/x-tex">\alpha</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.43056em;vertical-align:0em;"></span><span class="mord mathnormal" style="margin-right:0.0037em;">α</span></span></span></span> 倍，然后与缩放 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>β</mi></mrow><annotation encoding="application/x-tex">\beta</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="mord mathnormal" style="margin-right:0.05278em;">β</span></span></span></span> 倍的矩阵 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="bold-italic">C</mi></mrow><annotation encoding="application/x-tex">\boldsymbol{C}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68611em;vertical-align:0em;"></span><span class="mord"><span class="mord"><span class="mord boldsymbol" style="margin-right:0.06979em;">C</span></span></span></span></span></span> 相加，并将最终结果存入 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="bold-italic">C</mi></mrow><annotation encoding="application/x-tex">\boldsymbol{C}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68611em;vertical-align:0em;"></span><span class="mord"><span class="mord"><span class="mord boldsymbol" style="margin-right:0.06979em;">C</span></span></span></span></span></span> 中。</p>
+<p>接下来分析计算复杂度，假设<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="bold-italic">A</mi></mrow><annotation encoding="application/x-tex">\boldsymbol{A}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68611em;vertical-align:0em;"></span><span class="mord"><span class="mord"><span class="mord boldsymbol">A</span></span></span></span></span></span> 的形状是 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>M</mi><mo>×</mo><mi>K</mi></mrow><annotation encoding="application/x-tex">M \times K</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.76666em;vertical-align:-0.08333em;"></span><span class="mord mathnormal" style="margin-right:0.10903em;">M</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathnormal" style="margin-right:0.07153em;">K</span></span></span></span> ，<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="bold-italic">B</mi></mrow><annotation encoding="application/x-tex">\boldsymbol{B}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68611em;vertical-align:0em;"></span><span class="mord"><span class="mord"><span class="mord boldsymbol" style="margin-right:0.04835em;">B</span></span></span></span></span></span> 的形状是 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>K</mi><mo>×</mo><mi>N</mi></mrow><annotation encoding="application/x-tex">K \times N</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.76666em;vertical-align:-0.08333em;"></span><span class="mord mathnormal" style="margin-right:0.07153em;">K</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathnormal" style="margin-right:0.10903em;">N</span></span></span></span> ，则 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="bold-italic">C</mi></mrow><annotation encoding="application/x-tex">\boldsymbol{C}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68611em;vertical-align:0em;"></span><span class="mord"><span class="mord"><span class="mord boldsymbol" style="margin-right:0.06979em;">C</span></span></span></span></span></span> 形状是 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>M</mi><mo>×</mo><mi>N</mi></mrow><annotation encoding="application/x-tex">M \times N</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.76666em;vertical-align:-0.08333em;"></span><span class="mord mathnormal" style="margin-right:0.10903em;">M</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathnormal" style="margin-right:0.10903em;">N</span></span></span></span> 。其中主要的部分是 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="bold-italic">A</mi><mi mathvariant="bold-italic">B</mi></mrow><annotation encoding="application/x-tex">\boldsymbol{A} \boldsymbol{B}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68611em;vertical-align:0em;"></span><span class="mord"><span class="mord"><span class="mord boldsymbol">A</span></span></span><span class="mord"><span class="mord"><span class="mord boldsymbol" style="margin-right:0.04835em;">B</span></span></span></span></span></span> 矩阵相乘，根据矩阵乘法的定义</p>
+<p class='katex-block'><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi mathvariant="bold-italic">A</mi><mi mathvariant="bold-italic">B</mi><mo>=</mo><mrow><mo fence="true">(</mo><mtable rowspacing="0.15999999999999992em" columnalign="center center center" columnspacing="1em"><mtr><mtd><mstyle scriptlevel="0" displaystyle="false"><msub><mi>a</mi><mrow><mn>1</mn><mo separator="true">,</mo><mn>1</mn></mrow></msub></mstyle></mtd><mtd><mstyle scriptlevel="0" displaystyle="false"><mo lspace="0em" rspace="0em">⋯</mo></mstyle></mtd><mtd><mstyle scriptlevel="0" displaystyle="false"><msub><mi>a</mi><mrow><mn>1</mn><mo separator="true">,</mo><mi>K</mi></mrow></msub></mstyle></mtd></mtr><mtr><mtd><mstyle scriptlevel="0" displaystyle="false"><mi><mi mathvariant="normal">⋮</mi><mpadded height="+0em" voffset="0em"><mspace mathbackground="black" width="0em" height="1.5em"></mspace></mpadded></mi></mstyle></mtd><mtd><mstyle scriptlevel="0" displaystyle="false"><mo lspace="0em" rspace="0em">⋱</mo></mstyle></mtd><mtd><mstyle scriptlevel="0" displaystyle="false"><mi><mi mathvariant="normal">⋮</mi><mpadded height="+0em" voffset="0em"><mspace mathbackground="black" width="0em" height="1.5em"></mspace></mpadded></mi></mstyle></mtd></mtr><mtr><mtd><mstyle scriptlevel="0" displaystyle="false"><msub><mi>a</mi><mrow><mi>M</mi><mo separator="true">,</mo><mn>1</mn></mrow></msub></mstyle></mtd><mtd><mstyle scriptlevel="0" displaystyle="false"><mo lspace="0em" rspace="0em">⋯</mo></mstyle></mtd><mtd><mstyle scriptlevel="0" displaystyle="false"><msub><mi>a</mi><mrow><mi>M</mi><mo separator="true">,</mo><mi>K</mi></mrow></msub></mstyle></mtd></mtr></mtable><mo fence="true">)</mo></mrow><mrow><mo fence="true">(</mo><mtable rowspacing="0.15999999999999992em" columnalign="center center center" columnspacing="1em"><mtr><mtd><mstyle scriptlevel="0" displaystyle="false"><msub><mi>b</mi><mrow><mn>1</mn><mo separator="true">,</mo><mn>1</mn></mrow></msub></mstyle></mtd><mtd><mstyle scriptlevel="0" displaystyle="false"><mo lspace="0em" rspace="0em">⋯</mo></mstyle></mtd><mtd><mstyle scriptlevel="0" displaystyle="false"><msub><mi>b</mi><mrow><mn>1</mn><mo separator="true">,</mo><mi>N</mi></mrow></msub></mstyle></mtd></mtr><mtr><mtd><mstyle scriptlevel="0" displaystyle="false"><mi><mi mathvariant="normal">⋮</mi><mpadded height="+0em" voffset="0em"><mspace mathbackground="black" width="0em" height="1.5em"></mspace></mpadded></mi></mstyle></mtd><mtd><mstyle scriptlevel="0" displaystyle="false"><mo lspace="0em" rspace="0em">⋱</mo></mstyle></mtd><mtd><mstyle scriptlevel="0" displaystyle="false"><mi><mi mathvariant="normal">⋮</mi><mpadded height="+0em" voffset="0em"><mspace mathbackground="black" width="0em" height="1.5em"></mspace></mpadded></mi></mstyle></mtd></mtr><mtr><mtd><mstyle scriptlevel="0" displaystyle="false"><msub><mi>b</mi><mrow><mi>K</mi><mo separator="true">,</mo><mn>1</mn></mrow></msub></mstyle></mtd><mtd><mstyle scriptlevel="0" displaystyle="false"><mo lspace="0em" rspace="0em">⋯</mo></mstyle></mtd><mtd><mstyle scriptlevel="0" displaystyle="false"><msub><mi>b</mi><mrow><mi>K</mi><mo separator="true">,</mo><mi>N</mi></mrow></msub></mstyle></mtd></mtr></mtable><mo fence="true">)</mo></mrow><mo>=</mo><mrow><mo fence="true">(</mo><mtable rowspacing="0.15999999999999992em" columnalign="center center center" columnspacing="1em"><mtr><mtd><mstyle scriptlevel="0" displaystyle="false"><mrow><msubsup><mo>∑</mo><mrow><mi>k</mi><mo>=</mo><mn>1</mn></mrow><mi>K</mi></msubsup><msub><mi>a</mi><mrow><mn>1</mn><mo separator="true">,</mo><mi>k</mi></mrow></msub><msub><mi>b</mi><mrow><mi>k</mi><mo separator="true">,</mo><mn>1</mn></mrow></msub></mrow></mstyle></mtd><mtd><mstyle scriptlevel="0" displaystyle="false"><mo lspace="0em" rspace="0em">⋯</mo></mstyle></mtd><mtd><mstyle scriptlevel="0" displaystyle="false"><mrow><msubsup><mo>∑</mo><mrow><mi>k</mi><mo>=</mo><mn>1</mn></mrow><mi>K</mi></msubsup><msub><mi>a</mi><mrow><mn>1</mn><mo separator="true">,</mo><mi>k</mi></mrow></msub><msub><mi>b</mi><mrow><mi>k</mi><mo separator="true">,</mo><mi>N</mi></mrow></msub></mrow></mstyle></mtd></mtr><mtr><mtd><mstyle scriptlevel="0" displaystyle="false"><mi><mi mathvariant="normal">⋮</mi><mpadded height="+0em" voffset="0em"><mspace mathbackground="black" width="0em" height="1.5em"></mspace></mpadded></mi></mstyle></mtd><mtd><mstyle scriptlevel="0" displaystyle="false"><mo lspace="0em" rspace="0em">⋱</mo></mstyle></mtd><mtd><mstyle scriptlevel="0" displaystyle="false"><mi><mi mathvariant="normal">⋮</mi><mpadded height="+0em" voffset="0em"><mspace mathbackground="black" width="0em" height="1.5em"></mspace></mpadded></mi></mstyle></mtd></mtr><mtr><mtd><mstyle scriptlevel="0" displaystyle="false"><mrow><msubsup><mo>∑</mo><mrow><mi>k</mi><mo>=</mo><mn>1</mn></mrow><mi>K</mi></msubsup><msub><mi>a</mi><mrow><mi>M</mi><mo separator="true">,</mo><mi>k</mi></mrow></msub><msub><mi>b</mi><mrow><mi>k</mi><mo separator="true">,</mo><mn>1</mn></mrow></msub></mrow></mstyle></mtd><mtd><mstyle scriptlevel="0" displaystyle="false"><mo lspace="0em" rspace="0em">⋯</mo></mstyle></mtd><mtd><mstyle scriptlevel="0" displaystyle="false"><mrow><msubsup><mo>∑</mo><mrow><mi>k</mi><mo>=</mo><mn>1</mn></mrow><mi>K</mi></msubsup><msub><mi>a</mi><mrow><mi>M</mi><mo separator="true">,</mo><mi>k</mi></mrow></msub><msub><mi>b</mi><mrow><mi>k</mi><mo separator="true">,</mo><mi>N</mi></mrow></msub></mrow></mstyle></mtd></mtr></mtable><mo fence="true">)</mo></mrow></mrow><annotation encoding="application/x-tex">\boldsymbol{A}\boldsymbol{B}=\left(\begin{array}{ccc} a_{1,1} &amp; \cdots &amp; a_{1,K} \\ \vdots &amp; \ddots &amp; \vdots \\ a_{M,1} &amp; \cdots &amp; a_{M,K} \end{array}\right)\left(\begin{array}{ccc} b_{1,1} &amp; \cdots &amp; b_{1,N} \\ \vdots &amp; \ddots &amp; \vdots \\ b_{K,1} &amp; \cdots &amp; b_{K,N} \end{array}\right)=\left(\begin{array}{ccc} \sum_{k=1}^{K} a_{1,k} b_{k,1} &amp; \cdots &amp; \sum_{k=1}^{K} a_{1,k} b_{k,N} \\ \vdots &amp; \ddots &amp; \vdots \\ \sum_{k=1}^{K} a_{M,k} b_{k,1} &amp; \cdots &amp; \sum_{k=1}^{K} a_{M,k} b_{k,N} \end{array}\right) 
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68611em;vertical-align:0em;"></span><span class="mord"><span class="mord"><span class="mord boldsymbol">A</span></span></span><span class="mord"><span class="mord"><span class="mord boldsymbol" style="margin-right:0.04835em;">B</span></span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:4.260000000000001em;vertical-align:-1.8800000000000006em;"></span><span class="minner"><span class="mopen"><span class="delimsizing mult"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:2.3500249999999996em;"><span style="top:-1.9499950000000004em;"><span class="pstrut" style="height:3.1550000000000002em;"></span><span class="delimsizinginner delim-size4"><span>⎝</span></span></span><span style="top:-3.1000050000000003em;"><span class="pstrut" style="height:3.1550000000000002em;"></span><span class="delimsizinginner delim-size4"><span>⎜</span></span></span><span style="top:-3.110005em;"><span class="pstrut" style="height:3.1550000000000002em;"></span><span class="delimsizinginner delim-size4"><span>⎜</span></span></span><span style="top:-4.350025em;"><span class="pstrut" style="height:3.1550000000000002em;"></span><span class="delimsizinginner delim-size4"><span>⎛</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:1.850025em;"><span></span></span></span></span></span></span><span class="mord"><span class="mtable"><span class="arraycolsep" style="width:0.5em;"></span><span class="col-align-c"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:2.3800000000000003em;"><span style="top:-5.2275em;"><span class="pstrut" style="height:3.6875em;"></span><span class="mord"><span class="mord"><span class="mord mathnormal">a</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.301108em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">1</span><span class="mpunct mtight">,</span><span class="mord mtight">1</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.286108em;"><span></span></span></span></span></span></span></span></span><span style="top:-3.3674999999999997em;"><span class="pstrut" style="height:3.6875em;"></span><span class="mord"><span class="mord"><span class="mord">⋮</span><span class="mord rule" style="border-right-width:0em;border-top-width:1.5em;bottom:0em;"></span></span></span></span><span style="top:-2.1674999999999995em;"><span class="pstrut" style="height:3.6875em;"></span><span class="mord"><span class="mord"><span class="mord mathnormal">a</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.328331em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.10903em;">M</span><span class="mpunct mtight">,</span><span class="mord mtight">1</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.286108em;"><span></span></span></span></span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:1.8800000000000006em;"><span></span></span></span></span></span><span class="arraycolsep" style="width:0.5em;"></span><span class="arraycolsep" style="width:0.5em;"></span><span class="col-align-c"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:2.3800000000000003em;"><span style="top:-5.04em;"><span class="pstrut" style="height:3.5em;"></span><span class="mord"><span class="minner">⋯</span></span></span><span style="top:-3.1799999999999997em;"><span class="pstrut" style="height:3.5em;"></span><span class="mord"><span class="minner">⋱</span></span></span><span style="top:-1.9799999999999995em;"><span class="pstrut" style="height:3.5em;"></span><span class="mord"><span class="minner">⋯</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:1.8800000000000006em;"><span></span></span></span></span></span><span class="arraycolsep" style="width:0.5em;"></span><span class="arraycolsep" style="width:0.5em;"></span><span class="col-align-c"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:2.3800000000000003em;"><span style="top:-5.2275em;"><span class="pstrut" style="height:3.6875em;"></span><span class="mord"><span class="mord"><span class="mord mathnormal">a</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.328331em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">1</span><span class="mpunct mtight">,</span><span class="mord mathnormal mtight" style="margin-right:0.07153em;">K</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.286108em;"><span></span></span></span></span></span></span></span></span><span style="top:-3.3674999999999997em;"><span class="pstrut" style="height:3.6875em;"></span><span class="mord"><span class="mord"><span class="mord">⋮</span><span class="mord rule" style="border-right-width:0em;border-top-width:1.5em;bottom:0em;"></span></span></span></span><span style="top:-2.1674999999999995em;"><span class="pstrut" style="height:3.6875em;"></span><span class="mord"><span class="mord"><span class="mord mathnormal">a</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.328331em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.10903em;">M</span><span class="mpunct mtight">,</span><span class="mord mathnormal mtight" style="margin-right:0.07153em;">K</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.286108em;"><span></span></span></span></span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:1.8800000000000006em;"><span></span></span></span></span></span><span class="arraycolsep" style="width:0.5em;"></span></span></span><span class="mclose"><span class="delimsizing mult"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:2.3500249999999996em;"><span style="top:-1.9499950000000004em;"><span class="pstrut" style="height:3.1550000000000002em;"></span><span class="delimsizinginner delim-size4"><span>⎠</span></span></span><span style="top:-3.1000050000000003em;"><span class="pstrut" style="height:3.1550000000000002em;"></span><span class="delimsizinginner delim-size4"><span>⎟</span></span></span><span style="top:-3.110005em;"><span class="pstrut" style="height:3.1550000000000002em;"></span><span class="delimsizinginner delim-size4"><span>⎟</span></span></span><span style="top:-4.350025em;"><span class="pstrut" style="height:3.1550000000000002em;"></span><span class="delimsizinginner delim-size4"><span>⎞</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:1.850025em;"><span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="minner"><span class="mopen"><span class="delimsizing mult"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:2.3500249999999996em;"><span style="top:-1.9499950000000004em;"><span class="pstrut" style="height:3.1550000000000002em;"></span><span class="delimsizinginner delim-size4"><span>⎝</span></span></span><span style="top:-3.1000050000000003em;"><span class="pstrut" style="height:3.1550000000000002em;"></span><span class="delimsizinginner delim-size4"><span>⎜</span></span></span><span style="top:-3.110005em;"><span class="pstrut" style="height:3.1550000000000002em;"></span><span class="delimsizinginner delim-size4"><span>⎜</span></span></span><span style="top:-4.350025em;"><span class="pstrut" style="height:3.1550000000000002em;"></span><span class="delimsizinginner delim-size4"><span>⎛</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:1.850025em;"><span></span></span></span></span></span></span><span class="mord"><span class="mtable"><span class="arraycolsep" style="width:0.5em;"></span><span class="col-align-c"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:2.3800000000000003em;"><span style="top:-5.2275em;"><span class="pstrut" style="height:3.6875em;"></span><span class="mord"><span class="mord"><span class="mord mathnormal">b</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.301108em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">1</span><span class="mpunct mtight">,</span><span class="mord mtight">1</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.286108em;"><span></span></span></span></span></span></span></span></span><span style="top:-3.3674999999999997em;"><span class="pstrut" style="height:3.6875em;"></span><span class="mord"><span class="mord"><span class="mord">⋮</span><span class="mord rule" style="border-right-width:0em;border-top-width:1.5em;bottom:0em;"></span></span></span></span><span style="top:-2.1674999999999995em;"><span class="pstrut" style="height:3.6875em;"></span><span class="mord"><span class="mord"><span class="mord mathnormal">b</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.328331em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.07153em;">K</span><span class="mpunct mtight">,</span><span class="mord mtight">1</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.286108em;"><span></span></span></span></span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:1.8800000000000006em;"><span></span></span></span></span></span><span class="arraycolsep" style="width:0.5em;"></span><span class="arraycolsep" style="width:0.5em;"></span><span class="col-align-c"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:2.3800000000000003em;"><span style="top:-5.04em;"><span class="pstrut" style="height:3.5em;"></span><span class="mord"><span class="minner">⋯</span></span></span><span style="top:-3.1799999999999997em;"><span class="pstrut" style="height:3.5em;"></span><span class="mord"><span class="minner">⋱</span></span></span><span style="top:-1.9799999999999995em;"><span class="pstrut" style="height:3.5em;"></span><span class="mord"><span class="minner">⋯</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:1.8800000000000006em;"><span></span></span></span></span></span><span class="arraycolsep" style="width:0.5em;"></span><span class="arraycolsep" style="width:0.5em;"></span><span class="col-align-c"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:2.3800000000000003em;"><span style="top:-5.2275em;"><span class="pstrut" style="height:3.6875em;"></span><span class="mord"><span class="mord"><span class="mord mathnormal">b</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.328331em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">1</span><span class="mpunct mtight">,</span><span class="mord mathnormal mtight" style="margin-right:0.10903em;">N</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.286108em;"><span></span></span></span></span></span></span></span></span><span style="top:-3.3674999999999997em;"><span class="pstrut" style="height:3.6875em;"></span><span class="mord"><span class="mord"><span class="mord">⋮</span><span class="mord rule" style="border-right-width:0em;border-top-width:1.5em;bottom:0em;"></span></span></span></span><span style="top:-2.1674999999999995em;"><span class="pstrut" style="height:3.6875em;"></span><span class="mord"><span class="mord"><span class="mord mathnormal">b</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.328331em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.07153em;">K</span><span class="mpunct mtight">,</span><span class="mord mathnormal mtight" style="margin-right:0.10903em;">N</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.286108em;"><span></span></span></span></span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:1.8800000000000006em;"><span></span></span></span></span></span><span class="arraycolsep" style="width:0.5em;"></span></span></span><span class="mclose"><span class="delimsizing mult"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:2.3500249999999996em;"><span style="top:-1.9499950000000004em;"><span class="pstrut" style="height:3.1550000000000002em;"></span><span class="delimsizinginner delim-size4"><span>⎠</span></span></span><span style="top:-3.1000050000000003em;"><span class="pstrut" style="height:3.1550000000000002em;"></span><span class="delimsizinginner delim-size4"><span>⎟</span></span></span><span style="top:-3.110005em;"><span class="pstrut" style="height:3.1550000000000002em;"></span><span class="delimsizinginner delim-size4"><span>⎟</span></span></span><span style="top:-4.350025em;"><span class="pstrut" style="height:3.1550000000000002em;"></span><span class="delimsizinginner delim-size4"><span>⎞</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:1.850025em;"><span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:4.5424619999999996em;vertical-align:-2.0212309999999993em;"></span><span class="minner"><span class="mopen"><span class="delimsizing mult"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:2.3500249999999996em;"><span style="top:-1.9499950000000004em;"><span class="pstrut" style="height:3.1550000000000002em;"></span><span class="delimsizinginner delim-size4"><span>⎝</span></span></span><span style="top:-3.1000050000000003em;"><span class="pstrut" style="height:3.1550000000000002em;"></span><span class="delimsizinginner delim-size4"><span>⎜</span></span></span><span style="top:-3.110005em;"><span class="pstrut" style="height:3.1550000000000002em;"></span><span class="delimsizinginner delim-size4"><span>⎜</span></span></span><span style="top:-4.350025em;"><span class="pstrut" style="height:3.1550000000000002em;"></span><span class="delimsizinginner delim-size4"><span>⎛</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:1.850025em;"><span></span></span></span></span></span></span><span class="mord"><span class="mtable"><span class="arraycolsep" style="width:0.5em;"></span><span class="col-align-c"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:2.521231em;"><span style="top:-5.2275em;"><span class="pstrut" style="height:3.6875em;"></span><span class="mord"><span class="mop"><span class="mop op-symbol small-op" style="position:relative;top:-0.0000050000000000050004em;">∑</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.981231em;"><span style="top:-2.40029em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.03148em;">k</span><span class="mrel mtight">=</span><span class="mord mtight">1</span></span></span></span><span style="top:-3.2029em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.07153em;">K</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.29971000000000003em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathnormal">a</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361079999999999em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">1</span><span class="mpunct mtight">,</span><span class="mord mathnormal mtight" style="margin-right:0.03148em;">k</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.286108em;"><span></span></span></span></span></span></span><span class="mord"><span class="mord mathnormal">b</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361079999999999em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.03148em;">k</span><span class="mpunct mtight">,</span><span class="mord mtight">1</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.286108em;"><span></span></span></span></span></span></span></span></span><span style="top:-3.3675em;"><span class="pstrut" style="height:3.6875em;"></span><span class="mord"><span class="mord"><span class="mord">⋮</span><span class="mord rule" style="border-right-width:0em;border-top-width:1.5em;bottom:0em;"></span></span></span></span><span style="top:-2.0262690000000005em;"><span class="pstrut" style="height:3.6875em;"></span><span class="mord"><span class="mop"><span class="mop op-symbol small-op" style="position:relative;top:-0.0000050000000000050004em;">∑</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.981231em;"><span style="top:-2.40029em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.03148em;">k</span><span class="mrel mtight">=</span><span class="mord mtight">1</span></span></span></span><span style="top:-3.2029em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.07153em;">K</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.29971000000000003em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathnormal">a</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361079999999999em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.10903em;">M</span><span class="mpunct mtight">,</span><span class="mord mathnormal mtight" style="margin-right:0.03148em;">k</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.286108em;"><span></span></span></span></span></span></span><span class="mord"><span class="mord mathnormal">b</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361079999999999em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.03148em;">k</span><span class="mpunct mtight">,</span><span class="mord mtight">1</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.286108em;"><span></span></span></span></span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:2.0212309999999993em;"><span></span></span></span></span></span><span class="arraycolsep" style="width:0.5em;"></span><span class="arraycolsep" style="width:0.5em;"></span><span class="col-align-c"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:2.521231em;"><span style="top:-5.04em;"><span class="pstrut" style="height:3.5em;"></span><span class="mord"><span class="minner">⋯</span></span></span><span style="top:-3.18em;"><span class="pstrut" style="height:3.5em;"></span><span class="mord"><span class="minner">⋱</span></span></span><span style="top:-1.8387690000000008em;"><span class="pstrut" style="height:3.5em;"></span><span class="mord"><span class="minner">⋯</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:2.0212309999999993em;"><span></span></span></span></span></span><span class="arraycolsep" style="width:0.5em;"></span><span class="arraycolsep" style="width:0.5em;"></span><span class="col-align-c"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:2.521231em;"><span style="top:-5.2275em;"><span class="pstrut" style="height:3.6875em;"></span><span class="mord"><span class="mop"><span class="mop op-symbol small-op" style="position:relative;top:-0.0000050000000000050004em;">∑</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.981231em;"><span style="top:-2.40029em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.03148em;">k</span><span class="mrel mtight">=</span><span class="mord mtight">1</span></span></span></span><span style="top:-3.2029em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.07153em;">K</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.29971000000000003em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathnormal">a</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361079999999999em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">1</span><span class="mpunct mtight">,</span><span class="mord mathnormal mtight" style="margin-right:0.03148em;">k</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.286108em;"><span></span></span></span></span></span></span><span class="mord"><span class="mord mathnormal">b</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361079999999999em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.03148em;">k</span><span class="mpunct mtight">,</span><span class="mord mathnormal mtight" style="margin-right:0.10903em;">N</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.286108em;"><span></span></span></span></span></span></span></span></span><span style="top:-3.3675em;"><span class="pstrut" style="height:3.6875em;"></span><span class="mord"><span class="mord"><span class="mord">⋮</span><span class="mord rule" style="border-right-width:0em;border-top-width:1.5em;bottom:0em;"></span></span></span></span><span style="top:-2.0262690000000005em;"><span class="pstrut" style="height:3.6875em;"></span><span class="mord"><span class="mop"><span class="mop op-symbol small-op" style="position:relative;top:-0.0000050000000000050004em;">∑</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.981231em;"><span style="top:-2.40029em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.03148em;">k</span><span class="mrel mtight">=</span><span class="mord mtight">1</span></span></span></span><span style="top:-3.2029em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.07153em;">K</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.29971000000000003em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathnormal">a</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361079999999999em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.10903em;">M</span><span class="mpunct mtight">,</span><span class="mord mathnormal mtight" style="margin-right:0.03148em;">k</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.286108em;"><span></span></span></span></span></span></span><span class="mord"><span class="mord mathnormal">b</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361079999999999em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.03148em;">k</span><span class="mpunct mtight">,</span><span class="mord mathnormal mtight" style="margin-right:0.10903em;">N</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.286108em;"><span></span></span></span></span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:2.0212309999999993em;"><span></span></span></span></span></span><span class="arraycolsep" style="width:0.5em;"></span></span></span><span class="mclose"><span class="delimsizing mult"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:2.3500249999999996em;"><span style="top:-1.9499950000000004em;"><span class="pstrut" style="height:3.1550000000000002em;"></span><span class="delimsizinginner delim-size4"><span>⎠</span></span></span><span style="top:-3.1000050000000003em;"><span class="pstrut" style="height:3.1550000000000002em;"></span><span class="delimsizinginner delim-size4"><span>⎟</span></span></span><span style="top:-3.110005em;"><span class="pstrut" style="height:3.1550000000000002em;"></span><span class="delimsizinginner delim-size4"><span>⎟</span></span></span><span style="top:-4.350025em;"><span class="pstrut" style="height:3.1550000000000002em;"></span><span class="delimsizinginner delim-size4"><span>⎞</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:1.850025em;"><span></span></span></span></span></span></span></span></span></span></span></span></p>
+<p>其中第 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>i</mi></mrow><annotation encoding="application/x-tex">i</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.65952em;vertical-align:0em;"></span><span class="mord mathnormal">i</span></span></span></span> 行第 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>j</mi></mrow><annotation encoding="application/x-tex">j</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.85396em;vertical-align:-0.19444em;"></span><span class="mord mathnormal" style="margin-right:0.05724em;">j</span></span></span></span> 列元素 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mo>∑</mo><mrow><mi>k</mi><mo>=</mo><mn>1</mn></mrow><mi>K</mi></msubsup><msub><mi>a</mi><mrow><mi>i</mi><mo separator="true">,</mo><mi>k</mi></mrow></msub><msub><mi>b</mi><mrow><mi>k</mi><mo separator="true">,</mo><mi>j</mi></mrow></msub></mrow><annotation encoding="application/x-tex">\sum_{k=1}^{K} a_{i, k} b_{k, j}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.2809409999999999em;vertical-align:-0.29971000000000003em;"></span><span class="mop"><span class="mop op-symbol small-op" style="position:relative;top:-0.0000050000000000050004em;">∑</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.981231em;"><span style="top:-2.40029em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.03148em;">k</span><span class="mrel mtight">=</span><span class="mord mtight">1</span></span></span></span><span style="top:-3.2029em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.07153em;">K</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.29971000000000003em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathnormal">a</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361079999999999em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">i</span><span class="mpunct mtight">,</span><span class="mord mathnormal mtight" style="margin-right:0.03148em;">k</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.286108em;"><span></span></span></span></span></span></span><span class="mord"><span class="mord mathnormal">b</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361079999999999em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.03148em;">k</span><span class="mpunct mtight">,</span><span class="mord mathnormal mtight" style="margin-right:0.05724em;">j</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.286108em;"><span></span></span></span></span></span></span></span></span></span> ，即每个元素的计算需要 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>K</mi></mrow><annotation encoding="application/x-tex">K</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathnormal" style="margin-right:0.07153em;">K</span></span></span></span> 次乘法和 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>K</mi><mo>−</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">K-1</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.76666em;vertical-align:-0.08333em;"></span><span class="mord mathnormal" style="margin-right:0.07153em;">K</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.64444em;vertical-align:0em;"></span><span class="mord">1</span></span></span></span> 次加法，即计算 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="bold-italic">A</mi><mi mathvariant="bold-italic">B</mi></mrow><annotation encoding="application/x-tex">\boldsymbol{A} \boldsymbol{B}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68611em;vertical-align:0em;"></span><span class="mord"><span class="mord"><span class="mord boldsymbol">A</span></span></span><span class="mord"><span class="mord"><span class="mord boldsymbol" style="margin-right:0.04835em;">B</span></span></span></span></span></span> 共需要执行 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false">(</mo><mn>2</mn><mi>K</mi><mo>−</mo><mn>1</mn><mo stretchy="false">)</mo><mi>M</mi><mi>N</mi></mrow><annotation encoding="application/x-tex">(2K-1)MN</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord">2</span><span class="mord mathnormal" style="margin-right:0.07153em;">K</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">1</span><span class="mclose">)</span><span class="mord mathnormal" style="margin-right:0.10903em;">M</span><span class="mord mathnormal" style="margin-right:0.10903em;">N</span></span></span></span> 次浮点数运算。</p>
+<p>另外 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="bold-italic">A</mi><mi mathvariant="bold-italic">B</mi></mrow><annotation encoding="application/x-tex">\boldsymbol{A} \boldsymbol{B}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68611em;vertical-align:0em;"></span><span class="mord"><span class="mord"><span class="mord boldsymbol">A</span></span></span><span class="mord"><span class="mord"><span class="mord boldsymbol" style="margin-right:0.04835em;">B</span></span></span></span></span></span> 和 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="bold-italic">C</mi></mrow><annotation encoding="application/x-tex">\boldsymbol{C}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68611em;vertical-align:0em;"></span><span class="mord"><span class="mord"><span class="mord boldsymbol" style="margin-right:0.06979em;">C</span></span></span></span></span></span> 的放缩都需要 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>M</mi><mi>N</mi></mrow><annotation encoding="application/x-tex">MN</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathnormal" style="margin-right:0.10903em;">M</span><span class="mord mathnormal" style="margin-right:0.10903em;">N</span></span></span></span> 次浮点运算，那么总的浮点运算次数则为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false">(</mo><mn>2</mn><mi>K</mi><mo>+</mo><mn>1</mn><mo stretchy="false">)</mo><mi>M</mi><mi>N</mi></mrow><annotation encoding="application/x-tex">(2K+1)MN</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord">2</span><span class="mord mathnormal" style="margin-right:0.07153em;">K</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">1</span><span class="mclose">)</span><span class="mord mathnormal" style="margin-right:0.10903em;">M</span><span class="mord mathnormal" style="margin-right:0.10903em;">N</span></span></span></span> ，由于 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>K</mi><mo>≫</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">K\gg 1</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.72243em;vertical-align:-0.0391em;"></span><span class="mord mathnormal" style="margin-right:0.07153em;">K</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">≫</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.64444em;vertical-align:0em;"></span><span class="mord">1</span></span></span></span> ，因此通常浮点运算次数近似等于 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>2</mn><mi>K</mi><mi>M</mi><mi>N</mi></mrow><annotation encoding="application/x-tex">2KMN</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord">2</span><span class="mord mathnormal" style="margin-right:0.07153em;">K</span><span class="mord mathnormal" style="margin-right:0.10903em;">M</span><span class="mord mathnormal" style="margin-right:0.10903em;">N</span></span></span></span> ，单位为FLOPs(Float Point Operations)。对于硬件而言，需要关注的是完成这部分计算所需要的时间，即每秒浮点计算数 FLOPS(Float Point Operations Per Second)，为便于表示通常使用 GFLOPS (= <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1</mn><msup><mn>0</mn><mn>9</mn></msup></mrow><annotation encoding="application/x-tex">10^9</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8141079999999999em;vertical-align:0em;"></span><span class="mord">1</span><span class="mord"><span class="mord">0</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141079999999999em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">9</span></span></span></span></span></span></span></span></span></span></span> FLOPS) 和 TFLOPS (= <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1</mn><msup><mn>0</mn><mn>12</mn></msup></mrow><annotation encoding="application/x-tex">10^{12}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8141079999999999em;vertical-align:0em;"></span><span class="mord">1</span><span class="mord"><span class="mord">0</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141079999999999em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">1</span><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span></span></span> FLOPS)。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250716171306482.png" alt="image.png" /></p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2025/08/20/sgemm-%E4%BC%98%E5%8C%96/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/08/20/Block-all-reduce-%E5%AD%A6%E4%B9%A0-sum-softmax/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
+      <meta itemprop="name" content="Ronny Lu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ronny Lu's blog">
+      <meta itemprop="description" content="Tech notes on LLM, LLM Infra, and others">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | Ronny Lu's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2025/08/20/Block-all-reduce-%E5%AD%A6%E4%B9%A0-sum-softmax/" class="post-title-link" itemprop="url">Block all reduce 学习 (sum, softmax)</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-08-20 16:21:57 / 修改时间：16:22:37" itemprop="dateCreated datePublished" datetime="2025-08-20T16:21:57+08:00">2025-08-20</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/cuda/" itemprop="url" rel="index"><span itemprop="name">cuda</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>1.8k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>7 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p>warp reduce几乎已经成为大部分reduce kernel的标准写法了，比如vLLM中，就是这种经典的写法。所以，先搞懂warp reduce（也就是搞懂各种warp functions的用法），再去写其他kernel，思路就会容易很多。需要注意的是，warp函数处理的是寄存器上的数据，也就是说，此时，没必要先加载数据到smem，再进行reduce，直接加载到寄存器即可。Warp Functions建议参考：<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/572820783">jhang：CUDA编程入门之Warp-Level Primitives</a></p>
+<p>block all reduce是在warp reduce的基础上进行的，reduce_smem这部分的共享内存申请无法避免，这是用来同步每个warp之间得到局部结果。注意，最后，还需要atomicAdd做一个block级别的原子操作，以得到全局的和。float4向量化优化访存，可以减缓WarpScheduler发送指令的压力。</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2025/08/20/Block-all-reduce-%E5%AD%A6%E4%B9%A0-sum-softmax/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/08/20/%E5%A4%A7%E6%A8%A1%E5%9E%8B-kv-cache-%E8%AF%A6%E8%A7%A3-%E6%8E%A8%E7%90%86%E5%BC%95%E6%93%8E%E4%B8%AD%E7%9A%84-kv-cache-%E5%A4%8D%E7%94%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
+      <meta itemprop="name" content="Ronny Lu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ronny Lu's blog">
+      <meta itemprop="description" content="Tech notes on LLM, LLM Infra, and others">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | Ronny Lu's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2025/08/20/%E5%A4%A7%E6%A8%A1%E5%9E%8B-kv-cache-%E8%AF%A6%E8%A7%A3-%E6%8E%A8%E7%90%86%E5%BC%95%E6%93%8E%E4%B8%AD%E7%9A%84-kv-cache-%E5%A4%8D%E7%94%A8/" class="post-title-link" itemprop="url">大模型 kv cache 详解 & 推理引擎中的 kv cache 复用</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-08-20 16:20:58 / 修改时间：16:44:54" itemprop="dateCreated datePublished" datetime="2025-08-20T16:20:58+08:00">2025-08-20</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">大模型</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E6%8E%A8%E7%90%86%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index"><span itemprop="name">推理技术</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E6%8E%A8%E7%90%86%E6%8A%80%E6%9C%AF/Sglang/" itemprop="url" rel="index"><span itemprop="name">Sglang</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>4.9k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>18 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h1 id="主题"><a class="markdownIt-Anchor" href="#主题"></a> 主题</h1>
+<ol>
+<li>
+<p><strong>大模型推理基础概念, 为什么需要有kv cache, prefix cache</strong></p>
+</li>
+<li>
+<p><strong>kv cache, prefix cache在推理引擎中的实现和用法</strong></p>
+</li>
+<li>
+<p><strong>推理引擎接入attention store后的改动</strong></p>
+</li>
+</ol>
+<h1 id="常见的llm模型结构-以llama为例"><a class="markdownIt-Anchor" href="#常见的llm模型结构-以llama为例"></a> 常见的LLM模型结构 (以LLaMA为例)</h1>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820161239761.png" alt="image.png" /></p>
+<table>
+<thead>
+<tr>
+<th>模块</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Embeddings</strong></td>
+<td>把输入 token id 映射成 <strong>hidden_dim</strong> 长度的向量。</td>
+</tr>
+<tr>
+<td><strong>RMSNorm</strong></td>
+<td>用均方根归一化当前隐藏状态，稳住数值并让层与层之间梯度更平滑。</td>
+</tr>
+<tr>
+<td><strong>Self-Attention</strong></td>
+<td>计算 token 之间的自注意力</td>
+</tr>
+<tr>
+<td><strong>Residual Add (+)</strong></td>
+<td>将注意力输出叠加回输入张量，构成残差连接。</td>
+</tr>
+<tr>
+<td><strong>Feed-Forward</strong></td>
+<td>线性层负责隐藏维度扩展, 表征复杂特征</td>
+</tr>
+<tr>
+<td><strong>SwiGLU</strong></td>
+<td>激活函数, 给模型带来非线性</td>
+</tr>
+<tr>
+<td><strong>Linear → Vocab → Softmax</strong></td>
+<td>把隐藏向量投影到词表维度，得到每个 token 的 logits。再通过 Softmax算出概率</td>
+</tr>
+</tbody>
+</table>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2025/08/20/%E5%A4%A7%E6%A8%A1%E5%9E%8B-kv-cache-%E8%AF%A6%E8%A7%A3-%E6%8E%A8%E7%90%86%E5%BC%95%E6%93%8E%E4%B8%AD%E7%9A%84-kv-cache-%E5%A4%8D%E7%94%A8/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/08/20/DeepSeek-%E4%B8%AD%E7%9A%84%E4%B8%93%E5%AE%B6%E5%9D%87%E8%A1%A1%E5%88%86%E6%9E%90%E4%B8%8E%E4%BC%98%E5%8C%96/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
+      <meta itemprop="name" content="Ronny Lu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ronny Lu's blog">
+      <meta itemprop="description" content="Tech notes on LLM, LLM Infra, and others">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | Ronny Lu's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2025/08/20/DeepSeek-%E4%B8%AD%E7%9A%84%E4%B8%93%E5%AE%B6%E5%9D%87%E8%A1%A1%E5%88%86%E6%9E%90%E4%B8%8E%E4%BC%98%E5%8C%96/" class="post-title-link" itemprop="url">DeepSeek 中的专家均衡分析与优化</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-08-20 16:04:20 / 修改时间：16:05:04" itemprop="dateCreated datePublished" datetime="2025-08-20T16:04:20+08:00">2025-08-20</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">大模型</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E6%8E%A8%E7%90%86%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index"><span itemprop="name">推理技术</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E6%8E%A8%E7%90%86%E6%8A%80%E6%9C%AF/Deepseek%E4%BC%98%E5%8C%96/" itemprop="url" rel="index"><span itemprop="name">Deepseek优化</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>3.9k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>14 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h1 id="deepseek-moe"><a class="markdownIt-Anchor" href="#deepseek-moe"></a> Deepseek MoE</h1>
+<ul>
+<li>
+<p>MoE是什么？</p>
+<ul>
+<li>
+<p>Mixture of Experts,混专家模型</p>
+</li>
+<li>
+<p>共享专家+{Router/Gate+路由专家}+加和</p>
+</li>
+</ul>
+</li>
+<li>
+<p>为什么要有MoE?</p>
+<ul>
+<li>相同模型参数情况下大幅降低计算量</li>
+</ul>
+</li>
+<li>
+<p>Deepseek V3/R1 MoE的关键参数</p>
+<ul>
+<li>
+<p>61层中有58层包含MoE层</p>
+</li>
+<li>
+<p>每个MoE层包含1个共享专家和256个路由专家</p>
+<ul>
+<li>每层每个专家参数量约44M,256x58层累计约656.6B</li>
+</ul>
+</li>
+<li>
+<p>Router/Gate的选择策略</p>
+<ul>
+<li>
+<p>256个路由专家分为8组，每组32个</p>
+</li>
+<li>
+<p>每组选择最大2个得分进行求和，作为组得分</p>
+</li>
+<li>
+<p>选择组得分最高的4组</p>
+</li>
+<li>
+<p>从上述4组中得分最高的8个专家</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h1 id="ep并行与负载均衡"><a class="markdownIt-Anchor" href="#ep并行与负载均衡"></a> EP并行与负载均衡</h1>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820151740181.png" alt="image.png" /></p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2025/08/20/DeepSeek-%E4%B8%AD%E7%9A%84%E4%B8%93%E5%AE%B6%E5%9D%87%E8%A1%A1%E5%88%86%E6%9E%90%E4%B8%8E%E4%BC%98%E5%8C%96/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/08/20/DeepSeek-%E5%A4%8D%E7%8E%B0%E4%B9%8BEP%E9%80%9A%E4%BF%A1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
+      <meta itemprop="name" content="Ronny Lu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ronny Lu's blog">
+      <meta itemprop="description" content="Tech notes on LLM, LLM Infra, and others">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | Ronny Lu's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2025/08/20/DeepSeek-%E5%A4%8D%E7%8E%B0%E4%B9%8BEP%E9%80%9A%E4%BF%A1/" class="post-title-link" itemprop="url">DeepSeek 复现之EP通信</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-08-20 16:03:31 / 修改时间：16:04:06" itemprop="dateCreated datePublished" datetime="2025-08-20T16:03:31+08:00">2025-08-20</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">大模型</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E6%8E%A8%E7%90%86%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index"><span itemprop="name">推理技术</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E6%8E%A8%E7%90%86%E6%8A%80%E6%9C%AF/Deepseek%E4%BC%98%E5%8C%96/" itemprop="url" rel="index"><span itemprop="name">Deepseek优化</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>3.5k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>13 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h1 id="ep通信的挑战"><a class="markdownIt-Anchor" href="#ep通信的挑战"></a> EP通信的挑战</h1>
+<h2 id="deepseekv3中的moe架构"><a class="markdownIt-Anchor" href="#deepseekv3中的moe架构"></a> DeepSeekv3中的MoE架构</h2>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250819155632217.png" alt="image.png" /></p>
+<h2 id="ep专家并行每个gpu处理不同的专家"><a class="markdownIt-Anchor" href="#ep专家并行每个gpu处理不同的专家"></a> EP专家并行：每个GPU处理不同的专家</h2>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250819155637847.png" alt="image.png" /></p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2025/08/20/DeepSeek-%E5%A4%8D%E7%8E%B0%E4%B9%8BEP%E9%80%9A%E4%BF%A1/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/08/20/DeepSeek-%E5%A4%8D%E7%8E%B0%E6%8A%80%E6%9C%AF%E6%A6%82%E8%BF%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
+      <meta itemprop="name" content="Ronny Lu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ronny Lu's blog">
+      <meta itemprop="description" content="Tech notes on LLM, LLM Infra, and others">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | Ronny Lu's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2025/08/20/DeepSeek-%E5%A4%8D%E7%8E%B0%E6%8A%80%E6%9C%AF%E6%A6%82%E8%BF%B0/" class="post-title-link" itemprop="url">DeepSeek 复现技术概述</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-08-20 16:00:30 / 修改时间：16:02:05" itemprop="dateCreated datePublished" datetime="2025-08-20T16:00:30+08:00">2025-08-20</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">大模型</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E6%8E%A8%E7%90%86%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index"><span itemprop="name">推理技术</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E6%8E%A8%E7%90%86%E6%8A%80%E6%9C%AF/Deepseek%E4%BC%98%E5%8C%96/" itemprop="url" rel="index"><span itemprop="name">Deepseek优化</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>1.2k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>4 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h1 id="moe部分tp并行vsep并行"><a class="markdownIt-Anchor" href="#moe部分tp并行vsep并行"></a> <strong>MOE部分TP并行v.s.EP并行</strong></h1>
+<p><strong>TP并行</strong>：每个专家的参数切成k份，因为专家数很多(256)，分给每个专家的数据量很少，GEMM计算密度低</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250819155405036.png" alt="image.png" /></p>
+<p><strong>TP怎么选</strong></p>
+<ul>
+<li>
+<p>TP可以减少延迟，但是引入了通信，会降低吞吐</p>
+</li>
+<li>
+<p>D的batch固定，且较小，不能减少proj的耗时，MLA的atten TP后，降低了计算密度，收益小，TP4-&gt;TP1</p>
+</li>
+<li>
+<p>P的batch大，使用MHA,proj&amp;mla均能线性降低，整体吞吐一定下降，但能显著改善长输入的延迟，TP1&amp;TP4混合部署</p>
+</li>
+</ul>
+<p><strong>EP并行</strong>：每张卡放少数几个专家，只接收和专家对应的数据，极大提升GEMM的计算密度</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250819155411429.png" alt="image.png" /></p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2025/08/20/DeepSeek-%E5%A4%8D%E7%8E%B0%E6%8A%80%E6%9C%AF%E6%A6%82%E8%BF%B0/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -1430,7 +1479,7 @@ conditional_wait 将解锁互斥锁，允许其他人访问条件变量（用于
 
 
   <nav class="pagination">
-    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/6/">6</a><a class="extend next" rel="next" title="下一页" aria-label="下一页" href="/page/2/"><i class="fa fa-angle-right"></i></a>
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/8/">8</a><a class="extend next" rel="next" title="下一页" aria-label="下一页" href="/page/2/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 </div>
@@ -1453,14 +1502,14 @@ conditional_wait 将解锁互斥锁，允许其他人访问条件变量（用于
       <i class="fa fa-chart-line"></i>
     </span>
       <span>站点总字数：</span>
-    <span title="站点总字数">194k</span>
+    <span title="站点总字数">245k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span>站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">11:46</span>
+    <span title="站点阅读时长">14:50</span>
   </span>
 </div>
 <div class="busuanzi-count">

@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="https://avatars.githubusercontent.com/u/55233584?v=4">
+  <link rel="icon" type="image/png" sizes="32x32" href="https://avatars.githubusercontent.com/u/55233584?v=4">
+  <link rel="icon" type="image/png" sizes="16x16" href="https://avatars.githubusercontent.com/u/55233584?v=4">
+  <link rel="mask-icon" href="https://avatars.githubusercontent.com/u/55233584?v=4" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-minimal.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"luyiyun1021.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.22.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="warp reduce几乎已经成为大部分reduce kernel的标准写法了，比如vLLM中，就是这种经典的写法。所以，先搞懂warp reduce（也就是搞懂各种warp functions的用法），再去写其他kernel，思路就会容易很多。需要注意的是，warp函数处理的是寄存器上的数据，也就是说，此时，没必要先加载数据到smem，再进行reduce，直接加载到寄存器即可。Warp Func">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Block all reduce 学习 (sum, softmax)">
+<meta property="og:url" content="https://luyiyun1021.github.io/2025/08/20/Block-all-reduce-%E5%AD%A6%E4%B9%A0-sum-softmax/index.html">
+<meta property="og:site_name" content="Ronny Lu&#39;s blog">
+<meta property="og:description" content="warp reduce几乎已经成为大部分reduce kernel的标准写法了，比如vLLM中，就是这种经典的写法。所以，先搞懂warp reduce（也就是搞懂各种warp functions的用法），再去写其他kernel，思路就会容易很多。需要注意的是，warp函数处理的是寄存器上的数据，也就是说，此时，没必要先加载数据到smem，再进行reduce，直接加载到寄存器即可。Warp Func">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-08-20T08:21:57.000Z">
+<meta property="article:modified_time" content="2025-08-20T08:22:37.709Z">
+<meta property="article:author" content="Ronny Lu">
+<meta property="article:tag" content="cuda">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://luyiyun1021.github.io/2025/08/20/Block-all-reduce-%E5%AD%A6%E4%B9%A0-sum-softmax/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://luyiyun1021.github.io/2025/08/20/Block-all-reduce-%E5%AD%A6%E4%B9%A0-sum-softmax/","path":"2025/08/20/Block-all-reduce-学习-sum-softmax/","title":"Block all reduce 学习 (sum, softmax)"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Block all reduce 学习 (sum, softmax) | Ronny Lu's blog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<style>.darkmode--activated{--body-bg-color:#282828;--content-bg-color:#333;--card-bg-color:#555;--text-color:#ccc;--blockquote-color:#bbb;--link-color:#ccc;--link-hover-color:#eee;--brand-color:#ddd;--brand-hover-color:#ddd;--table-row-odd-bg-color:#282828;--table-row-hover-bg-color:#363636;--menu-item-bg-color:#555;--btn-default-bg:#222;--btn-default-color:#ccc;--btn-default-border-color:#555;--btn-default-hover-bg:#666;--btn-default-hover-color:#ccc;--btn-default-hover-border-color:#666;--highlight-background:#282b2e;--highlight-foreground:#a9b7c6;--highlight-gutter-background:#34393d;--highlight-gutter-foreground:#9ca9b6}.darkmode--activated img{opacity:.75}.darkmode--activated img:hover{opacity:.9}.darkmode--activated code{color:#69dbdc;background:0 0}button.darkmode-toggle{z-index:9999}.darkmode-ignore,img{display:flex!important}.beian img{display:inline-block!important}</style></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Ronny Lu's blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#sum"><span class="nav-number">1.</span> <span class="nav-text"> sum</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#fp32"><span class="nav-number">1.1.</span> <span class="nav-text"> fp32</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#warp_reduce_sum_f32"><span class="nav-number">1.1.1.</span> <span class="nav-text"> warp_reduce_sum_f32</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#block_all_reduce_sum_f32_f32_kernel"><span class="nav-number">1.1.2.</span> <span class="nav-text"> block_all_reduce_sum_f32_f32_kernel</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#f32-pack-4"><span class="nav-number">1.1.3.</span> <span class="nav-text"> f32 pack 4</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#fp16"><span class="nav-number">1.2.</span> <span class="nav-text"> fp16</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#f16-pack-8"><span class="nav-number">1.2.1.</span> <span class="nav-text"> f16 pack 8</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#launch%E6%96%B9%E6%B3%95"><span class="nav-number">1.3.</span> <span class="nav-text"> Launch方法</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#softmax"><span class="nav-number">2.</span> <span class="nav-text"> Softmax</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#sum-reduce-%E5%92%8C-max-reduce%E5%87%BD%E6%95%B0"><span class="nav-number">2.1.</span> <span class="nav-text"> sum reduce 和 max reduce函数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#softmax-per-token"><span class="nav-number">2.2.</span> <span class="nav-text"> softmax per-token</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#safe-softmax-per-token"><span class="nav-number">2.3.</span> <span class="nav-text"> safe softmax per token</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AE%97%E6%B3%95%E6%A6%82%E8%BF%B0"><span class="nav-number">2.3.1.</span> <span class="nav-text"> 算法概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A0%87%E5%87%86-softmax-%E5%85%AC%E5%BC%8F"><span class="nav-number">2.3.2.</span> <span class="nav-text"> 标准 Softmax 公式：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#safe-softmax-%E5%85%AC%E5%BC%8F"><span class="nav-number">2.3.3.</span> <span class="nav-text"> Safe Softmax 公式：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#cuda%E4%BB%A3%E7%A0%81"><span class="nav-number">2.3.4.</span> <span class="nav-text"> CUDA代码</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#online-safe-softmax-per-token"><span class="nav-number">2.4.</span> <span class="nav-text"> online safe softmax per token</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AE%97%E6%B3%95%E6%A6%82%E8%BF%B0-2"><span class="nav-number">2.4.1.</span> <span class="nav-text"> 算法概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A0%B8%E5%BF%83%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84md"><span class="nav-number">2.4.2.</span> <span class="nav-text"> 核心数据结构：MD</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BC%A0%E7%BB%9F%E6%96%B9%E5%BC%8F%E4%B8%A4%E6%AC%A1%E9%81%8D%E5%8E%86"><span class="nav-number">2.4.3.</span> <span class="nav-text"> 传统方式（两次遍历）：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#online%E6%96%B9%E5%BC%8F%E4%B8%80%E6%AC%A1%E9%81%8D%E5%8E%86"><span class="nav-number">2.4.4.</span> <span class="nav-text"> Online方式（一次遍历）：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%A4%E4%B8%AAmd%E5%80%BC%E5%90%88%E5%B9%B6%E7%9A%84%E6%95%B0%E5%AD%A6%E6%8E%A8%E5%AF%BC"><span class="nav-number">2.4.5.</span> <span class="nav-text"> 两个MD值合并的数学推导</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#md%E5%80%BC%E5%90%88%E5%B9%B6%E7%9A%84%E6%95%B0%E5%AD%A6%E7%AD%89%E4%BB%B7%E6%80%A7%E8%AF%81%E6%98%8E"><span class="nav-number">2.4.5.1.</span> <span class="nav-text"> MD值合并的数学等价性证明</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E9%97%AE%E9%A2%98%E6%8F%8F%E8%BF%B0"><span class="nav-number">2.4.5.1.1.</span> <span class="nav-text"> 问题描述</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E7%AC%A6%E5%8F%B7%E5%AE%9A%E4%B9%89"><span class="nav-number">2.4.5.1.2.</span> <span class="nav-text"> 符号定义</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E7%9B%B4%E6%8E%A5%E8%AE%A1%E7%AE%97-vs-%E5%90%88%E5%B9%B6%E8%AE%A1%E7%AE%97"><span class="nav-number">2.4.5.1.3.</span> <span class="nav-text"> 直接计算 vs 合并计算</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E7%AD%89%E4%BB%B7%E6%80%A7%E8%AF%81%E6%98%8E"><span class="nav-number">2.4.5.1.4.</span> <span class="nav-text"> 等价性证明</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%83%85%E5%86%B5%E5%88%86%E6%9E%90"><span class="nav-number">2.4.5.1.5.</span> <span class="nav-text"> 情况分析</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%B1%95%E5%BC%80-d_direct"><span class="nav-number">2.4.5.1.6.</span> <span class="nav-text"> 展开 d_direct</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%B1%95%E5%BC%80-d_new"><span class="nav-number">2.4.5.1.7.</span> <span class="nav-text"> 展开 d_new</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E7%BB%93%E8%AE%BA"><span class="nav-number">2.4.5.1.8.</span> <span class="nav-text"> 结论</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E9%80%9A%E7%94%A8%E6%83%85%E5%86%B5%E8%AF%81%E6%98%8E"><span class="nav-number">2.4.5.1.9.</span> <span class="nav-text"> 通用情况证明</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%95%B0%E5%AD%A6%E7%9B%B4%E8%A7%89%E7%90%86%E8%A7%A3"><span class="nav-number">2.4.5.1.10.</span> <span class="nav-text"> 数学直觉理解</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AE%97%E6%B3%95%E4%BC%98%E5%8A%BF%E5%AF%B9%E6%AF%94"><span class="nav-number">2.4.6.</span> <span class="nav-text"> 算法优势对比</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%A7%E8%83%BD%E4%BC%98%E5%8A%BF"><span class="nav-number">2.4.7.</span> <span class="nav-text"> 性能优势</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#cuda%E4%BB%A3%E7%A0%81-2"><span class="nav-number">2.4.8.</span> <span class="nav-text"> CUDA代码</span></a></li></ol></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Ronny Lu"
+      src="https://avatars.githubusercontent.com/u/55233584?v=4">
+  <p class="site-author-name" itemprop="name">Ronny Lu</p>
+  <div class="site-description" itemprop="description">Tech notes on LLM, LLM Infra, and others</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">75</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">16</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">19</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/08/20/Block-all-reduce-%E5%AD%A6%E4%B9%A0-sum-softmax/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
+      <meta itemprop="name" content="Ronny Lu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ronny Lu's blog">
+      <meta itemprop="description" content="Tech notes on LLM, LLM Infra, and others">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Block all reduce 学习 (sum, softmax) | Ronny Lu's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Block all reduce 学习 (sum, softmax)
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-08-20 16:21:57 / 修改时间：16:22:37" itemprop="dateCreated datePublished" datetime="2025-08-20T16:21:57+08:00">2025-08-20</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/cuda/" itemprop="url" rel="index"><span itemprop="name">cuda</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>1.8k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>7 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>warp reduce几乎已经成为大部分reduce kernel的标准写法了，比如vLLM中，就是这种经典的写法。所以，先搞懂warp reduce（也就是搞懂各种warp functions的用法），再去写其他kernel，思路就会容易很多。需要注意的是，warp函数处理的是寄存器上的数据，也就是说，此时，没必要先加载数据到smem，再进行reduce，直接加载到寄存器即可。Warp Functions建议参考：<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/572820783">jhang：CUDA编程入门之Warp-Level Primitives</a></p>
+<p>block all reduce是在warp reduce的基础上进行的，reduce_smem这部分的共享内存申请无法避免，这是用来同步每个warp之间得到局部结果。注意，最后，还需要atomicAdd做一个block级别的原子操作，以得到全局的和。float4向量化优化访存，可以减缓WarpScheduler发送指令的压力。</p>
+<span id="more"></span>    
+<h1 id="sum"><a class="markdownIt-Anchor" href="#sum"></a> sum</h1>
+<h2 id="fp32"><a class="markdownIt-Anchor" href="#fp32"></a> fp32</h2>
+<h3 id="warp_reduce_sum_f32"><a class="markdownIt-Anchor" href="#warp_reduce_sum_f32"></a> warp_reduce_sum_f32</h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="type">const</span> <span class="type">int</span> kWarpSize = WARP_SIZE&gt;</span><br><span class="line">__device__ __forceinline__ <span class="type">float</span> <span class="built_in">warp_reduce_sum_f32</span>(<span class="type">float</span> val) &#123;</span><br><span class="line"><span class="meta">#<span class="keyword">pragma</span> unroll</span></span><br><span class="line">  <span class="keyword">for</span> (<span class="type">int</span> mask = kWarpSize &gt;&gt; <span class="number">1</span>; mask &gt;= <span class="number">1</span>; mask &gt;&gt;= <span class="number">1</span>) &#123;</span><br><span class="line">    val += __shfl_xor_sync(<span class="number">0xffffffff</span>, val, mask);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> val;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>数据交换解释</strong></p>
+<p>__shfl_xor_sync: 表示被 mask 指定线程的 laneid 与 laneMask 做按位异或计算，实现不同线程之间的 butterfly 数据交互</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">Step 1, mask = 16  (最高位 bit4 取反)</span><br><span class="line">│0 ←→16│1 ←→17│2 ←→18│3 ←→19│4 ←→20│5 ←→21│6 ←→22│7 ←→23│8 ←→24│9 ←→25│10←→26│11←→27│12←→28│13←→29│14←→30│15←→31│</span><br><span class="line"></span><br><span class="line">Step 2, mask = 8   (bit3 取反。此时 0-15 内部、16-31 内部再次配对)</span><br><span class="line">│0 ←→ 8│1 ←→ 9│2 ←→10│3 ←→11│4 ←→12│5 ←→13│6 ←→14│7 ←→15│16←→24│17←→25│18←→26│19←→27│20←→28│21←→29│22←→30│23←→31│</span><br><span class="line"></span><br><span class="line">Step 3, mask = 4   (bit2 取反)</span><br><span class="line">│0 ←→4│1 ←→5│2 ←→6│3 ←→7│8 ←→12│9 ←→13│10←→14│11←→15│16←→20│17←→21│18←→22│19←→23│24←→28│25←→29│26←→30│27←→31│</span><br><span class="line"></span><br><span class="line">Step 4, mask = 2   (bit1 取反)</span><br><span class="line">│0←→2│1←→3│4←→6│5←→7│8←→10│9←→11│12←→14│13←→15│16←→18│17←→19│20←→22│21←→23│24←→26│25←→27│28←→30│29←→31│</span><br><span class="line"></span><br><span class="line">Step 5, mask = 1   (最低位 bit0 取反)</span><br><span class="line">│0←→1│2←→3│4←→5│6←→7│8←→9│10←→11│12←→13│14←→15│16←→17│18←→19│20←→21│22←→23│24←→25│26←→27│28←→29│30←→31│</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<h3 id="block_all_reduce_sum_f32_f32_kernel"><a class="markdownIt-Anchor" href="#block_all_reduce_sum_f32_f32_kernel"></a> block_all_reduce_sum_f32_f32_kernel</h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Block All Reduce Sum</span></span><br><span class="line"><span class="comment">// grid(N/256), block(256)</span></span><br><span class="line"><span class="comment">// a: Nx1, y=sum(a)</span></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="type">const</span> <span class="type">int</span> NUM_THREADS = <span class="number">256</span>&gt;</span><br><span class="line">__global__ <span class="type">void</span> <span class="built_in">block_all_reduce_sum_f32_f32_kernel</span>(<span class="type">float</span> *a, <span class="type">float</span> *y, <span class="type">int</span> N) &#123;</span><br><span class="line">  <span class="type">int</span> tid = threadIdx.x;</span><br><span class="line">  <span class="type">int</span> idx = blockIdx.x * NUM_THREADS + tid;</span><br><span class="line">  <span class="keyword">constexpr</span> <span class="type">int</span> NUM_WARPS = (NUM_THREADS + WARP_SIZE - <span class="number">1</span>) / WARP_SIZE;</span><br><span class="line">  __shared__ <span class="type">float</span> reduce_smem[NUM_WARPS];</span><br><span class="line">  <span class="comment">// keep the data in register is enough for warp operaion.</span></span><br><span class="line">  <span class="type">float</span> sum = (idx &lt; N) ? a[idx] : <span class="number">0.0f</span>;</span><br><span class="line">  <span class="type">int</span> warp = tid / WARP_SIZE;</span><br><span class="line">  <span class="type">int</span> lane = tid % WARP_SIZE;</span><br><span class="line">  <span class="comment">// perform warp sync reduce.</span></span><br><span class="line">  sum = <span class="built_in">warp_reduce_sum_f32</span>&lt;WARP_SIZE&gt;(sum);</span><br><span class="line">  <span class="comment">// warp leaders store the data to shared memory.</span></span><br><span class="line">  <span class="keyword">if</span> (lane == <span class="number">0</span>)</span><br><span class="line">    reduce_smem[warp] = sum;</span><br><span class="line">  __syncthreads(); <span class="comment">// make sure the data is in shared memory.</span></span><br><span class="line">  <span class="comment">// the first warp compute the final sum.</span></span><br><span class="line">  sum = (lane &lt; NUM_WARPS) ? reduce_smem[lane] : <span class="number">0.0f</span>;</span><br><span class="line">  <span class="keyword">if</span> (warp == <span class="number">0</span>)</span><br><span class="line">    sum = <span class="built_in">warp_reduce_sum_f32</span>&lt;NUM_WARPS&gt;(sum);</span><br><span class="line">  <span class="keyword">if</span> (tid == <span class="number">0</span>)</span><br><span class="line">    <span class="built_in">atomicAdd</span>(y, sum);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>测试一下warp_reduce + block_all_reduce 的方法会比写入shared memory进行reduce的速度快多少, 写一个后者的示例代码</p>
+<p>测下来性能差距约一倍</p>
+<h3 id="f32-pack-4"><a class="markdownIt-Anchor" href="#f32-pack-4"></a> f32 pack 4</h3>
+<p>shared memory和global memory的一次访存事务最多取128bytes, 所以为了利用这个特性打满带宽, 一次应该读取4个fp32数据</p>
+<p><strong>性能测试</strong></p>
+<h2 id="fp16"><a class="markdownIt-Anchor" href="#fp16"></a> fp16</h2>
+<p>测下来fp16 warp_reduce 和fp32 warp_reduce 时间并无区别, 原因是在这个场景下 global-load、shared-store、<code>atomicAdd</code> latency 远超过一条 <code>__hadd</code> 或普通 <code>+</code> 指令的差别。</p>
+<h3 id="f16-pack-8"><a class="markdownIt-Anchor" href="#f16-pack-8"></a> f16 pack 8</h3>
+<p>为了打满128B访存带宽, 一次应该读取8个fp16数据</p>
+<p><strong>性能测试</strong></p>
+<h2 id="launch方法"><a class="markdownIt-Anchor" href="#launch方法"></a> Launch方法</h2>
+<ol>
+<li>ndim != 2 or (输入维度为 (S × K) 且 K/(n_elements) &gt; 1024 超过了单个block线程上限)</li>
+</ol>
+<ul>
+<li>先把所有维度展平成 <strong>长度 N</strong> 的一维向量，再用「一维网格 + 固定 1024 线程模板」的 kernel 来累加：<code>block_threads = 1024 / n_elements</code>，<code>grid = ceil(N/1024)</code></li>
+</ul>
+<ol>
+<li>输入维度为 (S × K) 且 K/(n_elements) &lt;= 1024</li>
+</ol>
+<ul>
+<li><code>block_threads = K / n_elements</code>, <code>grid = ceil(N/K)</code></li>
+</ul>
+<p>区别: 通过行级并行获得更好的内存访问模式和缓存效率</p>
+<h1 id="softmax"><a class="markdownIt-Anchor" href="#softmax"></a> Softmax</h1>
+<h2 id="sum-reduce-和-max-reduce函数"><a class="markdownIt-Anchor" href="#sum-reduce-和-max-reduce函数"></a> <strong>sum reduce 和 max reduce函数</strong></h2>
+<h2 id="softmax-per-token"><a class="markdownIt-Anchor" href="#softmax-per-token"></a> softmax per-token</h2>
+<ul>
+<li>e^x_i / Σe^x, 一共s*h个block, 每个block处理h个元素, 内部对于e^x进行block all reduce sum计算, 最后exp_val / exp_sum</li>
+</ul>
+<h2 id="safe-softmax-per-token"><a class="markdownIt-Anchor" href="#safe-softmax-per-token"></a> safe softmax per token</h2>
+<h3 id="算法概述"><a class="markdownIt-Anchor" href="#算法概述"></a> <strong>算法概述</strong></h3>
+<p>Safe Softmax 是 Softmax 的数值稳定版本，通过减去最大值来避免指数运算的数值溢出问题。</p>
+<h3 id="标准-softmax-公式"><a class="markdownIt-Anchor" href="#标准-softmax-公式"></a> <strong>标准 Softmax 公式：</strong></h3>
+<p>softmax(x_i) = e^x_i / Σ(e^x_j)</p>
+<h3 id="safe-softmax-公式"><a class="markdownIt-Anchor" href="#safe-softmax-公式"></a> <strong>Safe Softmax 公式：</strong></h3>
+<p>softmax(x_i) = e^(x_i - max(x)) / Σ(e^(x_j - max(x)))</p>
+<h3 id="cuda代码"><a class="markdownIt-Anchor" href="#cuda代码"></a> CUDA代码</h3>
+<p>一共s*h个block, 每个block处理h个元素, 内部对于x进行block all reduce max计算, 再对e^x - max_val进行block all reduce sum计算, 最后exp_val / exp_sum</p>
+<h2 id="online-safe-softmax-per-token"><a class="markdownIt-Anchor" href="#online-safe-softmax-per-token"></a> online safe softmax per token</h2>
+<h3 id="算法概述-2"><a class="markdownIt-Anchor" href="#算法概述-2"></a> <strong>算法概述</strong></h3>
+<p>Online Safe Softmax 是一种更高效的数值稳定 softmax 实现，基于论文 “Online normalizer calculation for softmax”。它通过在线更新的方式，<strong>一次遍历</strong>就完成最大值查找和归一化因子计算，避免了传统两次遍历的开销。</p>
+<h3 id="核心数据结构md"><a class="markdownIt-Anchor" href="#核心数据结构md"></a> 核心数据结构：MD</h3>
+<p><strong>关键思想：</strong> 将 <code>(max, sum_exp)</code> 打包成一个结构体，通过特殊的归约操作同时更新两个值。</p>
+<h3 id="传统方式两次遍历"><a class="markdownIt-Anchor" href="#传统方式两次遍历"></a> <strong>传统方式（两次遍历）：</strong></h3>
+<h3 id="online方式一次遍历"><a class="markdownIt-Anchor" href="#online方式一次遍历"></a> <strong>Online方式（一次遍历）：</strong></h3>
+<p>假设当前状态为 <code>(m_old, d_old)</code>，新来一个值 <code>x_new</code>：</p>
+<p><strong>情况1：</strong><code>x_new ≤ m_old</code></p>
+<p><strong>情况2：</strong><code>x_new &gt; m_old</code></p>
+<h3 id="两个md值合并的数学推导"><a class="markdownIt-Anchor" href="#两个md值合并的数学推导"></a> <strong>两个MD值合并的数学推导</strong></h3>
+<p>假设有两个状态：</p>
+<ul>
+<li>
+<p><code>MD1: (m1, d1)</code> 代表 <code>max=m1, sum_exp=d1</code></p>
+</li>
+<li>
+<p><code>MD2: (m2, d2)</code> 代表 <code>max=m2, sum_exp=d2</code></p>
+</li>
+</ul>
+<p>合并后：</p>
+<ul>
+<li>
+<p><code>m_new = max(m1, m2)</code></p>
+</li>
+<li>
+<p><code>d_new = d1 * exp(m1 - m_new) + d2 * exp(m2 - m_new)</code></p>
+</li>
+</ul>
+<h4 id="md值合并的数学等价性证明"><a class="markdownIt-Anchor" href="#md值合并的数学等价性证明"></a> MD值合并的数学等价性证明</h4>
+<h5 id="问题描述"><a class="markdownIt-Anchor" href="#问题描述"></a> 问题描述</h5>
+<p>我们需要证明：将两个独立计算的softmax状态合并，与直接对所有元素计算softmax是数学等价的。</p>
+<h5 id="符号定义"><a class="markdownIt-Anchor" href="#符号定义"></a> 符号定义</h5>
+<p>假设我们有两组数据：</p>
+<ul>
+<li>
+<p><strong>集合A</strong>: <code>&#123;a₁, a₂, ..., aₙ&#125;</code>，其对应的MD状态为 <code>(m1, d1)</code></p>
+</li>
+<li>
+<p><strong>集合B</strong>: <code>&#123;b₁, b₂, ..., bₖ&#125;</code>,，其对应的MD状态为 <code>(m2, d2)</code></p>
+</li>
+</ul>
+<p>其中：</p>
+<ul>
+<li>
+<p><code>m1 = max(a₁, a₂, ..., aₙ)</code></p>
+</li>
+<li>
+<p><code>d1 = Σᵢ exp(aᵢ - m1) = exp(a₁-m1) + exp(a₂-m1) + ... + exp(aₙ-m1)</code></p>
+</li>
+<li>
+<p><code>m2 = max(b₁, b₂, ..., bₖ)</code></p>
+</li>
+<li>
+<p><code>d2 = Σⱼ exp(bⱼ - m2) = exp(b₁-m2) + exp(b₂-m2) + ... + exp(bₖ-m2)</code></p>
+</li>
+</ul>
+<h5 id="直接计算-vs-合并计算"><a class="markdownIt-Anchor" href="#直接计算-vs-合并计算"></a> 直接计算 vs 合并计算</h5>
+<p><strong>方法1：直接对所有元素计算（标准答案）</strong></p>
+<p>对整个集合 <code>&#123;a₁, ..., aₙ, b₁, ..., bₖ&#125;</code> 直接计算softmax：</p>
+<p><strong>方法2：通过MD合并计算</strong></p>
+<p>使用我们的合并公式：</p>
+<h5 id="等价性证明"><a class="markdownIt-Anchor" href="#等价性证明"></a> 等价性证明</h5>
+<p>我们需要证明：<code>d_direct = d_new</code>（显然 <code>m_direct = m_new</code>）</p>
+<h5 id="情况分析"><a class="markdownIt-Anchor" href="#情况分析"></a> 情况分析</h5>
+<p>不失一般性，假设 <code>m1 ≥ m2</code>，则：</p>
+<ul>
+<li>
+<p><code>m_new = m_direct = m1</code></p>
+</li>
+<li>
+<p><code>m1 - m_new = 0</code></p>
+</li>
+<li>
+<p><code>m2 - m_new = m2 - m1 ≤ 0</code></p>
+</li>
+</ul>
+<h5 id="展开-d_direct"><a class="markdownIt-Anchor" href="#展开-d_direct"></a> 展开 d_direct</h5>
+<p>对于第二项，我们有：</p>
+<p>因此：</p>
+<h5 id="展开-d_new"><a class="markdownIt-Anchor" href="#展开-d_new"></a> 展开 d_new</h5>
+<h5 id="结论"><a class="markdownIt-Anchor" href="#结论"></a> 结论</h5>
+<p><code>d_direct = d_new = d1 + d2 * exp(m2 - m1)</code></p>
+<h5 id="通用情况证明"><a class="markdownIt-Anchor" href="#通用情况证明"></a> 通用情况证明</h5>
+<p>上面我们假设了 <code>m1 ≥ m2</code>，对于 <code>m2 &gt; m1</code> 的情况，证明过程完全类似：</p>
+<p>当 <code>m2 &gt; m1</code> 时：</p>
+<ul>
+<li>
+<p><code>m_new = m2</code></p>
+</li>
+<li>
+<p><code>d_new = d1 * exp(m1 - m2) + d2 * exp(m2 - m2) = d1 * exp(m1 - m2) + d2</code></p>
+</li>
+<li>
+<p><code>d_direct = d1 * exp(m1 - m2) + d2</code></p>
+</li>
+</ul>
+<p>同样成立！</p>
+<h5 id="数学直觉理解"><a class="markdownIt-Anchor" href="#数学直觉理解"></a> 数学直觉理解</h5>
+<p>这个等价性的核心在于<strong>指数函数的性质</strong>：</p>
+<p><code>exp(a - M) = exp(a - m + m - M) = exp(a - m) * exp(m - M)</code></p>
+<p>当我们改变参考点（从局部最大值m到全局最大值M）时，需要用 <code>exp(m - M)</code> 因子来重新调整所有之前计算的指数和。</p>
+<h3 id="算法优势对比"><a class="markdownIt-Anchor" href="#算法优势对比"></a> <strong>算法优势对比</strong></h3>
+<p><strong>传统Safe Softmax vs Online Safe Softmax</strong></p>
+<table>
+<thead>
+<tr>
+<th>特性</th>
+<th>传统方式</th>
+<th>Online方式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>遍历次数</strong></td>
+<td>2次</td>
+<td>1次</td>
+</tr>
+<tr>
+<td><strong>内存访问</strong></td>
+<td>2×N</td>
+<td>1×N</td>
+</tr>
+<tr>
+<td><strong>寄存器使用</strong></td>
+<td>较少</td>
+<td>较多</td>
+</tr>
+<tr>
+<td><strong>数值稳定性</strong></td>
+<td>✓</td>
+<td>✓</td>
+</tr>
+<tr>
+<td><strong>计算复杂度</strong></td>
+<td>O(N)</td>
+<td>O(N)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="性能优势"><a class="markdownIt-Anchor" href="#性能优势"></a> 性能优势</h3>
+<ol>
+<li>
+<p><strong>减少内存访问</strong>：从 2N 降低到 N</p>
+</li>
+<li>
+<p><strong>更好的缓存局部性</strong>：一次遍历，数据在缓存中热度更高</p>
+</li>
+<li>
+<p><strong>减少全局内存延迟</strong>：特别在大序列场景下优势明显</p>
+</li>
+</ol>
+<h3 id="cuda代码-2"><a class="markdownIt-Anchor" href="#cuda代码-2"></a> CUDA代码</h3>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/cuda/" rel="tag"># cuda</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/08/20/%E5%A4%A7%E6%A8%A1%E5%9E%8B-kv-cache-%E8%AF%A6%E8%A7%A3-%E6%8E%A8%E7%90%86%E5%BC%95%E6%93%8E%E4%B8%AD%E7%9A%84-kv-cache-%E5%A4%8D%E7%94%A8/" rel="prev" title="大模型 kv cache 详解 & 推理引擎中的 kv cache 复用">
+                  <i class="fa fa-angle-left"></i> 大模型 kv cache 详解 & 推理引擎中的 kv cache 复用
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2025/08/20/sgemm-%E4%BC%98%E5%8C%96/" rel="next" title="sgemm 优化">
+                  sgemm 优化 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Ronny Lu</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">245k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">14:50</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">false</script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" integrity="sha256-UF1fgpAiu3tPJN/uCqEUHNe7pnr+QR0SQDNfgglgtcM=" crossorigin="anonymous">
+  <script class="next-config" data-name="katex" type="application/json">{"copy_tex_js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/copy-tex.min.js","integrity":"sha256-Us54+rSGDSTvIhKKUs4kygE2ipA0RXpWWh0/zLqw3bs="}}</script>
+  <script src="/js/third-party/math/katex.js"></script>
+
+
+
+</body>
+</html>

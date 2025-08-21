@@ -153,18 +153,18 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">55</span>
+          <span class="site-state-item-count">75</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
           <a href="/categories/">
-        <span class="site-state-item-count">14</span>
+        <span class="site-state-item-count">16</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-count">19</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -190,7 +190,7 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2024/12/16/%E5%B9%B6%E8%A1%8C%E6%97%A0%E9%94%81%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84-%E4%B8%8A-%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5-%E9%93%BE%E8%A1%A8/">
+    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/01/16/01-CUDA-C-Basics/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
@@ -208,7 +208,7 @@
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/2024/12/16/%E5%B9%B6%E8%A1%8C%E6%97%A0%E9%94%81%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84-%E4%B8%8A-%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5-%E9%93%BE%E8%A1%A8/" class="post-title-link" itemprop="url">并行无锁数据结构(上) - 基本概念, 链表</a>
+          <a href="/2025/01/16/01-CUDA-C-Basics/" class="post-title-link" itemprop="url">01 CUDA C Basics</a>
         </h2>
 
         <div class="post-meta-container">
@@ -220,7 +220,7 @@
       <span class="post-meta-item-text">发表于</span>
       
 
-      <time title="创建时间：2024-12-16 21:54:21 / 修改时间：21:58:04" itemprop="dateCreated datePublished" datetime="2024-12-16T21:54:21+08:00">2024-12-16</time>
+      <time title="创建时间：2025-01-16 16:41:38 / 修改时间：16:44:09" itemprop="dateCreated datePublished" datetime="2025-01-16T16:41:38+08:00">2025-01-16</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -228,7 +228,7 @@
       </span>
       <span class="post-meta-item-text">分类于</span>
         <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/c/" itemprop="url" rel="index"><span itemprop="name">c++</span></a>
+          <a href="/categories/cuda/" itemprop="url" rel="index"><span itemprop="name">cuda</span></a>
         </span>
     </span>
 
@@ -239,121 +239,7 @@
         <i class="far fa-file-word"></i>
       </span>
       <span class="post-meta-item-text">本文字数：</span>
-      <span>3.1k</span>
-    </span>
-    <span class="post-meta-item" title="阅读时长">
-      <span class="post-meta-item-icon">
-        <i class="far fa-clock"></i>
-      </span>
-      <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>11 分钟</span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h1 id="基本概念"><a class="markdownIt-Anchor" href="#基本概念"></a> 基本概念</h1>
-<h2 id="fine-grained-lock-vs-lock-free"><a class="markdownIt-Anchor" href="#fine-grained-lock-vs-lock-free"></a> Fine-grained Lock vs. Lock Free</h2>
-<ul>
-<li><strong>Fine-grained lock</strong><br />
-Slow down all the threads if one thread  is stuck inside the critical section.  <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">spin_lock.<span class="built_in">lock</span>();</span><br><span class="line">x= new_value; <span class="comment">// </span></span><br><span class="line">spin_lock.<span class="built_in">unlock</span>();</span><br></pre></td></tr></table></figure>
-</li>
-<li><strong>Lock Free</strong>
-<ul>
-<li>no stuck in critical section (critical section is a single atomic operation)</li>
-<li>If one thread fails at CAS, there must be another thread succeeds at the CAS (system-wide progress).</li>
-</ul>
-  <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">auto</span> expected = x.<span class="built_in">load</span>();</span><br><span class="line"><span class="keyword">do</span> &#123;</span><br><span class="line">	<span class="type">const</span> <span class="type">bool</span> ok = x.<span class="built_in">compare_exchange_strong</span>(expected, new_value);</span><br><span class="line">&#125; <span class="keyword">while</span> (!ok);</span><br><span class="line"><span class="comment">// x.compare_exchange_strong(expected, new_value) 的意思是：</span></span><br><span class="line"><span class="comment">// 如果 x 的当前值等于 expected，就把 new_value 赋值给 x，并且返回 true</span></span><br><span class="line"><span class="comment">// 否则把 x 的当前值传给 expected，返回 false</span></span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2024/12/16/%E5%B9%B6%E8%A1%8C%E6%97%A0%E9%94%81%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84-%E4%B8%8A-%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5-%E9%93%BE%E8%A1%A8/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2024/12/16/%E5%8F%82%E6%95%B0%E4%BC%A0%E9%80%92/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
-      <meta itemprop="name" content="Ronny Lu">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ronny Lu's blog">
-      <meta itemprop="description" content="Tech notes on LLM, LLM Infra, and others">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="undefined | Ronny Lu's blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2024/12/16/%E5%8F%82%E6%95%B0%E4%BC%A0%E9%80%92/" class="post-title-link" itemprop="url">参数传递</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2024-12-16 21:47:41 / 修改时间：21:48:24" itemprop="dateCreated datePublished" datetime="2024-12-16T21:47:41+08:00">2024-12-16</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">分类于</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/c/" itemprop="url" rel="index"><span itemprop="name">c++</span></a>
-        </span>
-    </span>
-
-  
-    <span class="post-meta-break"></span>
-    <span class="post-meta-item" title="本文字数">
-      <span class="post-meta-item-icon">
-        <i class="far fa-file-word"></i>
-      </span>
-      <span class="post-meta-item-text">本文字数：</span>
-      <span>923</span>
+      <span>848</span>
     </span>
     <span class="post-meta-item" title="阅读时长">
       <span class="post-meta-item-icon">
@@ -371,11 +257,18 @@ Slow down all the threads if one thread  is stuck inside the critica
     
     
     <div class="post-body" itemprop="articleBody">
-          <h1 id="参数"><a class="markdownIt-Anchor" href="#参数"></a> 参数</h1>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241216214303103.png" alt="image.png" /></p>
+          <h2 id="课程链接"><a class="markdownIt-Anchor" href="#课程链接"></a> 课程链接</h2>
+<p><a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1JJ4m1P7xW">【Nvidia官方课程】CUDA入门课【中英字幕】_哔哩哔哩_bilibili</a>﻿<br />
+﻿<a target="_blank" rel="noopener" href="https://www.olcf.ornl.gov/cuda-training-series/">https://www.olcf.ornl.gov/cuda-training-series/</a></p>
+<h2 id="cuda-intro"><a class="markdownIt-Anchor" href="#cuda-intro"></a> CUDA Intro</h2>
+<p><strong>异构计算</strong></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116162334293.png" alt="image.png" /></p>
+<p>GPU加速</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116162343989.png" alt="image.png" /></p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116162352994.png" alt="image.png" /></p>
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/2024/12/16/%E5%8F%82%E6%95%B0%E4%BC%A0%E9%80%92/#more" rel="contents">
+              <a class="btn" href="/2025/01/16/01-CUDA-C-Basics/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -406,7 +299,7 @@ Slow down all the threads if one thread  is stuck inside the critica
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2024/12/16/%E5%8F%B3%E5%80%BC%E5%BC%95%E7%94%A8/">
+    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/01/16/%E5%A4%9A%E6%A8%A1%E6%80%81%E6%80%BB%E7%BB%93/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
@@ -424,7 +317,7 @@ Slow down all the threads if one thread  is stuck inside the critica
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/2024/12/16/%E5%8F%B3%E5%80%BC%E5%BC%95%E7%94%A8/" class="post-title-link" itemprop="url">右值引用</a>
+          <a href="/2025/01/16/%E5%A4%9A%E6%A8%A1%E6%80%81%E6%80%BB%E7%BB%93/" class="post-title-link" itemprop="url">多模态总结</a>
         </h2>
 
         <div class="post-meta-container">
@@ -436,7 +329,7 @@ Slow down all the threads if one thread  is stuck inside the critica
       <span class="post-meta-item-text">发表于</span>
       
 
-      <time title="创建时间：2024-12-16 21:39:43 / 修改时间：21:40:12" itemprop="dateCreated datePublished" datetime="2024-12-16T21:39:43+08:00">2024-12-16</time>
+      <time title="创建时间：2025-01-16 16:17:42 / 修改时间：16:19:01" itemprop="dateCreated datePublished" datetime="2025-01-16T16:17:42+08:00">2025-01-16</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -444,7 +337,15 @@ Slow down all the threads if one thread  is stuck inside the critica
       </span>
       <span class="post-meta-item-text">分类于</span>
         <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/c/" itemprop="url" rel="index"><span itemprop="name">c++</span></a>
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">大模型</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E8%AE%BA%E6%96%87%E7%B2%BE%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">论文精读</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E8%AE%BA%E6%96%87%E7%B2%BE%E8%AF%BB/%E5%A4%9A%E6%A8%A1%E6%80%81/" itemprop="url" rel="index"><span itemprop="name">多模态</span></a>
         </span>
     </span>
 
@@ -455,14 +356,14 @@ Slow down all the threads if one thread  is stuck inside the critica
         <i class="far fa-file-word"></i>
       </span>
       <span class="post-meta-item-text">本文字数：</span>
-      <span>735</span>
+      <span>987</span>
     </span>
     <span class="post-meta-item" title="阅读时长">
       <span class="post-meta-item-icon">
         <i class="far fa-clock"></i>
       </span>
       <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>3 分钟</span>
+      <span>4 分钟</span>
     </span>
 </div>
 
@@ -473,17 +374,11 @@ Slow down all the threads if one thread  is stuck inside the critica
     
     
     <div class="post-body" itemprop="articleBody">
-          <h1 id="基础概念"><a class="markdownIt-Anchor" href="#基础概念"></a> 基础概念</h1>
-<h2 id="表达式expression"><a class="markdownIt-Anchor" href="#表达式expression"></a> 表达式（Expression）</h2>
-<p>C++表达式是运算符和操作数的组合。运算符包括赋值、数逻比较和函数等，操作数包括变量和literal等。例子：<br />
-1. <code>foo(x + y)</code><br />
-2. <code>1 + b * foo()</code><br />
-3. <code>a = 1 + b * foo()</code><br />
-4. <code>a == b &amp;&amp; a &lt; c</code><br />
-5. <code>((i &lt; 3) ? i : j)=7</code></p>
+          <p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116161802558.png" alt="image.png" /></p>
+<p><strong>VIT</strong>: 多模态学习之前, 都是Oscar或者Uniter这些工作, 他们的缺陷都是因为里面用了一个Object Detection的模型去做视觉特征的抽取, 这种方法就太慢而且太贵了</p>
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/2024/12/16/%E5%8F%B3%E5%80%BC%E5%BC%95%E7%94%A8/#more" rel="contents">
+              <a class="btn" href="/2025/01/16/%E5%A4%9A%E6%A8%A1%E6%80%81%E6%80%BB%E7%BB%93/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -514,7 +409,7 @@ Slow down all the threads if one thread  is stuck inside the critica
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2024/12/16/C-%E5%B8%B8%E8%A7%81%E7%BC%96%E7%A8%8B%E9%94%99%E8%AF%AF%E6%80%BB%E7%BB%93/">
+    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/01/16/BeiTv3/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
@@ -532,7 +427,7 @@ Slow down all the threads if one thread  is stuck inside the critica
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/2024/12/16/C-%E5%B8%B8%E8%A7%81%E7%BC%96%E7%A8%8B%E9%94%99%E8%AF%AF%E6%80%BB%E7%BB%93/" class="post-title-link" itemprop="url">C++常见编程错误总结</a>
+          <a href="/2025/01/16/BeiTv3/" class="post-title-link" itemprop="url">BeiTv3</a>
         </h2>
 
         <div class="post-meta-container">
@@ -544,7 +439,7 @@ Slow down all the threads if one thread  is stuck inside the critica
       <span class="post-meta-item-text">发表于</span>
       
 
-      <time title="创建时间：2024-12-16 21:19:12 / 修改时间：21:26:14" itemprop="dateCreated datePublished" datetime="2024-12-16T21:19:12+08:00">2024-12-16</time>
+      <time title="创建时间：2025-01-16 16:17:04 / 修改时间：16:17:31" itemprop="dateCreated datePublished" datetime="2025-01-16T16:17:04+08:00">2025-01-16</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -552,7 +447,15 @@ Slow down all the threads if one thread  is stuck inside the critica
       </span>
       <span class="post-meta-item-text">分类于</span>
         <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/c/" itemprop="url" rel="index"><span itemprop="name">c++</span></a>
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">大模型</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E8%AE%BA%E6%96%87%E7%B2%BE%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">论文精读</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E8%AE%BA%E6%96%87%E7%B2%BE%E8%AF%BB/%E5%A4%9A%E6%A8%A1%E6%80%81/" itemprop="url" rel="index"><span itemprop="name">多模态</span></a>
         </span>
     </span>
 
@@ -563,14 +466,14 @@ Slow down all the threads if one thread  is stuck inside the critica
         <i class="far fa-file-word"></i>
       </span>
       <span class="post-meta-item-text">本文字数：</span>
-      <span>417</span>
+      <span>1.5k</span>
     </span>
     <span class="post-meta-item" title="阅读时长">
       <span class="post-meta-item-icon">
         <i class="far fa-clock"></i>
       </span>
       <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>2 分钟</span>
+      <span>5 分钟</span>
     </span>
 </div>
 
@@ -581,11 +484,18 @@ Slow down all the threads if one thread  is stuck inside the critica
     
     
     <div class="post-body" itemprop="articleBody">
-          <h1 id="i-more-efficient-than-i"><a class="markdownIt-Anchor" href="#i-more-efficient-than-i"></a> <ins>i More Efficient Than i</ins></h1>
-<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20241216193001450.png" alt="image.png" /></p>
+          <p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116161612285.png" alt="image.png" /></p>
+<blockquote>
+<p>🔗 原文链接：<a target="_blank" rel="noopener" href="https://blog.csdn.net/lansebingxuan/article/details/131609713">https://blog.csdn.net/lansebingxuan/article/details/13160…</a></p>
+</blockquote>
+<p>论文地址：<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2208.10442">Image as a Foreign Language: BEIT Pretraining for All Vision and Vision-Language Tasks</a></p>
+<p>论文代码：<a target="_blank" rel="noopener" href="https://github.com/microsoft/unilm/tree/master/beit3">BEiT-3</a></p>
+<h2 id="引言-big-convergence大一统"><a class="markdownIt-Anchor" href="#引言-big-convergence大一统"></a> 引言 Big Convergence（大一统）</h2>
+<p>最近不论是在Language、Vision还是在多模态领域，Big Convergence是大势所趋，也就是在超大的数据集上做大规模的预训练，一旦模型训练好之后，它的特征就已经非常好了，可以直接Transfer到下游任务上去，尤其是当模型足够大、数据足够多的时候，有可能预训练出来一个有通用性能的Foundation Model，这个Foundation Model能解决各种的模态或者各种下游任务，非常的强大。</p>
+<p>本文将大一统继续向前推进，彻底将多模态尤其是Vision Language预训练得很好，主要是从以下的三个方面实现大一统：</p>
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/2024/12/16/C-%E5%B8%B8%E8%A7%81%E7%BC%96%E7%A8%8B%E9%94%99%E8%AF%AF%E6%80%BB%E7%BB%93/#more" rel="contents">
+              <a class="btn" href="/2025/01/16/BeiTv3/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -616,7 +526,7 @@ Slow down all the threads if one thread  is stuck inside the critica
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2024/12/16/hello-world/">
+    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/01/16/CoCa/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
@@ -634,7 +544,7 @@ Slow down all the threads if one thread  is stuck inside the critica
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/2024/12/16/hello-world/" class="post-title-link" itemprop="url">Hello World</a>
+          <a href="/2025/01/16/CoCa/" class="post-title-link" itemprop="url">CoCa</a>
         </h2>
 
         <div class="post-meta-container">
@@ -646,7 +556,24 @@ Slow down all the threads if one thread  is stuck inside the critica
       <span class="post-meta-item-text">发表于</span>
       
 
-      <time title="创建时间：2024-12-16 16:12:20 / 修改时间：21:26:24" itemprop="dateCreated datePublished" datetime="2024-12-16T16:12:20+08:00">2024-12-16</time>
+      <time title="创建时间：2025-01-16 16:15:29 / 修改时间：16:15:47" itemprop="dateCreated datePublished" datetime="2025-01-16T16:15:29+08:00">2025-01-16</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">大模型</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E8%AE%BA%E6%96%87%E7%B2%BE%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">论文精读</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E8%AE%BA%E6%96%87%E7%B2%BE%E8%AF%BB/%E5%A4%9A%E6%A8%A1%E6%80%81/" itemprop="url" rel="index"><span itemprop="name">多模态</span></a>
+        </span>
     </span>
 
   
@@ -656,14 +583,14 @@ Slow down all the threads if one thread  is stuck inside the critica
         <i class="far fa-file-word"></i>
       </span>
       <span class="post-meta-item-text">本文字数：</span>
-      <span>79</span>
+      <span>1.1k</span>
     </span>
     <span class="post-meta-item" title="阅读时长">
       <span class="post-meta-item-icon">
         <i class="far fa-clock"></i>
       </span>
       <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>1 分钟</span>
+      <span>4 分钟</span>
     </span>
 </div>
 
@@ -674,10 +601,725 @@ Slow down all the threads if one thread  is stuck inside the critica
     
     
     <div class="post-body" itemprop="articleBody">
-          <p>Welcome to <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a target="_blank" rel="noopener" href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a target="_blank" rel="noopener" href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a target="_blank" rel="noopener" href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
+          <blockquote>
+<p>🔗 原文链接：<a target="_blank" rel="noopener" href="https://blog.csdn.net/lansebingxuan/article/details/131611916">https://blog.csdn.net/lansebingxuan/article/details/13161…</a></p>
+</blockquote>
+<p>论文地址：<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2205.01917v1">CoCa: Contrastive Captioners are Image-Text Foundation Models</a></p>
+<p>代码地址：<a target="_blank" rel="noopener" href="https://github.com/lucidrains/CoCa-pytorch">CoCa</a></p>
+<p>CoCa代表Contrastive Captioners的缩写，代表模型用两个目标函数训练出来的，一个是Contrastive Loss，一个是Captioning Loss。本文因为数据集更大，模型也更大，所以它的效果很好，在多模态所有的任务均SOTA，而且在单模态里，在ImageNet上也得到了90以上的Top1准确度，在视频动作识别领域，在Paper with Code上CoCa在K400、K600、K700这些数据集上排名前三。</p>
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/2024/12/16/hello-world/#more" rel="contents">
+              <a class="btn" href="/2025/01/16/CoCa/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/01/16/BLIP/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
+      <meta itemprop="name" content="Ronny Lu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ronny Lu's blog">
+      <meta itemprop="description" content="Tech notes on LLM, LLM Infra, and others">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | Ronny Lu's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2025/01/16/BLIP/" class="post-title-link" itemprop="url">BLIP</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-01-16 16:13:39 / 修改时间：16:14:54" itemprop="dateCreated datePublished" datetime="2025-01-16T16:13:39+08:00">2025-01-16</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">大模型</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E8%AE%BA%E6%96%87%E7%B2%BE%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">论文精读</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E8%AE%BA%E6%96%87%E7%B2%BE%E8%AF%BB/%E5%A4%9A%E6%A8%A1%E6%80%81/" itemprop="url" rel="index"><span itemprop="name">多模态</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>3.8k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>14 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote>
+<p>🔗 原文链接：<a target="_blank" rel="noopener" href="https://blog.csdn.net/lansebingxuan/article/details/131594387">https://blog.csdn.net/lansebingxuan/article/details/13159…</a></p>
+</blockquote>
+<p>论文地址：<a target="_blank" rel="noopener" href="https://arxiv.org/pdf/2201.12086.pdf">BLIP: Bootstrapping Language-Image Pre-training for Unified Vision-Language Understanding and Generation</a></p>
+<p>论文代码：<a target="_blank" rel="noopener" href="https://github.com/salesforce/BLIP">https://github.com/salesforce/BLIP</a></p>
+<p>BLIP是ALBEF原班人马做的, 借鉴了很多ALBEF的思想, <strong>BLIP设计了一个多模态混合编解码器（MED），能够实现 3 种功能：单模态编码、基于图像的文本编码、基于图像的文本解码</strong></p>
+<h3 id="研究动机及本文贡献"><a class="markdownIt-Anchor" href="#研究动机及本文贡献"></a> 研究动机及本文贡献</h3>
+<ol>
+<li>
+<p><strong>从模型角度</strong>：最近的一些方法通常有2种模型实现方式，1）Transformer Encoder结果的模型，比如Clip、ALBEF，2）Transformer Encoder、Decoder结构的模型，比如SimVLM。第一种Encoder Only的模型无法直接运用到Text Generation的任务，比如图像生成字幕，因为它只有编码器没有解码器，需要加一些模块做Text Generation的任务；第二种Encoder、Decoder虽然有Decoder可以做生成的任务，但因为没有一个统一的框架，所以它不能直接用来做Image Text Retrieval的任务，因此需要提出一个Unified的统一的框架，用一个模型把所有的任务都解决。BLIP这篇论文就是（利用了很多VLMO里的想法）<strong>把模型设计成一个灵活的框架，从而构造一个Unified Framework</strong>。</p>
+</li>
+<li>
+<p><strong>从数据角度</strong>：目前表现出色的方法比如Clip、ALBEF和SimVLM都是在大规模从网上爬下来的非常Noisy的Image Text Pair数据集上预训练模型，虽然当数据集足够大能够弥补一些嘈杂数据集带来的影响，但BLIP论文指出，使用Noisy的数据集去预训练效果不佳，不是最优解，BLIP论文提出<strong>Captioner和Filter 模块</strong>，Captioner的作用是给定任意一张图片，用Captioner生成一些字幕，从而得到大量的合成数据Synthetic Data，同时去训练一个Filtering Model，把图像和文本不匹配的对从数据集里删掉。作者训练的Captioner模型，可以生成非常好的有描述性的文本，因此训练的filtering模型会选择这个图像文本对去进行模型的训练，而不用原来那个真实的图像文本对去进行训练，这样能够有效地清洗Noisy的DataSet，让模型更好地利用数据集里的图像文本配对信息。</p>
+</li>
+</ol>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2025/01/16/BLIP/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/01/16/VLMO/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
+      <meta itemprop="name" content="Ronny Lu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ronny Lu's blog">
+      <meta itemprop="description" content="Tech notes on LLM, LLM Infra, and others">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | Ronny Lu's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2025/01/16/VLMO/" class="post-title-link" itemprop="url">VLMO</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-01-16 16:12:59 / 修改时间：16:42:42" itemprop="dateCreated datePublished" datetime="2025-01-16T16:12:59+08:00">2025-01-16</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">大模型</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E8%AE%BA%E6%96%87%E7%B2%BE%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">论文精读</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E8%AE%BA%E6%96%87%E7%B2%BE%E8%AF%BB/%E5%A4%9A%E6%A8%A1%E6%80%81/" itemprop="url" rel="index"><span itemprop="name">多模态</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>1.9k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>7 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote>
+<p>🔗 原文链接：<a target="_blank" rel="noopener" href="https://blog.csdn.net/lansebingxuan/article/details/131749829">https://blog.csdn.net/lansebingxuan/article/details/13174…</a></p>
+</blockquote>
+<p>论文地址：<a target="_blank" rel="noopener" href="https://arxiv.org/pdf/2111.02358.pdf">VLMO: Unified Vision-Language Pre-Training with Mixture-of-Modality-Experts</a></p>
+<p>论文代码：<a target="_blank" rel="noopener" href="https://github.com/microsoft/unilm/tree/master/vlmo">VLMO</a></p>
+<p>VLMo提出了一种统一的视觉语言预训练模型（VLMO），该模型既可以用作双编码器，对检索任务的图像和文本进行单独编码，也可以用作融合编码器，对分类任务的图像-文本对的深度交互进行建模。</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2025/01/16/VLMO/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/01/16/ALBEF/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
+      <meta itemprop="name" content="Ronny Lu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ronny Lu's blog">
+      <meta itemprop="description" content="Tech notes on LLM, LLM Infra, and others">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | Ronny Lu's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2025/01/16/ALBEF/" class="post-title-link" itemprop="url">ALBEF</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-01-16 16:10:11 / 修改时间：16:14:24" itemprop="dateCreated datePublished" datetime="2025-01-16T16:10:11+08:00">2025-01-16</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">大模型</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E8%AE%BA%E6%96%87%E7%B2%BE%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">论文精读</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E8%AE%BA%E6%96%87%E7%B2%BE%E8%AF%BB/%E5%A4%9A%E6%A8%A1%E6%80%81/" itemprop="url" rel="index"><span itemprop="name">多模态</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>3.3k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>12 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p>ALBEF来自于Align before Fuse，作者团队全自来自于Salesforce Research。</p>
+<p>论文地址：<a target="_blank" rel="noopener" href="https://arxiv.org/pdf/2107.07651.pdf">Align before Fuse: Vision and Language Representation Learning with Momentum Distillation</a></p>
+<p>论文代码：<a target="_blank" rel="noopener" href="https://github.com/salesforce/ALBEF">ALBEF</a></p>
+<h1 id="摘要"><a class="markdownIt-Anchor" href="#摘要"></a> 摘要</h1>
+<p>最近图像文本的大规模的特征学习非常火爆，大部分已有的方法都是用一个Transformer模型作为多模态的一个编码器，同时编码视觉的Token和文本的Token，视觉Token就是视觉特征，一般是region-based的图像特征。</p>
+<p><strong>本文贡献1–ALign BEfore Fuse：</strong></p>
+<p>ViLT和ALBEF都认为不需要目标检测的模型，但ViLT只是说用了目标检测模型以后速度太慢，希望推理时间变得更快，但是ALBEF分析认为<strong>使用预训练的目标检测器之后，视觉特征和文本特征无法align对齐</strong>，因为目标检测器是提前训练好的，只抽取特征，没有再进行end-to-end的训练，所以导致视觉特征和文本特征可能相隔很远，此时将两个特征同时送入多模态的编码器之后，编码器学习图像文本之间的交互信息就会变得很有挑战。<strong>作者提出对比学习的ITC Loss，将图像和文本在Fusing之前实现Align，也就是他们论文的题目ALign BEfore Fuse。</strong></p>
+<p><strong>本文贡献2–自训练方式学习：</strong></p>
+<p>网上爬取的数据特别noisy，因为图片文本对里面的文本通常具备搜索属性，但不是好的描述性句子，甚至没有描述，这种noisy web data的问题影响模型有效地学习文本图像特征，所以作者<strong>使用Momentum Distillation也就是自训练的方式去学习</strong>，自训练就是用Pseudo Label伪标签去学习。<strong>作者采用Moco提出的Momentum Encoder的形式生成Pseudo Target，从而达到一个自训练的效果。</strong></p>
+<p>在图文检索的任务上，ALBEF的效果最好，性能反超之前的方法，尤其是在特别大的数据上训练过的模型CLIP和Align。在VQA和VR任务上，ALBEF也比之前state of art提升2.37%、3.84%的准确度，而且推理时间也更快。模型在4 million的训练数据集下，能做到一个8卡A100训练三四天的时间，训练门槛大大降低。</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2025/01/16/ALBEF/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/01/16/ViLT/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
+      <meta itemprop="name" content="Ronny Lu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ronny Lu's blog">
+      <meta itemprop="description" content="Tech notes on LLM, LLM Infra, and others">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | Ronny Lu's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2025/01/16/ViLT/" class="post-title-link" itemprop="url">ViLT</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-01-16 16:06:46 / 修改时间：16:08:55" itemprop="dateCreated datePublished" datetime="2025-01-16T16:06:46+08:00">2025-01-16</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">大模型</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E8%AE%BA%E6%96%87%E7%B2%BE%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">论文精读</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E8%AE%BA%E6%96%87%E7%B2%BE%E8%AF%BB/%E5%A4%9A%E6%A8%A1%E6%80%81/" itemprop="url" rel="index"><span itemprop="name">多模态</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>1.3k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>5 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p><strong>ViLT：最简单的多模态Transformer</strong></p>
+<h1 id="综述"><a class="markdownIt-Anchor" href="#综述"></a> 综述</h1>
+<p>作者根据下面两点将当前 VLP(Vision-and-Language Pre-training) 模型分成了四大类，并且总结了不同类别方法的特点：</p>
+<ul>
+<li>
+<p>图像和文本的表达力度是不是平衡，如参数量和计算</p>
+</li>
+<li>
+<p>图像和文本两个模态的信息是怎么融合的</p>
+</li>
+</ul>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250116160713958.png" alt="image.png" /></p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2025/01/16/ViLT/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/01/15/MOCO/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
+      <meta itemprop="name" content="Ronny Lu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ronny Lu's blog">
+      <meta itemprop="description" content="Tech notes on LLM, LLM Infra, and others">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | Ronny Lu's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2025/01/15/MOCO/" class="post-title-link" itemprop="url">MOCO</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2025-01-15 20:20:16" itemprop="dateCreated datePublished" datetime="2025-01-15T20:20:16+08:00">2025-01-15</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2025-01-16 15:09:57" itemprop="dateModified" datetime="2025-01-16T15:09:57+08:00">2025-01-16</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">大模型</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E8%AE%BA%E6%96%87%E7%B2%BE%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">论文精读</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E8%AE%BA%E6%96%87%E7%B2%BE%E8%AF%BB/%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0/" itemprop="url" rel="index"><span itemprop="name">对比学习</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>1.6k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>6 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p>论文地址 : <a target="_blank" rel="noopener" href="https://arxiv.org/abs/1911.05722">https://arxiv.org/abs/1911.05722</a></p>
+<p>论文代码(官方) : <a target="_blank" rel="noopener" href="https://github.com/facebookresearch/moco">https://github.com/facebookresearch/moco</a></p>
+<p>视频解读 : <a target="_blank" rel="noopener" href="https://www.bilibili.com/video/av422340209">MoCo 论文逐段精读【论文精读】_哔哩哔哩_bilibili</a></p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2025/01/15/MOCO/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/01/10/DALL%C2%B7E-2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
+      <meta itemprop="name" content="Ronny Lu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ronny Lu's blog">
+      <meta itemprop="description" content="Tech notes on LLM, LLM Infra, and others">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | Ronny Lu's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2025/01/10/DALL%C2%B7E-2/" class="post-title-link" itemprop="url">DALL·E 2</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2025-01-10 18:41:14" itemprop="dateCreated datePublished" datetime="2025-01-10T18:41:14+08:00">2025-01-10</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2025-01-16 16:43:12" itemprop="dateModified" datetime="2025-01-16T16:43:12+08:00">2025-01-16</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">大模型</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E8%AE%BA%E6%96%87%E7%B2%BE%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">论文精读</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E8%AE%BA%E6%96%87%E7%B2%BE%E8%AF%BB/AIGC/" itemprop="url" rel="index"><span itemprop="name">AIGC</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>5.2k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>19 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p><a target="_blank" rel="noopener" href="https://cdn.openai.com/papers/dall-e-2.pdf">《Hierarchical Text-Conditional Image Generation with CLIP Latents》</a></p>
+<p>Paper: <a target="_blank" rel="noopener" href="https://cdn.openai.com/papers/dall-e-2.pdf">https://cdn.openai.com/papers/dall-e-2.pdf</a></p>
+<p>Project: <a target="_blank" rel="noopener" href="https://openai.com/product/dall-e-2">https://openai.com/product/dall-e-2</a></p>
+<p>Author: OpenAI</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2025/01/10/DALL%C2%B7E-2/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -701,7 +1343,7 @@ Slow down all the threads if one thread  is stuck inside the critica
 
 
   <nav class="pagination">
-    <a class="extend prev" rel="prev" title="上一页" aria-label="上一页" href="/page/5/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/5/">5</a><span class="page-number current">6</span>
+    <a class="extend prev" rel="prev" title="上一页" aria-label="上一页" href="/page/5/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/5/">5</a><span class="page-number current">6</span><a class="page-number" href="/page/7/">7</a><a class="page-number" href="/page/8/">8</a><a class="extend next" rel="next" title="下一页" aria-label="下一页" href="/page/7/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 </div>
@@ -724,14 +1366,14 @@ Slow down all the threads if one thread  is stuck inside the critica
       <i class="fa fa-chart-line"></i>
     </span>
       <span>站点总字数：</span>
-    <span title="站点总字数">194k</span>
+    <span title="站点总字数">245k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span>站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">11:46</span>
+    <span title="站点阅读时长">14:50</span>
   </span>
 </div>
 <div class="busuanzi-count">

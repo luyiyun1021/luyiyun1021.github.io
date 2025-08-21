@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="https://avatars.githubusercontent.com/u/55233584?v=4">
+  <link rel="icon" type="image/png" sizes="32x32" href="https://avatars.githubusercontent.com/u/55233584?v=4">
+  <link rel="icon" type="image/png" sizes="16x16" href="https://avatars.githubusercontent.com/u/55233584?v=4">
+  <link rel="mask-icon" href="https://avatars.githubusercontent.com/u/55233584?v=4" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-minimal.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"luyiyun1021.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.22.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="🔗 原文链接：https:&#x2F;&#x2F;zhuanlan.zhihu.com&#x2F;p&#x2F;494144694  本篇文章是深入浅出GPU优化系列的第4个专题，主要是介绍如何对gemv算法进行优化。gemv，即矩阵向量乘，即计算一个矩阵A与一个向量x的乘积，这是并行计算中的经典话题。个人感觉，gemv的优化核心是需要考虑不同shape的情况，然后针对型地进行优化。本篇文章会先介绍一下针对不同shape设计不同的并">
+<meta property="og:type" content="article">
+<meta property="og:title" content="sgemv 优化">
+<meta property="og:url" content="https://luyiyun1021.github.io/2025/08/20/sgemv-%E4%BC%98%E5%8C%96/index.html">
+<meta property="og:site_name" content="Ronny Lu&#39;s blog">
+<meta property="og:description" content="🔗 原文链接：https:&#x2F;&#x2F;zhuanlan.zhihu.com&#x2F;p&#x2F;494144694  本篇文章是深入浅出GPU优化系列的第4个专题，主要是介绍如何对gemv算法进行优化。gemv，即矩阵向量乘，即计算一个矩阵A与一个向量x的乘积，这是并行计算中的经典话题。个人感觉，gemv的优化核心是需要考虑不同shape的情况，然后针对型地进行优化。本篇文章会先介绍一下针对不同shape设计不同的并">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250716171050133.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250716171059369.png">
+<meta property="og:image" content="https://bj.bcebos.com/brainbox-online/app/brainBox/image/webScissorStorage/385e109493b44d27b70ef647f4a48660">
+<meta property="og:image" content="https://bj.bcebos.com/brainbox-online/app/brainBox/image/webScissorStorage/1ac45885710643fa8883de038fdd3649">
+<meta property="article:published_time" content="2025-08-20T08:23:50.000Z">
+<meta property="article:modified_time" content="2025-08-20T08:24:15.497Z">
+<meta property="article:author" content="Ronny Lu">
+<meta property="article:tag" content="cuda">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250716171050133.png">
+
+
+<link rel="canonical" href="https://luyiyun1021.github.io/2025/08/20/sgemv-%E4%BC%98%E5%8C%96/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://luyiyun1021.github.io/2025/08/20/sgemv-%E4%BC%98%E5%8C%96/","path":"2025/08/20/sgemv-优化/","title":"sgemv 优化"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>sgemv 优化 | Ronny Lu's blog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<style>.darkmode--activated{--body-bg-color:#282828;--content-bg-color:#333;--card-bg-color:#555;--text-color:#ccc;--blockquote-color:#bbb;--link-color:#ccc;--link-hover-color:#eee;--brand-color:#ddd;--brand-hover-color:#ddd;--table-row-odd-bg-color:#282828;--table-row-hover-bg-color:#363636;--menu-item-bg-color:#555;--btn-default-bg:#222;--btn-default-color:#ccc;--btn-default-border-color:#555;--btn-default-hover-bg:#666;--btn-default-hover-color:#ccc;--btn-default-hover-border-color:#666;--highlight-background:#282b2e;--highlight-foreground:#a9b7c6;--highlight-gutter-background:#34393d;--highlight-gutter-foreground:#9ca9b6}.darkmode--activated img{opacity:.75}.darkmode--activated img:hover{opacity:.9}.darkmode--activated code{color:#69dbdc;background:0 0}button.darkmode-toggle{z-index:9999}.darkmode-ignore,img{display:flex!important}.beian img{display:inline-block!important}</style></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Ronny Lu's blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-overview-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Ronny Lu"
+      src="https://avatars.githubusercontent.com/u/55233584?v=4">
+  <p class="site-author-name" itemprop="name">Ronny Lu</p>
+  <div class="site-description" itemprop="description">Tech notes on LLM, LLM Infra, and others</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">75</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">16</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">19</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/08/20/sgemv-%E4%BC%98%E5%8C%96/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
+      <meta itemprop="name" content="Ronny Lu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ronny Lu's blog">
+      <meta itemprop="description" content="Tech notes on LLM, LLM Infra, and others">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="sgemv 优化 | Ronny Lu's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          sgemv 优化
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-08-20 16:23:50 / 修改时间：16:24:15" itemprop="dateCreated datePublished" datetime="2025-08-20T16:23:50+08:00">2025-08-20</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/cuda/" itemprop="url" rel="index"><span itemprop="name">cuda</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>2.4k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>9 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><blockquote>
+<p>🔗 原文链接：<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/494144694">https://zhuanlan.zhihu.com/p/494144694</a></p>
+</blockquote>
+<p>本篇文章是深入浅出GPU优化系列的第4个专题，主要是介绍<strong>如何对gemv算法进行优化</strong>。gemv，即矩阵向量乘，即计算一个矩阵A与一个向量x的乘积，这是并行计算中的经典话题。个人感觉，<strong>gemv的优化核心是需要考虑不同shape的情况，然后针对型地进行优化</strong>。本篇文章会先介绍一下针对不同shape设计不同的并行算法，然后说明一下优化思路和相关优化技巧，最后说一下实验效果，在A矩阵列数为16 128的时候，我写的gemv能拥有超越cublas的性能表现。</p>
+<p><strong>一、前言</strong></p>
+<p>首先介绍一下gemv算法。给定矩阵A: m * n 和向量x: n * 1，gemv需要计算两者的乘积，示意图如下：</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250716171050133.png" alt="image.png" /></p>
+<span id="more"></span>
+<p><strong>二、针对不同shape的并行算法设计</strong></p>
+<p>这次讲到并行算法设计，什么叫并行算法设计。每个人的理解都不太一样，在GPU中，我的理解就是：<strong>设计block和thread的workload，说白了就是要搞清楚一个block负责哪部分的计算，一个thread要负责哪部分的计算。<strong>而设计的原则就是</strong>尽可能地减少访存，提高数据的复用概率，然后让所有的处理器都满负荷地进行工作，不能浪费。</strong></p>
+<p><strong>2.1 针对n=32</strong></p>
+<p>对于n=32的情况，我们将每个block设置为256个线程，4个warp，然后每个warp负责一行元素的计算。每个warp要对x进行访问，然后在warp内部进行一次reduce求和操作。</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250716171059369.png" alt="image.png" /></p>
+<p>n=32</p>
+<p>代码如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> WARP_SIZE 32</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> INT4(value) (reinterpret_cast<span class="string">&lt;int4 *&gt;</span>(&amp;(value))[0])</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> FLOAT4(value) (reinterpret_cast<span class="string">&lt;float4 *&gt;</span>(&amp;(value))[0])</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// -------------------------------------- FP32</span></span><br><span class="line"><span class="comment">// -------------------------------------- Warp Reduce Sum</span></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="type">const</span> <span class="type">int</span> kWarpSize = WARP_SIZE&gt;</span><br><span class="line">__device__ __forceinline__ <span class="type">float</span> <span class="built_in">warp_reduce_sum_f32</span>(<span class="type">float</span> val) &#123;</span><br><span class="line"><span class="meta">#<span class="keyword">pragma</span> unroll</span></span><br><span class="line">  <span class="keyword">for</span> (<span class="type">int</span> mask = kWarpSize &gt;&gt; <span class="number">1</span>; mask &gt;= <span class="number">1</span>; mask &gt;&gt;= <span class="number">1</span>) &#123;</span><br><span class="line">    val += __shfl_xor_sync(<span class="number">0xffffffff</span>, val, mask);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> val;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// SGEMV: Warp SGEMV K32</span></span><br><span class="line"><span class="comment">// 假设K为32的倍数，每个warp负责一行</span></span><br><span class="line"><span class="comment">// grid(M/4), block(32,4) blockDim.x=32=K, blockDim.y=4</span></span><br><span class="line"><span class="comment">// a: MxK, x: Kx1, y: Mx1, compute: y = a * x</span></span><br><span class="line"><span class="function">__global__ <span class="type">void</span> <span class="title">sgemv_k32_f32_kernel</span><span class="params">(<span class="type">float</span> *a, <span class="type">float</span> *x, <span class="type">float</span> *y, <span class="type">int</span> M,</span></span></span><br><span class="line"><span class="params"><span class="function">                                     <span class="type">int</span> K)</span> </span>&#123;</span><br><span class="line">  <span class="type">int</span> tx = threadIdx.x;         <span class="comment">// 0~31 (warp内的线程ID)</span></span><br><span class="line">  <span class="type">int</span> ty = threadIdx.y;         <span class="comment">// 0~3  (block内的行ID, 表示在a在M维度的块内偏移量, 每个block处理4行)</span></span><br><span class="line">  <span class="type">int</span> bx = blockIdx.x;          <span class="comment">// 0~M/4 (block ID, 表示在a在M维度的块偏移量)</span></span><br><span class="line">  <span class="type">int</span> lane = tx % WARP_SIZE;    <span class="comment">// 0~31 (warp内线程ID，这里等于tx)</span></span><br><span class="line">  <span class="type">int</span> m = bx * blockDim.y + ty; <span class="comment">// (0~M/4) * 4 + (0~3) (全局行索引 = a在M维度的块偏移量(bx) * 块行数(4) + a在M维度的块内偏移量(ty))</span></span><br><span class="line">  <span class="keyword">if</span> (m &lt; M) &#123;</span><br><span class="line">    <span class="type">float</span> sum = <span class="number">0.0f</span>;</span><br><span class="line">    <span class="type">int</span> NUM_WARPS = (K + WARP_SIZE - <span class="number">1</span>) / WARP_SIZE;</span><br><span class="line"><span class="meta">#<span class="keyword">pragma</span> unroll</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> w = <span class="number">0</span>; w &lt; NUM_WARPS; ++w) &#123;</span><br><span class="line">      <span class="comment">// 若NUM_WARPS&gt;=2，先将当前行的数据累加到第一个warp中</span></span><br><span class="line">      <span class="type">int</span> k = w * WARP_SIZE + lane;</span><br><span class="line">      sum += a[m * K + k] * x[k];</span><br><span class="line">    &#125;</span><br><span class="line">    sum = <span class="built_in">warp_reduce_sum_f32</span>&lt;WARP_SIZE&gt;(sum);</span><br><span class="line">    <span class="keyword">if</span> (lane == <span class="number">0</span>)</span><br><span class="line">      y[m] = sum;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">sgemv_k32_f32</span><span class="params">(torch::Tensor a, torch::Tensor x, torch::Tensor y)</span> </span>&#123;</span><br><span class="line">  <span class="built_in">CHECK_TORCH_TENSOR_DTYPE</span>(a, torch::kFloat32)</span><br><span class="line">  <span class="built_in">CHECK_TORCH_TENSOR_DTYPE</span>(x, torch::kFloat32)</span><br><span class="line">  <span class="built_in">CHECK_TORCH_TENSOR_DTYPE</span>(y, torch::kFloat32)</span><br><span class="line">  <span class="type">const</span> <span class="type">int</span> M = a.<span class="built_in">size</span>(<span class="number">0</span>);</span><br><span class="line">  <span class="type">const</span> <span class="type">int</span> K = a.<span class="built_in">size</span>(<span class="number">1</span>);</span><br><span class="line">  <span class="built_in">CHECK_TORCH_TENSOR_SHAPE</span>(a, M, K)</span><br><span class="line">  <span class="built_in">CHECK_TORCH_TENSOR_SHAPE</span>(x, K, <span class="number">1</span>)</span><br><span class="line">  <span class="built_in">CHECK_TORCH_TENSOR_SHAPE</span>(y, M, <span class="number">1</span>)</span><br><span class="line">  <span class="built_in">ASSERT_K_IS_MULTIBLE_OF</span>(<span class="number">32</span>)</span><br><span class="line"></span><br><span class="line">  <span class="function">dim3 <span class="title">block</span><span class="params">(<span class="number">32</span>, <span class="number">4</span>)</span></span>;</span><br><span class="line">  <span class="function">dim3 <span class="title">grid</span><span class="params">((M + <span class="number">4</span> - <span class="number">1</span>) / <span class="number">4</span>)</span></span>;</span><br><span class="line"></span><br><span class="line">  sgemv_k32_f32_kernel&lt;&lt;&lt;grid, block&gt;&gt;&gt;(<span class="built_in">reinterpret_cast</span>&lt;<span class="type">float</span> *&gt;(a.<span class="built_in">data_ptr</span>()),</span><br><span class="line">                                        <span class="built_in">reinterpret_cast</span>&lt;<span class="type">float</span> *&gt;(x.<span class="built_in">data_ptr</span>()),</span><br><span class="line">                                        <span class="built_in">reinterpret_cast</span>&lt;<span class="type">float</span> *&gt;(y.<span class="built_in">data_ptr</span>()),</span><br><span class="line">                                        M, K);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>2.2 针对n=128</strong></p>
+<p>对于n=128的情况，同样让warp负责一行元素的计算，但是因为每行的元素比较多，所以采用了float4进行向量化的访存。能够有更高的访存效率。</p>
+<p><img src="https://bj.bcebos.com/brainbox-online/app/brainBox/image/webScissorStorage/385e109493b44d27b70ef647f4a48660" alt="" /></p>
+<p>n=128</p>
+<p>代码如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> WARP_SIZE 32</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> INT4(value) (reinterpret_cast<span class="string">&lt;int4 *&gt;</span>(&amp;(value))[0])</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> FLOAT4(value) (reinterpret_cast<span class="string">&lt;float4 *&gt;</span>(&amp;(value))[0])</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// -------------------------------------- FP32</span></span><br><span class="line"><span class="comment">// -------------------------------------- Warp Reduce Sum</span></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="type">const</span> <span class="type">int</span> kWarpSize = WARP_SIZE&gt;</span><br><span class="line">__device__ __forceinline__ <span class="type">float</span> <span class="built_in">warp_reduce_sum_f32</span>(<span class="type">float</span> val) &#123;</span><br><span class="line"><span class="meta">#<span class="keyword">pragma</span> unroll</span></span><br><span class="line">  <span class="keyword">for</span> (<span class="type">int</span> mask = kWarpSize &gt;&gt; <span class="number">1</span>; mask &gt;= <span class="number">1</span>; mask &gt;&gt;= <span class="number">1</span>) &#123;</span><br><span class="line">    val += __shfl_xor_sync(<span class="number">0xffffffff</span>, val, mask);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> val;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// SGEMV: Warp SGEMV K128 + Vec4</span></span><br><span class="line"><span class="comment">// 假设K为128的倍数 float4</span></span><br><span class="line"><span class="comment">// grid(M/4), block(32,4) blockDim.x=32=K, blockDim.y=4</span></span><br><span class="line"><span class="comment">// a: MxK, x: Kx1, y: Mx1, compute: y = a * x</span></span><br><span class="line"><span class="function">__global__ <span class="type">void</span> <span class="title">sgemv_k128_f32x4_kernel</span><span class="params">(<span class="type">float</span> *a, <span class="type">float</span> *x, <span class="type">float</span> *y, <span class="type">int</span> M,</span></span></span><br><span class="line"><span class="params"><span class="function">                                        <span class="type">int</span> K)</span> </span>&#123;</span><br><span class="line">  <span class="comment">// 每个线程负责4个元素，一个warp覆盖128个元素</span></span><br><span class="line">  <span class="type">int</span> tx = threadIdx.x;         <span class="comment">// 0~31 (warp内的线程ID)</span></span><br><span class="line">  <span class="type">int</span> ty = threadIdx.y;         <span class="comment">// 0~3  (block内的行ID, 表示在a在M维度的块内偏移量, 每个block处理4行)</span></span><br><span class="line">  <span class="type">int</span> bx = blockIdx.x;          <span class="comment">// 0~M/4 (block ID, 表示在a在M维度的块偏移量)</span></span><br><span class="line">  <span class="type">int</span> lane = tx % WARP_SIZE;    <span class="comment">// 0~31 (warp内线程ID，这里等于tx)</span></span><br><span class="line">  <span class="type">int</span> m = bx * blockDim.y + ty; <span class="comment">// (0~M/4) * 4 + (0~3) (全局行索引 = a在M维度的块偏移量(bx) * 块行数(4) + a在M维度的块内偏移量(ty))</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (m &lt; M) &#123;</span><br><span class="line">    <span class="type">float</span> sum = <span class="number">0.0f</span>;</span><br><span class="line">    <span class="comment">// process 4*WARP_SIZE elements per warp.</span></span><br><span class="line">    <span class="type">int</span> NUM_WARPS = (((K + WARP_SIZE - <span class="number">1</span>) / WARP_SIZE) + <span class="number">4</span> - <span class="number">1</span>) / <span class="number">4</span>; <span class="comment">// 一个warp的一个thread要读取多少次, K / 32 / 4</span></span><br><span class="line"><span class="meta">#<span class="keyword">pragma</span> unroll</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> w = <span class="number">0</span>; w &lt; NUM_WARPS; ++w) &#123;</span><br><span class="line">      <span class="type">int</span> k = (w * WARP_SIZE + lane) * <span class="number">4</span>; <span class="comment">// warp 0 读取 x[0-3], x[128-131]..., a[m][0-3], a[m][128-131]..., warp 1 读取 x[4-7], x[132-135]..., a[m][4-7], a[m][132-135]...</span></span><br><span class="line">      float4 reg_x = <span class="built_in">FLOAT4</span>(x[k]);</span><br><span class="line">      float4 reg_a = <span class="built_in">FLOAT4</span>(a[m * K + k]);</span><br><span class="line">      sum += (reg_a.x * reg_x.x + reg_a.y * reg_x.y + reg_a.z * reg_x.z +</span><br><span class="line">              reg_a.w * reg_x.w);</span><br><span class="line">    &#125;</span><br><span class="line">    sum = <span class="built_in">warp_reduce_sum_f32</span>&lt;WARP_SIZE&gt;(sum);</span><br><span class="line">    <span class="keyword">if</span> (lane == <span class="number">0</span>)</span><br><span class="line">      y[m] = sum;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">sgemv_k128_f32x4</span><span class="params">(torch::Tensor a, torch::Tensor x, torch::Tensor y)</span> </span>&#123;</span><br><span class="line">  <span class="built_in">CHECK_TORCH_TENSOR_DTYPE</span>(a, torch::kFloat32)</span><br><span class="line">  <span class="built_in">CHECK_TORCH_TENSOR_DTYPE</span>(x, torch::kFloat32)</span><br><span class="line">  <span class="built_in">CHECK_TORCH_TENSOR_DTYPE</span>(y, torch::kFloat32)</span><br><span class="line">  <span class="type">const</span> <span class="type">int</span> M = a.<span class="built_in">size</span>(<span class="number">0</span>);</span><br><span class="line">  <span class="type">const</span> <span class="type">int</span> K = a.<span class="built_in">size</span>(<span class="number">1</span>);</span><br><span class="line">  <span class="built_in">CHECK_TORCH_TENSOR_SHAPE</span>(a, M, K)</span><br><span class="line">  <span class="built_in">CHECK_TORCH_TENSOR_SHAPE</span>(x, K, <span class="number">1</span>)</span><br><span class="line">  <span class="built_in">CHECK_TORCH_TENSOR_SHAPE</span>(y, M, <span class="number">1</span>)</span><br><span class="line">  <span class="built_in">ASSERT_K_IS_MULTIBLE_OF</span>(<span class="number">128</span>)</span><br><span class="line"></span><br><span class="line">  <span class="function">dim3 <span class="title">block</span><span class="params">(<span class="number">32</span>, <span class="number">4</span>)</span></span>;</span><br><span class="line">  <span class="function">dim3 <span class="title">grid</span><span class="params">((M + <span class="number">4</span> - <span class="number">1</span>) / <span class="number">4</span>)</span></span>;</span><br><span class="line"></span><br><span class="line">  sgemv_k128_f32x4_kernel&lt;&lt;&lt;grid, block&gt;&gt;&gt;(</span><br><span class="line">      <span class="built_in">reinterpret_cast</span>&lt;<span class="type">float</span> *&gt;(a.<span class="built_in">data_ptr</span>()),</span><br><span class="line">      <span class="built_in">reinterpret_cast</span>&lt;<span class="type">float</span> *&gt;(x.<span class="built_in">data_ptr</span>()),</span><br><span class="line">      <span class="built_in">reinterpret_cast</span>&lt;<span class="type">float</span> *&gt;(y.<span class="built_in">data_ptr</span>()), M, K);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>2.3 针对n=16</strong></p>
+<p>对于n=16的情况，让一个warp负责两行元素的计算。以warp0为例，0-15号线程负责第0行元素的计算，而16-31号线程负责第1行元素的计算。</p>
+<p><img src="https://bj.bcebos.com/brainbox-online/app/brainBox/image/webScissorStorage/1ac45885710643fa8883de038fdd3649" alt="" /></p>
+<p>n=16</p>
+<p>代码如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> WARP_SIZE 32</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> INT4(value) (reinterpret_cast<span class="string">&lt;int4 *&gt;</span>(&amp;(value))[0])</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> FLOAT4(value) (reinterpret_cast<span class="string">&lt;float4 *&gt;</span>(&amp;(value))[0])</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// -------------------------------------- FP32</span></span><br><span class="line"><span class="comment">// -------------------------------------- Warp Reduce Sum</span></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="type">const</span> <span class="type">int</span> kWarpSize = WARP_SIZE&gt;</span><br><span class="line">__device__ __forceinline__ <span class="type">float</span> <span class="built_in">warp_reduce_sum_f32</span>(<span class="type">float</span> val) &#123;</span><br><span class="line"><span class="meta">#<span class="keyword">pragma</span> unroll</span></span><br><span class="line">  <span class="keyword">for</span> (<span class="type">int</span> mask = kWarpSize &gt;&gt; <span class="number">1</span>; mask &gt;= <span class="number">1</span>; mask &gt;&gt;= <span class="number">1</span>) &#123;</span><br><span class="line">    val += __shfl_xor_sync(<span class="number">0xffffffff</span>, val, mask);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> val;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">// SGEMV: Warp SGEMV K16</span></span><br><span class="line"><span class="comment">// 假设K为16 &lt; 32,每个warp负责2行，每行有16个元素</span></span><br><span class="line"><span class="comment">// NUM_THREADS=128, NUM_WARPS=NUM_THREADS/WARP_SIZE;</span></span><br><span class="line"><span class="comment">// NUM_ROWS=NUM_WARPS * ROW_PER_WARP, grid(M/NUM_ROWS), block(32,NUM_WARPS)</span></span><br><span class="line"><span class="comment">// a: MxK, x: Kx1, y: Mx1, compute: y = a * x</span></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="type">const</span> <span class="type">int</span> ROW_PER_WARP = <span class="number">2</span>&gt;</span><br><span class="line">__global__ <span class="type">void</span> <span class="built_in">sgemv_k16_f32_kernel</span>(<span class="type">float</span> *A, <span class="type">float</span> *x, <span class="type">float</span> *y, <span class="type">int</span> M,</span><br><span class="line">                                     <span class="type">int</span> K) &#123;</span><br><span class="line">  <span class="keyword">constexpr</span> <span class="type">int</span> K_WARP_SIZE = (WARP_SIZE + ROW_PER_WARP - <span class="number">1</span>) / ROW_PER_WARP; <span class="comment">// 每个warp负责2行，每行有 WARP_SIZE / ROW_PER_WARP = 32 / 2 = 16 个元素</span></span><br><span class="line">  <span class="type">int</span> tx = threadIdx.x;         <span class="comment">// 0~31 (warp内的线程ID)</span></span><br><span class="line">  <span class="type">int</span> ty = threadIdx.y;         <span class="comment">// 0~3  (block内的行ID, 表示在a在M维度的块内偏移量, 每个block处理8行)</span></span><br><span class="line">  <span class="type">int</span> bx = blockIdx.x;          <span class="comment">// 0~M/8 (block ID, 表示在a在M维度的块偏移量)</span></span><br><span class="line">  <span class="type">int</span> lane = tx % WARP_SIZE;    <span class="comment">// 0~31 (warp内线程ID，这里等于tx)</span></span><br><span class="line">  <span class="type">int</span> k = lane % K_WARP_SIZE;   <span class="comment">// 0~15 (warp内列ID, 表示在a在K维度的warp内偏移量)</span></span><br><span class="line">  <span class="comment">// gloabl row of a: MxK and y:Mx1, blockDim.y=NUM_WARPS</span></span><br><span class="line">  <span class="type">int</span> m = (blockDim.y * bx + ty) * ROW_PER_WARP + lane / K_WARP_SIZE; <span class="comment">// (全局行索引 = a在M维度的块偏移量(bx) * 块行数(8) + a在M维度的块内偏移量(ty) * 2 + warp内线程ID(lane) / 每个warp负责的每行元素数量(16))</span></span><br><span class="line">  <span class="keyword">if</span> (m &lt; M) &#123;</span><br><span class="line">    <span class="type">float</span> sum = A[m * K + k] * x[k];</span><br><span class="line">    sum = <span class="built_in">warp_reduce_sum_f32</span>&lt;K_WARP_SIZE&gt;(sum);</span><br><span class="line">    <span class="comment">// 注意是k == 0，而不是lane == 0, warpid 0 / 16</span></span><br><span class="line">    <span class="keyword">if</span> (k == <span class="number">0</span>)</span><br><span class="line">      y[m] = sum;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">sgemv_k16_f32</span><span class="params">(torch::Tensor a, torch::Tensor x, torch::Tensor y)</span> </span>&#123;</span><br><span class="line">  <span class="built_in">CHECK_TORCH_TENSOR_DTYPE</span>(a, torch::kFloat32)</span><br><span class="line">  <span class="built_in">CHECK_TORCH_TENSOR_DTYPE</span>(x, torch::kFloat32)</span><br><span class="line">  <span class="built_in">CHECK_TORCH_TENSOR_DTYPE</span>(y, torch::kFloat32)</span><br><span class="line">  <span class="type">const</span> <span class="type">int</span> M = a.<span class="built_in">size</span>(<span class="number">0</span>);</span><br><span class="line">  <span class="type">const</span> <span class="type">int</span> K = a.<span class="built_in">size</span>(<span class="number">1</span>);</span><br><span class="line">  <span class="built_in">CHECK_TORCH_TENSOR_SHAPE</span>(a, M, K)</span><br><span class="line">  <span class="built_in">CHECK_TORCH_TENSOR_SHAPE</span>(x, K, <span class="number">1</span>)</span><br><span class="line">  <span class="built_in">CHECK_TORCH_TENSOR_SHAPE</span>(y, M, <span class="number">1</span>)</span><br><span class="line">  <span class="built_in">ASSERT_K_IS_EQUAL_OF</span>(<span class="number">16</span>)</span><br><span class="line"></span><br><span class="line">  <span class="keyword">constexpr</span> <span class="type">int</span> NUM_THREADS = <span class="number">128</span>;</span><br><span class="line">  <span class="keyword">constexpr</span> <span class="type">int</span> ROW_PER_WARP = <span class="number">2</span>;</span><br><span class="line">  <span class="keyword">constexpr</span> <span class="type">int</span> NUM_WARPS = NUM_THREADS / WARP_SIZE; <span class="comment">// 4</span></span><br><span class="line">  <span class="keyword">constexpr</span> <span class="type">int</span> NUM_ROWS = NUM_WARPS * ROW_PER_WARP; <span class="comment">// 4 * 2 = 8</span></span><br><span class="line"></span><br><span class="line">  <span class="function">dim3 <span class="title">block</span><span class="params">(<span class="number">32</span>, NUM_WARPS)</span></span>;</span><br><span class="line">  <span class="function">dim3 <span class="title">grid</span><span class="params">((M + NUM_ROWS - <span class="number">1</span>) / NUM_ROWS)</span></span>;</span><br><span class="line"></span><br><span class="line">  sgemv_k16_f32_kernel&lt;ROW_PER_WARP&gt;</span><br><span class="line">      &lt;&lt;&lt;grid, block&gt;&gt;&gt;(<span class="built_in">reinterpret_cast</span>&lt;<span class="type">float</span> *&gt;(a.<span class="built_in">data_ptr</span>()),</span><br><span class="line">                        <span class="built_in">reinterpret_cast</span>&lt;<span class="type">float</span> *&gt;(x.<span class="built_in">data_ptr</span>()),</span><br><span class="line">                        <span class="built_in">reinterpret_cast</span>&lt;<span class="type">float</span> *&gt;(y.<span class="built_in">data_ptr</span>()), M, K);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>三、优化思路：</strong></p>
+<p>上一节说明了如何针对不同维度的n进行优化，这一节说明一下为什么要这么设计，以及这样的设计方式能够带来什么样的好处。主要考虑的因素有两个，如下：</p>
+<p><strong>3.1 尽可能地让warp中的32个线程忙碌</strong></p>
+<p>这个主要是针对n&lt;32的情况，例如n=16，如果使用一个warp来负责一行元素的计算，那么warp中有一半的元素都是浪费的。所以让一个warp来负责多行元素的计算，这样让32个线程全部忙碌起来。</p>
+<p><strong>3.2 尽可能地提高访存效率</strong></p>
+<p>① global mem -&gt; register</p>
+<p>将数据从global memory搬运到寄存器上时，最重要的就是考虑是不是进行了合并访存。在这里，我们只考虑矩阵数据在global mem中是地址对齐的，即n是2的多次幂。上述的三种并行实现中，warp中的32个线程都是连续地访问32个float或者128个float，因而满足了合并访存的条件，确保了global -&gt; register的访存效率。</p>
+<p>② shared mem -&gt; register<br />
+说到这里，可能会有读者好奇，上述的代码都没有用到shared mem。为啥要说这个点。我们可以再仔细看看上述的三种并行实现，以第2种为例，一个block中有4个warp，每个warp都需要对x进行一次global上的访存，所以一个block有4次访存。如果将x存储到shared mem中，4个warp都去访问shared mem上的x，这样的话，对于global的访存就从4次变成1次。直观上会有性能提升，但不幸的是，如果用shared mem的话，将global mem的数据搬运至shared mem需要有同步操作，这又会导致性能的下降。总的来说，使用shared mem并没有得到显著的提升，不过还是在这里说明一下。</p>
+<p>③ 向量化访存</p>
+<p>向量化访存就是一个老生常谈的话题了，说白了就是尽可能地使用128bit的访存指令，这个在reduce、sgemm、elementwise专题上说了很多，就不再多说。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/cuda/" rel="tag"># cuda</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/08/20/sgemm-%E4%BC%98%E5%8C%96/" rel="prev" title="sgemm 优化">
+                  <i class="fa fa-angle-left"></i> sgemm 优化
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2025/08/20/%E5%88%86%E5%B8%83%E5%BC%8F%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF/" rel="next" title="分布式推理框架核心技术">
+                  分布式推理框架核心技术 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Ronny Lu</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">245k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">14:50</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">false</script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" integrity="sha256-UF1fgpAiu3tPJN/uCqEUHNe7pnr+QR0SQDNfgglgtcM=" crossorigin="anonymous">
+  <script class="next-config" data-name="katex" type="application/json">{"copy_tex_js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/copy-tex.min.js","integrity":"sha256-Us54+rSGDSTvIhKKUs4kygE2ipA0RXpWWh0/zLqw3bs="}}</script>
+  <script src="/js/third-party/math/katex.js"></script>
+
+
+
+</body>
+</html>

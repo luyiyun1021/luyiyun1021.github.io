@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="https://avatars.githubusercontent.com/u/55233584?v=4">
+  <link rel="icon" type="image/png" sizes="32x32" href="https://avatars.githubusercontent.com/u/55233584?v=4">
+  <link rel="icon" type="image/png" sizes="16x16" href="https://avatars.githubusercontent.com/u/55233584?v=4">
+  <link rel="mask-icon" href="https://avatars.githubusercontent.com/u/55233584?v=4" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-minimal.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"luyiyun1021.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.22.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="Deepseek MoE   MoE是什么？   Mixture of Experts,混专家模型   共享专家+{Router&#x2F;Gate+路由专家}+加和     为什么要有MoE?  相同模型参数情况下大幅降低计算量    Deepseek V3&#x2F;R1 MoE的关键参数   61层中有58层包含MoE层   每个MoE层包含1个共享专家和256个路由专家  每层每个专家参数量约44M,256">
+<meta property="og:type" content="article">
+<meta property="og:title" content="DeepSeek 中的专家均衡分析与优化">
+<meta property="og:url" content="https://luyiyun1021.github.io/2025/08/20/DeepSeek-%E4%B8%AD%E7%9A%84%E4%B8%93%E5%AE%B6%E5%9D%87%E8%A1%A1%E5%88%86%E6%9E%90%E4%B8%8E%E4%BC%98%E5%8C%96/index.html">
+<meta property="og:site_name" content="Ronny Lu&#39;s blog">
+<meta property="og:description" content="Deepseek MoE   MoE是什么？   Mixture of Experts,混专家模型   共享专家+{Router&#x2F;Gate+路由专家}+加和     为什么要有MoE?  相同模型参数情况下大幅降低计算量    Deepseek V3&#x2F;R1 MoE的关键参数   61层中有58层包含MoE层   每个MoE层包含1个共享专家和256个路由专家  每层每个专家参数量约44M,256">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820151740181.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820151746798.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820151755883.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820151804659.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820151819341.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820151828238.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820151836329.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820151912670.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820151921261.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820151928698.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820151940701.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820152158609.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820152241496.png">
+<meta property="og:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820152330044.png">
+<meta property="article:published_time" content="2025-08-20T08:04:20.000Z">
+<meta property="article:modified_time" content="2025-08-20T08:05:04.597Z">
+<meta property="article:author" content="Ronny Lu">
+<meta property="article:tag" content="大模型">
+<meta property="article:tag" content="大模型推理">
+<meta property="article:tag" content="Deepseek">
+<meta property="article:tag" content="Deepseek优化">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820151740181.png">
+
+
+<link rel="canonical" href="https://luyiyun1021.github.io/2025/08/20/DeepSeek-%E4%B8%AD%E7%9A%84%E4%B8%93%E5%AE%B6%E5%9D%87%E8%A1%A1%E5%88%86%E6%9E%90%E4%B8%8E%E4%BC%98%E5%8C%96/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://luyiyun1021.github.io/2025/08/20/DeepSeek-%E4%B8%AD%E7%9A%84%E4%B8%93%E5%AE%B6%E5%9D%87%E8%A1%A1%E5%88%86%E6%9E%90%E4%B8%8E%E4%BC%98%E5%8C%96/","path":"2025/08/20/DeepSeek-中的专家均衡分析与优化/","title":"DeepSeek 中的专家均衡分析与优化"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>DeepSeek 中的专家均衡分析与优化 | Ronny Lu's blog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<style>.darkmode--activated{--body-bg-color:#282828;--content-bg-color:#333;--card-bg-color:#555;--text-color:#ccc;--blockquote-color:#bbb;--link-color:#ccc;--link-hover-color:#eee;--brand-color:#ddd;--brand-hover-color:#ddd;--table-row-odd-bg-color:#282828;--table-row-hover-bg-color:#363636;--menu-item-bg-color:#555;--btn-default-bg:#222;--btn-default-color:#ccc;--btn-default-border-color:#555;--btn-default-hover-bg:#666;--btn-default-hover-color:#ccc;--btn-default-hover-border-color:#666;--highlight-background:#282b2e;--highlight-foreground:#a9b7c6;--highlight-gutter-background:#34393d;--highlight-gutter-foreground:#9ca9b6}.darkmode--activated img{opacity:.75}.darkmode--activated img:hover{opacity:.9}.darkmode--activated code{color:#69dbdc;background:0 0}button.darkmode-toggle{z-index:9999}.darkmode-ignore,img{display:flex!important}.beian img{display:inline-block!important}</style></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Ronny Lu's blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#deepseek-moe"><span class="nav-number">1.</span> <span class="nav-text"> Deepseek MoE</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#ep%E5%B9%B6%E8%A1%8C%E4%B8%8E%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1"><span class="nav-number">2.</span> <span class="nav-text"> EP并行与负载均衡</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B4%9F%E8%BD%BD%E4%B8%8D%E5%9D%87%E7%9A%84%E5%8E%9F%E5%9B%A0"><span class="nav-number">2.1.</span> <span class="nav-text"> 负载不均的原因</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E7%9A%84%E8%A1%A1%E9%87%8F%E6%8C%87%E6%A0%87%E5%8F%8A%E5%AF%B9%E6%80%A7%E8%83%BD%E7%9A%84%E5%BD%B1%E5%93%8D"><span class="nav-number">2.2.</span> <span class="nav-text"> 负载均衡的衡量指标及对性能的影响</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ep%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1-%E9%9D%99%E6%80%81%E5%86%97%E4%BD%99%E7%AD%96%E7%95%A5"><span class="nav-number">2.3.</span> <span class="nav-text"> EP负载均衡-静态冗余策略</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#ep%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1-eplb%E7%AE%97%E6%B3%95"><span class="nav-number">2.3.1.</span> <span class="nav-text"> EP负载均衡-EPLB算法</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#ep%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1-decode%E5%85%A8%E5%B1%80%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1"><span class="nav-number">2.3.1.1.</span> <span class="nav-text"> EP负载均衡-Decode全局负载均衡</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#ep%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1-prefill%E5%85%A8%E5%B1%80%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1"><span class="nav-number">2.3.1.2.</span> <span class="nav-text"> EP负载均衡-Prefill全局负载均衡</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ep%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1-dispatch-token%E5%9D%87%E5%88%86"><span class="nav-number">2.3.2.</span> <span class="nav-text"> EP负载均衡-Dispatch Token均分</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#eplb%E7%AE%97%E6%B3%95%E8%AF%A6%E7%BB%86%E8%A7%A3%E6%9E%90"><span class="nav-number">2.4.</span> <span class="nav-text"> EPLB算法详细解析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%BA%90%E7%A0%81%E8%A7%A3%E8%AF%BB"><span class="nav-number">2.4.1.</span> <span class="nav-text"> 源码解读</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%A5%E5%8F%A3%E5%87%BD%E6%95%B0"><span class="nav-number">2.4.2.</span> <span class="nav-text"> 入口函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%A8%E5%B1%80%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1"><span class="nav-number">2.4.3.</span> <span class="nav-text"> 全局负载均衡</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#balanced_packing"><span class="nav-number">2.4.4.</span> <span class="nav-text"> balanced_packing</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%86%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1"><span class="nav-number">2.4.5.</span> <span class="nav-text"> 分层负载均衡</span></a></li></ol></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Ronny Lu"
+      src="https://avatars.githubusercontent.com/u/55233584?v=4">
+  <p class="site-author-name" itemprop="name">Ronny Lu</p>
+  <div class="site-description" itemprop="description">Tech notes on LLM, LLM Infra, and others</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">75</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">16</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">19</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://luyiyun1021.github.io/2025/08/20/DeepSeek-%E4%B8%AD%E7%9A%84%E4%B8%93%E5%AE%B6%E5%9D%87%E8%A1%A1%E5%88%86%E6%9E%90%E4%B8%8E%E4%BC%98%E5%8C%96/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/55233584?v=4">
+      <meta itemprop="name" content="Ronny Lu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ronny Lu's blog">
+      <meta itemprop="description" content="Tech notes on LLM, LLM Infra, and others">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="DeepSeek 中的专家均衡分析与优化 | Ronny Lu's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          DeepSeek 中的专家均衡分析与优化
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-08-20 16:04:20 / 修改时间：16:05:04" itemprop="dateCreated datePublished" datetime="2025-08-20T16:04:20+08:00">2025-08-20</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">大模型</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E6%8E%A8%E7%90%86%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index"><span itemprop="name">推理技术</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/%E6%8E%A8%E7%90%86%E6%8A%80%E6%9C%AF/Deepseek%E4%BC%98%E5%8C%96/" itemprop="url" rel="index"><span itemprop="name">Deepseek优化</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>3.9k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>14 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h1 id="deepseek-moe"><a class="markdownIt-Anchor" href="#deepseek-moe"></a> Deepseek MoE</h1>
+<ul>
+<li>
+<p>MoE是什么？</p>
+<ul>
+<li>
+<p>Mixture of Experts,混专家模型</p>
+</li>
+<li>
+<p>共享专家+{Router/Gate+路由专家}+加和</p>
+</li>
+</ul>
+</li>
+<li>
+<p>为什么要有MoE?</p>
+<ul>
+<li>相同模型参数情况下大幅降低计算量</li>
+</ul>
+</li>
+<li>
+<p>Deepseek V3/R1 MoE的关键参数</p>
+<ul>
+<li>
+<p>61层中有58层包含MoE层</p>
+</li>
+<li>
+<p>每个MoE层包含1个共享专家和256个路由专家</p>
+<ul>
+<li>每层每个专家参数量约44M,256x58层累计约656.6B</li>
+</ul>
+</li>
+<li>
+<p>Router/Gate的选择策略</p>
+<ul>
+<li>
+<p>256个路由专家分为8组，每组32个</p>
+</li>
+<li>
+<p>每组选择最大2个得分进行求和，作为组得分</p>
+</li>
+<li>
+<p>选择组得分最高的4组</p>
+</li>
+<li>
+<p>从上述4组中得分最高的8个专家</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h1 id="ep并行与负载均衡"><a class="markdownIt-Anchor" href="#ep并行与负载均衡"></a> EP并行与负载均衡</h1>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820151740181.png" alt="image.png" /></p>
+<span id="more"></span>
+<h2 id="负载不均的原因"><a class="markdownIt-Anchor" href="#负载不均的原因"></a> 负载不均的原因</h2>
+<ul>
+<li>deepseek模型本身存在不均（天然热点专家）</li>
+</ul>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820151746798.png" alt="image.png" /></p>
+<ul>
+<li>不同batch的token专家选择的随机性</li>
+</ul>
+<h2 id="负载均衡的衡量指标及对性能的影响"><a class="markdownIt-Anchor" href="#负载均衡的衡量指标及对性能的影响"></a> 负载均衡的衡量指标及对性能的影响</h2>
+<ul>
+<li>
+<p>Token数峰均比：每一次MoE层 Dispatch中所有rank 最多处理 token数/平均处理 token数</p>
+</li>
+<li>
+<p>不均衡度：一段时间内 Token数峰均比平均值，1表示完全均衡，越大越不均衡</p>
+</li>
+</ul>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820151755883.png" alt="image.png" /></p>
+<p>Prefill 双流Moe=2(Dispatch+Combine)处理总时延 35.6ms</p>
+<ul>
+<li>
+<p>Prefill 1个Token处理总时延0.16us(RDMA收发+NVLINK收发)</p>
+</li>
+<li>
+<p>不均衡度增加0.1，多处理6260token,时延增加2x1.05ms(6%↑)</p>
+</li>
+</ul>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820151804659.png" alt="image.png" /></p>
+<p>Decode 双流Moe=2(Dispatch +MLP + Combine)处理总时延1.42ms</p>
+<ul>
+<li>
+<p>Decode 1个Token 处理总时延0.7us(RDMA收发+MLP计算*)</p>
+</li>
+<li>
+<p>不均衡度增加0.1，多处理102个token,时延增加2x0.07ms(10%↑)</p>
+</li>
+</ul>
+<h2 id="ep负载均衡-静态冗余策略"><a class="markdownIt-Anchor" href="#ep负载均衡-静态冗余策略"></a> EP负载均衡-静态冗余策略</h2>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820151819341.png" alt="image.png" /></p>
+<p><strong>运行中</strong></p>
+<p>方案1</p>
+<ul>
+<li>
+<p>各Rank维护自身发送到各个路由专家的token数（逐次累加）</p>
+</li>
+<li>
+<p>Rank0接收中控的重排请求（定时/监控吞吐变化），通过All-Reduce获取所有Rank/专家的累积计数，即该专家的权重</p>
+</li>
+<li>
+<p>采样统计-&gt;全量统计，吞吐性能20%+</p>
+</li>
+</ul>
+<p>方案2（减少通信量）</p>
+<ul>
+<li>
+<p>每个Rank维护本地专家接收Token的累积计数</p>
+</li>
+<li>
+<p>然后通过all gather获取一段时间的累加和</p>
+</li>
+</ul>
+<p><strong>停流</strong></p>
+<p>负载均衡算法EPLB确定部署方案</p>
+<ul>
+<li>
+<p>Prefill EPLB</p>
+</li>
+<li>
+<p>Decode EPLB</p>
+</li>
+</ul>
+<p>停流，加载新的专家权重，接入新流量</p>
+<ul>
+<li>
+<p>将专家权重预加载到Host DDR</p>
+</li>
+<li>
+<p>重排后再按需加载到GPU HBM</p>
+</li>
+<li>
+<p>58x4专家理论耗时约200ms, 实测预加载耗时600ms</p>
+</li>
+</ul>
+<p><strong>运行中</strong></p>
+<ul>
+<li>
+<p>逻辑专家/物理专家</p>
+</li>
+<li>
+<p>部署数/映射表/反映射表</p>
+</li>
+</ul>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820151828238.png" alt="image.png" /></p>
+<h3 id="ep负载均衡-eplb算法"><a class="markdownIt-Anchor" href="#ep负载均衡-eplb算法"></a> EP负载均衡-EPLB算法</h3>
+<p><strong>EPLB算法</strong></p>
+<ul>
+<li>
+<p>输入：专家总数(256加冗余)+256个逻辑专家的权重+rank数+节点数+组数(deepseek中为8)</p>
+</li>
+<li>
+<p>输出：</p>
+<ul>
+<li>
+<p>(256加冗余)个物理专家-&gt;256个逻辑专家的映射表</p>
+</li>
+<li>
+<p>256个逻辑专家-&gt;(256加冗余)个物理专家的映射表</p>
+</li>
+<li>
+<p>256个逻辑专家的部署个数（至少为1，有冗余的大于1）</p>
+</li>
+</ul>
+</li>
+<li>
+<p>算法目标：让每个Rank分到的多个专家的权重和相对平均</p>
+</li>
+</ul>
+<p><strong>分组负载均衡</strong></p>
+<ul>
+<li>
+<p>用于Prefill阶段(num_groups% num_nodes ==0)</p>
+</li>
+<li>
+<p>考虑机间机内的带宽差异和Prefill两阶段通信，将同组专家放在同一机器内</p>
+</li>
+<li>
+<p>P4-EP32-32冗余:</p>
+<ul>
+<li>4机32卡，每卡9专家，共32个冗余专家</li>
+</ul>
+</li>
+</ul>
+<p><strong>全局负载均衡</strong></p>
+<ul>
+<li>
+<p>用于Decode阶段(num_groups% num_nodes!=0)</p>
+</li>
+<li>
+<p>当前Decode MoE流量因为低时延需求，都走RDMA,因此不考虑专家分组的差异</p>
+<ul>
+<li>
+<p>D18-EP144-单卡2专家，共288物理专家，32冗余</p>
+</li>
+<li>
+<p>D9-EP72-单卡4专家，共288物理专家，32冗余</p>
+</li>
+<li>
+<p>D10-EP80-单卡4专家，共320物理专家，64冗余</p>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="ep负载均衡-decode全局负载均衡"><a class="markdownIt-Anchor" href="#ep负载均衡-decode全局负载均衡"></a> EP负载均衡-Decode全局负载均衡</h4>
+<p><strong>Step1</strong>:</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820151836329.png" alt="image.png" /></p>
+<ul>
+<li>
+<p>给每个逻辑专家预留1个部署</p>
+</li>
+<li>
+<p>通过削峰策略逐个确定部署哪个逻辑专家</p>
+</li>
+</ul>
+<p>**Step2:**将待部署专家组合部署到rank中，单rank 2/4个专家</p>
+<p>贪心算法（排序+串行放置）</p>
+<ul>
+<li>
+<p>基于[冗余后新权重]对待部署专家进行排序</p>
+</li>
+<li>
+<p>从权重最大的开始放置到rank,每次都选当前未满且已部署专家权重和最小的rank</p>
+</li>
+</ul>
+<p>贪食蛇算法（排序+并行放置）</p>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820151912670.png" alt="image.png" /></p>
+<ul>
+<li>
+<p>基于[冗余后新权重]对逻辑专家进行排序</p>
+</li>
+<li>
+<p>按照降序方式进行以贪食蛇方式放置</p>
+</li>
+</ul>
+<h4 id="ep负载均衡-prefill全局负载均衡"><a class="markdownIt-Anchor" href="#ep负载均衡-prefill全局负载均衡"></a> EP负载均衡-Prefill全局负载均衡</h4>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820151921261.png" alt="image.png" /></p>
+<p><strong>Step1</strong>:256个逻辑专家属于8个组（模型决定)，每个组将本组8个专家权重加和，得到组权重</p>
+<p><strong>Step2</strong>:通过贪心算法，将8个组放到4个node中</p>
+<p><strong>Step3</strong>:每个Node内实现全局负载均衡，64逻辑专家-&gt;72物理专家</p>
+<p><strong>Step4</strong>:每个node内72个物理专家通过贪心算法放到8个rank上</p>
+<h3 id="ep负载均衡-dispatch-token均分"><a class="markdownIt-Anchor" href="#ep负载均衡-dispatch-token均分"></a> EP负载均衡-Dispatch Token均分</h3>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820151928698.png" alt="image.png" /></p>
+<p><strong>Hash均分</strong></p>
+<ul>
+<li>
+<p>每个Token计算HASH值，[HASH%部署数]确定目的rank</p>
+<ul>
+<li>
+<p>优点：实现简单，能够并行计算</p>
+</li>
+<li>
+<p>缺点：存在HASH不均</p>
+</li>
+</ul>
+</li>
+</ul>
+<p><strong>RR均分</strong></p>
+<ul>
+<li>
+<p>每个rank通过RR方式分配token到多个物理专家</p>
+</li>
+<li>
+<p>不能均分的token基于src rank id确定目的rank</p>
+</li>
+<li>
+<p>优点：分配不均的上限为(rank数/2)</p>
+</li>
+<li>
+<p>缺点：有一定的算子开销（可接受）</p>
+</li>
+</ul>
+<h2 id="eplb算法详细解析"><a class="markdownIt-Anchor" href="#eplb算法详细解析"></a> EPLB算法详细解析</h2>
+<ul>
+<li>
+<p>项目源码：<a target="_blank" rel="noopener" href="https://github.com/deepseek-ai/eplb">https://github.com/deepseek-ai/eplb</a></p>
+</li>
+<li>
+<p>项目简介：专家并行负载均衡器</p>
+</li>
+<li>
+<p>项目背景：在DeepSeek的LLM大模型中采用了MoE技术，MoE技术通过引入多个专家(Expert)增大模型的总参数量，而在单次训练或推理中只激活其中部分专家来降低计算量，从而平衡模型规模和算力需求。DeepSeek采用专家并行（EP）来提高MoE的处理性能，不同的专家被分配到不同的GPU上。不同专家的负载因当前工作负载而变化，在特定的EP-GPU部署策略下GPU可能会出现负载不均的问题，在水桶效应的作用下影响总体性能。正如DeepSeek-V3论文中所述，DeepSeek采用冗余专家策略来复制负载过大的专家，并通过估计专家负载的分布及算法计算出合理的专家复制和专家在GPU放置策略，来提升系统性能。</p>
+</li>
+<li>
+<p>项目概述：开源项目是关于一种基于特定分布给出专家复制和专家在GPU的放置策略的<strong>算法</strong>。估计专家负载的分布则一般采用历史统计的移动平均(moving average of historical statistics)得到，DeepSeek-V3论文中提到的统计时长为10分钟。需要指出的是，该项目只讨论了专家的部署策略，没有讨论在某种工作负载情况下如何基于当前专家的部署策略来分发工作任务给各个GPU，这点可能在DeepEP中有实现？已确定没有</p>
+</li>
+<li>
+<p>项目解读</p>
+<ul>
+<li>
+<p>根据推理中Prefill和Decoder的不同需求分别实现了两种部署策略, 这两种策略的核心区别在于是否关心<strong>EP专家组</strong></p>
+<ul>
+<li>
+<p>分层负载平衡，适用于较小的专家并行规模(Prefill)，需满足<strong>EP专家组数</strong>(num_groups)可以被<strong>机器节点数</strong>(num_nodes)整除</p>
+</li>
+<li>
+<p>全局负载均衡，适用于较大的专家并行规模(Decode)</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="源码解读"><a class="markdownIt-Anchor" href="#源码解读"></a> 源码解读</h3>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820151940701.png" alt="image.png" /></p>
+<h3 id="入口函数"><a class="markdownIt-Anchor" href="#入口函数"></a> 入口函数</h3>
+<ul>
+<li>
+<p>函数输入</p>
+<ul>
+<li>
+<p>logical experts，逻辑专家，也就是MoE算法中提到的专家，DeepseekV3是256，其数量为num_logical_experts</p>
+</li>
+<li>
+<p>physical experts，物理专家，也就是考虑复制之后的专家，其数量为num_replicas，需要是GPU卡数的整数倍</p>
+</li>
+<li>
+<p>num_groups，EP组的数量</p>
+</li>
+<li>
+<p>num_nodes，机器节点数</p>
+</li>
+<li>
+<p>num_gpus，GPU的卡数，需要是节点数的整数倍，也就是单机2/4/8卡等</p>
+</li>
+<li>
+<p>weight， 维度是 [layers, num_logic_experts]，也就是每一层中，每个逻辑专家的负载统计</p>
+</li>
+</ul>
+</li>
+<li>
+<p>函数输出</p>
+<ul>
+<li>
+<p>physical_to_logical_map， [layers, num_replicas]，表示 每一层 每个物理专家位置上所对应的 逻辑专家号</p>
+</li>
+<li>
+<p>logical_to_physical_map，[layers, num_logical_experts, X]， 表示每一层 每个逻辑专家 被映射到 哪些物理专家位置上</p>
+</li>
+<li>
+<p>expert_count: [layers, num_logical_experts], 表示一层每个逻辑专家 对应的物理专家数量，确定了logical_to_physical_map的第三个维度X的大小</p>
+</li>
+</ul>
+</li>
+<li>
+<p>中间函数输出</p>
+<ul>
+<li>
+<p>phy2log: [X, num_phy], logical expert id of each physical expert， 每一层 每个物理专家位置上的逻辑专家号</p>
+</li>
+<li>
+<p>rank: [X, num_phy], the duplica rank， 每一层每个物理专家位置上的 复制的专家个数，没有复制专家的话为0</p>
+</li>
+<li>
+<p>logcnt: [X, num_log], number of replicas for each logical expert，每一层 每个逻辑专家号的复制次数(物理专家数量)</p>
+</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">rebalance_experts</span>(<span class="params">weight: torch.Tensor, num_replicas: <span class="built_in">int</span>, num_groups: <span class="built_in">int</span>,</span></span><br><span class="line"><span class="params">                      num_nodes: <span class="built_in">int</span>, num_gpus: <span class="built_in">int</span></span>) -&gt; <span class="type">Tuple</span>[torch.Tensor, torch.Tensor, torch.Tensor]:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    Entry point for expert-parallelism load balancer.</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    Parameters:</span></span><br><span class="line"><span class="string">        weight: [layers, num_logical_experts], the load statistics for all logical experts</span></span><br><span class="line"><span class="string">        num_replicas: number of physical experts, must be a multiple of `num_gpus`</span></span><br><span class="line"><span class="string">        num_groups: number of expert groups</span></span><br><span class="line"><span class="string">        num_nodes: number of server nodes, where the intra-node network (e.g, NVLink) is faster</span></span><br><span class="line"><span class="string">        num_gpus: number of GPUs, must be a multiple of `num_nodes`</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    Returns: </span></span><br><span class="line"><span class="string">        physical_to_logical_map: [layers, num_replicas], the expert index of each replica</span></span><br><span class="line"><span class="string">        logical_to_physical_map: [layers, num_logical_experts, X], the replica indices for each expert</span></span><br><span class="line"><span class="string">        expert_count: [layers, num_logical_experts], number of physical replicas for each logical expert</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    num_layers, num_logical_experts = weight.shape</span><br><span class="line">    weight = weight.<span class="built_in">float</span>().cpu()</span><br><span class="line">    <span class="keyword">if</span> num_groups % num_nodes == <span class="number">0</span>:</span><br><span class="line">        <span class="comment"># use hierarchical load-balance policy</span></span><br><span class="line">        phy2log, phyrank, logcnt = rebalance_experts_hierarchical(weight, num_replicas, </span><br><span class="line">                                                                  num_groups, num_nodes, num_gpus)</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        <span class="comment"># use global load-balance policy</span></span><br><span class="line">        phy2log, phyrank, logcnt = replicate_experts(weight, num_replicas)</span><br><span class="line">    <span class="comment"># 所有层被复制最多的专家的复制次数</span></span><br><span class="line">    maxlogcnt = logcnt.<span class="built_in">max</span>().item()</span><br><span class="line">    <span class="comment"># 维度[num_layers, num_logical_experts, maxlogcnt)</span></span><br><span class="line">    log2phy: torch.Tensor = torch.full((num_layers, num_logical_experts, maxlogcnt), </span><br><span class="line">                                       -<span class="number">1</span>, dtype=torch.int64, device=logcnt.device)</span><br><span class="line">    <span class="comment"># 输出[layers, num_logical_experts, X]</span></span><br><span class="line">    <span class="comment"># log2phy.view操作将张量转成 [num_layers, num_logical_experts x maxlogcnt]</span></span><br><span class="line">    <span class="comment"># torch.arange(num_replicas, dtype=torch.int64, device=log2phy.device).expand(num_layers, -1) 是 num_layers层，每一层都是0~num_replicas依次递增的序列</span></span><br><span class="line">    <span class="comment"># phy2log * maxlogcnt + phyrank， 让每一个物理专家位置都扩大maxlogcnt, 如果有复制再加1</span></span><br><span class="line">    <span class="comment"># 在log2phy中找到物理 rank 的位置，并用相应的逻辑 rank 进行填充，scatter暂时操作没看懂，但结果符合预期, // log2phy中是-1的没有对应的逻辑专家</span></span><br><span class="line">    <span class="comment"># A.scatter_(-1, index, src) 等价于 A[num_layers, index] = src[num_layers]</span></span><br><span class="line">    log2phy.view(num_layers, -<span class="number">1</span>).scatter_(-<span class="number">1</span>, phy2log * maxlogcnt + phyrank, </span><br><span class="line">            torch.arange(num_replicas, dtype=torch.int64, device=log2phy.device).expand(num_layers, -<span class="number">1</span>))</span><br><span class="line">    <span class="keyword">return</span> phy2log, log2phy, logcnt</span><br><span class="line"></span><br><span class="line">__all__ = [<span class="string">&#x27;rebalance_experts&#x27;</span>]</span><br></pre></td></tr></table></figure>
+<h3 id="全局负载均衡"><a class="markdownIt-Anchor" href="#全局负载均衡"></a> 全局负载均衡</h3>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820152158609.png" alt="image.png" /></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">replicate_experts</span>(<span class="params">weight: torch.Tensor, num_phy: <span class="built_in">int</span></span>) -&gt; torch.Tensor:</span><br><span class="line"></span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    Replicate `num_log` experts to `num_phy` replicas, such that the maximum load of all replicas is minimized.</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    Parameters:</span></span><br><span class="line"><span class="string">        weight: [X, num_log]</span></span><br><span class="line"><span class="string">        num_phy: total number of experts after replication</span></span><br><span class="line"><span class="string">    </span></span><br><span class="line"><span class="string">    Returns:</span></span><br><span class="line"><span class="string">        phy2log: [X, num_phy], logical expert id of each physical expert</span></span><br><span class="line"><span class="string">        rank: [X, num_phy], the duplica rank</span></span><br><span class="line"><span class="string">        logcnt: [X, num_log], number of replicas for each logical expert</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    <span class="comment"># n 是层数，num_log是逻辑专家数</span></span><br><span class="line">    n, num_log = weight.shape</span><br><span class="line">    <span class="comment"># 冗余专家数</span></span><br><span class="line">    num_redundant = num_phy - num_log</span><br><span class="line">    <span class="keyword">assert</span> num_redundant &gt;= <span class="number">0</span></span><br><span class="line">    device = weight.device</span><br><span class="line">    <span class="comment"># 每个物理专家位置初始化的逻辑专家为当前位置</span></span><br><span class="line">    phy2log = torch.arange(num_phy, dtype=torch.int64, device=device).repeat(n, <span class="number">1</span>) // [n, num_phy]</span><br><span class="line">    rank = torch.zeros(n, num_phy, dtype=torch.int64, device=device) // [n, num_phy]</span><br><span class="line">    <span class="comment"># 每个逻辑专家的个数初始化是1</span></span><br><span class="line">    logcnt = torch.ones(n, num_log, dtype=torch.int64, device=device) // [n, num_log]</span><br><span class="line">    <span class="comment"># arangen为二维张量</span></span><br><span class="line">    arangen = torch.arange(n, dtype=torch.int64, device=device)</span><br><span class="line">    <span class="comment"># 只对大于逻辑专家数的物理专家位置 重分配 逻辑专家号</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(num_log, num_phy):</span><br><span class="line">        <span class="comment"># 每个逻辑专家的weight除以它已经分配的逻辑专家个数，然后取最大值，得到逻辑专家号</span></span><br><span class="line">        redundant_indices = (weight / logcnt).<span class="built_in">max</span>(dim=-<span class="number">1</span>).indices</span><br><span class="line">        <span class="comment"># 对应物理专家位置赋值为逻辑专家号</span></span><br><span class="line">        phy2log[:, i] = redundant_indices</span><br><span class="line">        <span class="comment"># 高级索引 (Advanced Indexing), arangen表示选取logcnt 的第 0 行和第 1 行, redundant_indices表示在选定的行中选取相应的列索引</span></span><br><span class="line">        rank[:, i] = logcnt[arangen, redundant_indices]</span><br><span class="line">        <span class="comment"># 对应位置的计数加1</span></span><br><span class="line">        logcnt[arangen, redundant_indices] += <span class="number">1</span></span><br><span class="line">    <span class="keyword">return</span> phy2log, rank, logcnt</span><br></pre></td></tr></table></figure>
+<h3 id="balanced_packing"><a class="markdownIt-Anchor" href="#balanced_packing"></a> balanced_packing</h3>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820152241496.png" alt="image.png" /></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 算法思路： </span></span><br><span class="line"><span class="comment">#     给M个元素分配到N个组，每个组都分到M/N个元素，且每个组的weight总和相对均衡</span></span><br><span class="line"><span class="comment">#     - 先把M个元素的weight按从大到小的顺序排列</span></span><br><span class="line"><span class="comment">#     - 然后按照weight从大到小的顺序依次给M给元素分配到各个组，分配的时候动态计算各个组当前的weight，每次都动态选择weight最小的组</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">balanced_packing</span>(<span class="params">weight: torch.Tensor, num_packs: <span class="built_in">int</span></span>) -&gt; <span class="type">Tuple</span>[torch.Tensor, torch.Tensor]:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    Pack n weighted objects to m packs, such that each bin contains exactly n/m objects and the weights of all packs</span></span><br><span class="line"><span class="string">    are as balanced as possible.</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    Parameters:</span></span><br><span class="line"><span class="string">        weight: [X, n], the weight of each item</span></span><br><span class="line"><span class="string">        num_packs: number of packs</span></span><br><span class="line"><span class="string">    </span></span><br><span class="line"><span class="string">    Returns: </span></span><br><span class="line"><span class="string">        pack_index: [X, n], the pack index of each item</span></span><br><span class="line"><span class="string">        rank_in_pack: [X, n], the rank of the item in the pack</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    num_layers, num_groups = weight.shape</span><br><span class="line">    <span class="keyword">assert</span> num_groups % num_packs == <span class="number">0</span></span><br><span class="line">    groups_per_pack = num_groups // num_packs</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> groups_per_pack == <span class="number">1</span>:</span><br><span class="line">        <span class="comment"># 从0开始递增的张量</span></span><br><span class="line">        pack_index = torch.arange(weight.size(-<span class="number">1</span>), dtype=torch.int64, device=weight.device).expand(weight.shape)</span><br><span class="line">        <span class="comment"># 全0张量</span></span><br><span class="line">        rank_in_pack = torch.zeros_like(weight, dtype=torch.int64)</span><br><span class="line">        <span class="keyword">return</span> pack_index, rank_in_pack</span><br><span class="line">    <span class="comment"># 各层按weight降序排列各逻辑专家号</span></span><br><span class="line">    indices = weight.<span class="built_in">float</span>().sort(-<span class="number">1</span>, descending=<span class="literal">True</span>).indices.cpu()</span><br><span class="line">    <span class="comment"># 初始化全-1张量</span></span><br><span class="line">    pack_index = torch.full_like(weight, fill_value=-<span class="number">1</span>, dtype=torch.int64, device=<span class="string">&#x27;cpu&#x27;</span>)</span><br><span class="line">    rank_in_pack = torch.full_like(pack_index, fill_value=-<span class="number">1</span>)</span><br><span class="line">    <span class="comment"># 每一层分别计算</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(num_layers):</span><br><span class="line">        pack_weights = [<span class="number">0</span>] * num_packs</span><br><span class="line">        pack_items = [<span class="number">0</span>] * num_packs</span><br><span class="line">        <span class="keyword">for</span> group <span class="keyword">in</span> indices[i]:</span><br><span class="line">            <span class="comment"># 选择当前总weights数最少的pack</span></span><br><span class="line">            pack = <span class="built_in">min</span>((i <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(num_packs) <span class="keyword">if</span> pack_items[i] &lt; groups_per_pack), key=pack_weights.__getitem__)</span><br><span class="line">            <span class="comment"># 检查给这个总weights数最少的pack分配超过平均分配数</span></span><br><span class="line">            <span class="keyword">assert</span> pack_items[pack] &lt; groups_per_pack</span><br><span class="line">            <span class="comment"># 将当前选出来的group分配到总weights数最少的pack</span></span><br><span class="line">            pack_index[i, group] = pack</span><br><span class="line">            <span class="comment"># 记录当前选处理的group是第几个放到pack中的</span></span><br><span class="line">            rank_in_pack[i, group] = pack_items[pack]</span><br><span class="line">            <span class="comment"># 给这个pack加上刚分配的item的权重</span></span><br><span class="line">            pack_weights[pack] += weight[i, group]</span><br><span class="line">            <span class="comment"># 给这个pack加上1</span></span><br><span class="line">            pack_items[pack] += <span class="number">1</span></span><br><span class="line">    <span class="comment"># pack_index, 表示各个元素所属的pack</span></span><br><span class="line">    <span class="comment"># rank_in_pack表示各个元素在pack中的序号(从0开始)</span></span><br><span class="line">    <span class="keyword">return</span> pack_index, rank_in_pack</span><br></pre></td></tr></table></figure>
+<h3 id="分层负载均衡"><a class="markdownIt-Anchor" href="#分层负载均衡"></a> 分层负载均衡</h3>
+<ul>
+<li>
+<p>先将专家组平均打包到节点上 balanced_packing</p>
+<ul>
+<li>
+<p>然后节点内复制专家,权重高的被拆分以降低其权重</p>
+</li>
+<li>
+<p>最后将复制的专家放在单独的GPU上, balanced_packing</p>
+</li>
+</ul>
+</li>
+</ul>
+<p><img src="https://ronny-1333301201.cos.ap-shanghai.myqcloud.com/20250820152330044.png" alt="image.png" /></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br></pre></td><td class="code"><pre><span class="line">    </span><br><span class="line"><span class="keyword">def</span> <span class="title function_">rebalance_experts_hierarchical</span>(<span class="params">weight: torch.Tensor, num_physical_experts: <span class="built_in">int</span>, </span></span><br><span class="line"><span class="params">                      num_groups: <span class="built_in">int</span>, num_nodes: <span class="built_in">int</span>, num_gpus: <span class="built_in">int</span></span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    Parameters:</span></span><br><span class="line"><span class="string">        weight: [num_moe_layers, num_logical_experts]</span></span><br><span class="line"><span class="string">        group_size: number of logical experts per group, used in group-limited routing</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    Returns: </span></span><br><span class="line"><span class="string">        physical_to_logical_map: [num_moe_layers, num_physical_experts]</span></span><br><span class="line"><span class="string">        logical_to_physical_map: [num_moe_layers, num_logical_experts, X]</span></span><br><span class="line"><span class="string">        logical_count: [num_moe_layers, num_logical_experts]</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    num_layers, num_logical_experts = weight.shape</span><br><span class="line">    <span class="comment"># 分层的方案要求 逻辑专家数 能够均分到 各个组里面</span></span><br><span class="line">    <span class="keyword">assert</span> num_logical_experts % num_groups == <span class="number">0</span></span><br><span class="line">    <span class="comment"># 每个组内的逻辑专家数</span></span><br><span class="line">    group_size = num_logical_experts // num_groups </span><br><span class="line">    <span class="comment"># 要求每个节点里面的EP组个数相同</span></span><br><span class="line">    <span class="keyword">assert</span> num_groups % num_nodes == <span class="number">0</span></span><br><span class="line">    <span class="comment"># 每个组内的节点数</span></span><br><span class="line">    groups_per_node = num_groups // num_nodes</span><br><span class="line">    <span class="comment"># 要求每个节点中的GPU数量相同</span></span><br><span class="line">    <span class="keyword">assert</span> num_gpus % num_nodes == <span class="number">0</span></span><br><span class="line">    <span class="comment"># 要求每个GPU中放置的物理专家数相同</span></span><br><span class="line">    <span class="keyword">assert</span> num_physical_experts % num_gpus == <span class="number">0</span></span><br><span class="line">    <span class="comment"># 每个GPU内的物理专家数</span></span><br><span class="line">    phy_experts_per_gpu = num_physical_experts // num_gpus</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 置换 (permutation) 的逆映射</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">inverse</span>(<span class="params">perm: torch.Tensor</span>) -&gt; torch.Tensor:</span><br><span class="line">        inv = torch.empty_like(perm)</span><br><span class="line">        inv.scatter_(<span class="number">1</span>, perm, torch.arange(perm.size(<span class="number">1</span>), dtype=torch.int64, device=perm.device).expand(perm.shape))</span><br><span class="line">        <span class="keyword">return</span> inv</span><br><span class="line"></span><br><span class="line">    <span class="comment"># Step 1: pack groups to nodes</span></span><br><span class="line">    <span class="comment"># 每一层的每个组所有token个数加和, [num_layers, group_size]</span></span><br><span class="line">    tokens_per_group = weight.unflatten(-<span class="number">1</span>, (num_groups, group_size)).<span class="built_in">sum</span>(-<span class="number">1</span>)</span><br><span class="line">    <span class="comment"># 基于节点进行pack</span></span><br><span class="line">    <span class="comment"># group_pack_index, 每个group所属的pack</span></span><br><span class="line">    <span class="comment"># 每个pack内group的编号</span></span><br><span class="line">    group_pack_index, group_rank_in_pack = balanced_packing(tokens_per_group, num_nodes) </span><br><span class="line">    <span class="comment"># 将逻辑专家映射到各个节点(全局编号)，[num_layers, num_logical_experts]</span></span><br><span class="line">    log2mlog = (((group_pack_index * groups_per_node + group_rank_in_pack) * group_size).unsqueeze(-<span class="number">1</span>) + </span><br><span class="line">                torch.arange(group_size, dtype=torch.int64, device=group_pack_index.device)).flatten(-<span class="number">2</span>)</span><br><span class="line">    <span class="comment"># 如果 log2mlog[i] = j，那么 mlog2log[j] = i</span></span><br><span class="line">    <span class="comment"># 记录在没有复制的情况下，每一个全局节点编号上的逻辑专家号</span></span><br><span class="line">    mlog2log = inverse(log2mlog)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># Step 2: construct redundant experts within nodes</span></span><br><span class="line">    <span class="comment"># [num_layers * num_nodes, num_logical_experts // num_nodes]</span></span><br><span class="line">    <span class="comment"># 把num_nodes升到第1维度去, 没有改变weight的值</span></span><br><span class="line">    tokens_per_mlog = weight.gather(-<span class="number">1</span>, mlog2log).view(-<span class="number">1</span>, num_logical_experts // num_nodes)</span><br><span class="line">    <span class="comment"># 基于第2维度（每个节点的逻辑专家数），在各节点内并行进行专家复制扩展到每个节点的物理专家数</span></span><br><span class="line">    phy2mlog, phyrank, mlogcnt = replicate_experts(tokens_per_mlog, num_physical_experts // num_nodes)    </span><br><span class="line"></span><br><span class="line">    <span class="comment"># Step 3: pack physical_experts to GPUs</span></span><br><span class="line">    <span class="comment"># [num_layers * num_nodes, num_physical_experts // num_nodes]</span></span><br><span class="line">    <span class="comment"># 每个节点全局编号上的权重，高权重的由于有复制，因此会被除以复制的个数</span></span><br><span class="line">    tokens_per_phy = (tokens_per_mlog / mlogcnt).gather(-<span class="number">1</span>, phy2mlog)</span><br><span class="line">    <span class="comment"># 在节点内的gpu上做一次负载均衡，仍然是多个node并行</span></span><br><span class="line">    pack_index, rank_in_pack = balanced_packing(tokens_per_phy, num_gpus // num_nodes)</span><br><span class="line">    <span class="comment"># 物理专家到全局GPU编号的映射/反映射</span></span><br><span class="line">    phy2pphy = pack_index * phy_experts_per_gpu + rank_in_pack</span><br><span class="line">    pphy2phy = inverse(phy2pphy)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 全局GPU编号到全局节点编号的映射</span></span><br><span class="line">    pphy2mlog = phy2mlog.gather(-<span class="number">1</span>, pphy2phy) <span class="comment"># [num_layers * num_nodes, num_log_per_nodes]</span></span><br><span class="line">    pphy2mlog = (pphy2mlog.view(num_layers, num_nodes, -<span class="number">1</span>) + </span><br><span class="line">                 torch.arange(<span class="number">0</span>, num_logical_experts, num_logical_experts // num_nodes).view(<span class="number">1</span>, -<span class="number">1</span>, <span class="number">1</span>)).flatten(-<span class="number">2</span>)</span><br><span class="line">    <span class="comment"># 全局GPU编号到逻辑专家的映射</span></span><br><span class="line">    pphy2log = mlog2log.gather(-<span class="number">1</span>, pphy2mlog)</span><br><span class="line">    <span class="comment"># 标识哪些GPU编号是有复制专家的</span></span><br><span class="line">    pphyrank = phyrank.gather(-<span class="number">1</span>, pphy2phy).view(num_layers, -<span class="number">1</span>)</span><br><span class="line">    <span class="comment"># 标识每个逻辑专家分配到几个GPU上</span></span><br><span class="line">    logcnt = mlogcnt.view(num_layers, -<span class="number">1</span>).gather(-<span class="number">1</span>, log2mlog)</span><br><span class="line">    <span class="keyword">return</span> pphy2log, pphyrank, logcnt</span><br></pre></td></tr></table></figure>
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" rel="tag"># 大模型</a>
+              <a href="/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%8E%A8%E7%90%86/" rel="tag"># 大模型推理</a>
+              <a href="/tags/Deepseek/" rel="tag"># Deepseek</a>
+              <a href="/tags/Deepseek%E4%BC%98%E5%8C%96/" rel="tag"># Deepseek优化</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/08/20/DeepSeek-%E5%A4%8D%E7%8E%B0%E4%B9%8BEP%E9%80%9A%E4%BF%A1/" rel="prev" title="DeepSeek 复现之EP通信">
+                  <i class="fa fa-angle-left"></i> DeepSeek 复现之EP通信
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2025/08/20/%E5%A4%A7%E6%A8%A1%E5%9E%8B-kv-cache-%E8%AF%A6%E8%A7%A3-%E6%8E%A8%E7%90%86%E5%BC%95%E6%93%8E%E4%B8%AD%E7%9A%84-kv-cache-%E5%A4%8D%E7%94%A8/" rel="next" title="大模型 kv cache 详解 & 推理引擎中的 kv cache 复用">
+                  大模型 kv cache 详解 & 推理引擎中的 kv cache 复用 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Ronny Lu</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">245k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">14:50</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">false</script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" integrity="sha256-UF1fgpAiu3tPJN/uCqEUHNe7pnr+QR0SQDNfgglgtcM=" crossorigin="anonymous">
+  <script class="next-config" data-name="katex" type="application/json">{"copy_tex_js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/copy-tex.min.js","integrity":"sha256-Us54+rSGDSTvIhKKUs4kygE2ipA0RXpWWh0/zLqw3bs="}}</script>
+  <script src="/js/third-party/math/katex.js"></script>
+
+
+
+</body>
+</html>
